@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <h1>InvoiceBuilder</h1>
+    <center>
+      <h1>InvoiceBuilder <small>by</small></h1>
+
+      <a href='http://appointmentguru.co'><img src="./assets/logo.png"></a>
+    </center>
     <h5>Sample Datas</h5>
     <div>
       <button

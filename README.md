@@ -32,16 +32,23 @@ let invoice = {
 // https://github.com/Invoiced/invoice-generator-api
 </script>
 
-... 
+...
 
 <invoice-builder v-model='invoice' ></invoice-builder>
 ```
 
+**Building the docs/github page**
+
+```
+npm run build
+# .. push to github
+```
+
 **Features**
 
-- [ ] Display the invoice with the same look and feel of the generated invoice 
+- [ ] Display the invoice with the same look and feel of the generated invoice
 - [ ] All values are editable (ideally as edit-in-place)
-- [ ] ... 
+- [ ] ...
 
 
 ## Build Setup
