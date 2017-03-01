@@ -1,7 +1,8 @@
 <template>
   <div class="invoice-builder">
-    <textarea v-model='invoice' >
+    <textarea v-model='invoice' style='width:400px;height:400px;' >
     </textarea>
+    <div v-show='error' >{{error}}</div>
   </div>
 </template>
 
@@ -13,19 +14,24 @@ export default {
   },
   data () {
     return {
-      invoice: JSON.stringify(this.value)
+      invoice: JSON.stringify(this.value),
+      error: false
     }
   },
   watch: {
+    value () {
+      this.invoice = JSON.stringify(this.value)
+    },
     invoice () {
       let data = null
       try {
         data = JSON.parse(this.invoice)
+        this.$emit('input', data)
+        this.error = false
       } catch (err) {
         console.log(err)
-        data = 'Not valid JSON'
+        this.error = 'Not valid JSON'
       }
-      this.$emit('input', data)
     }
   }
 }
