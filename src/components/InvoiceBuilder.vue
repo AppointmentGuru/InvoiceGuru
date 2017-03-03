@@ -105,9 +105,6 @@ export default {
         description: null
       })
     },
-    handleEdit (index, row) {
-      console.log(index, row)
-    },
     handleDelete (index, row) {
       this.value.data.items.splice(index, 1)
     }
