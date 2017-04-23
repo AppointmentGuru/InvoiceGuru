@@ -2,9 +2,9 @@
   <div class="invoice-builder">
 
     <!-- Logo and Document Title -->
-    <el-row 
+    <el-row
     type="flex"
-    :gutter="20" 
+    :gutter="20"
     justify="space-between" >
     <el-col :span="8">
       <img :src="value.data.logo" />
@@ -17,30 +17,28 @@
   <br/><br>
 
   <!--  Invoice Details -->
-  <el-row 
-  type="flex" 
-  :gutter="20" 
+  <el-row
+  type="flex"
+  :gutter="20"
   justify="space-between" >
 
   <!-- Address details -->
   <el-col :span="6">
     <span class="silver">Invoice From:</span> <br/><br/>
-      <el-input 
-      type="textarea" 
-      :rows="2" 
-      placeholder="Who is this invoice from?" 
-      v-model="value.data.from">    
+      <el-input
+      type="textarea"
+      :rows="2"
+      placeholder="Who is this invoice from?"
+      v-model="value.data.from">
     </el-input>
-
   <br/>
   <span class="silver">Bill To:</span> <br/><br/>
-    <el-input 
-    type="textarea" 
-    :rows="2" 
-    placeholder="Who is this invoice to?" 
-    v-model="value.data.to">    
+    <el-input
+    type="textarea"
+    :rows="2"
+    placeholder="Who is this invoice to?"
+    v-model="value.data.to">
   </el-input>
-
 </el-col>
 
 <!-- Dates -->
@@ -58,7 +56,6 @@
         </el-date-picker>
       </td>
     </tr>
-    <br/>
     <tr>
       <td><span class="silver">Due Date:</span></td>
       <td>
@@ -68,6 +65,12 @@
         format="yyyy-MM-dd"
         placeholder="Pick a day">
       </el-date-picker>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="silver">Balance Due:</span></td>
+      <td>
+      <span class="sliver" >Balance Due: {{value.data.currency}} {{balanceDue}} </span>
       </td>
     </tr>
   </tbody>
@@ -179,6 +182,12 @@ export default {
     },
     amountLabel () {
       return `Amount ( ${this.value.data.currency} )`
+    },
+    balanceDue () {
+      // console.log(JSON.stringify(this.value.data.items))
+      return this.value.data.items.reduce(function (val, item) {
+        return (parseFloat(item.unit_cost) * item.quantity) + val
+      }, 0)
     }
   },
   watch: {

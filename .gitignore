@@ -106,3 +106,5 @@ ENV/
 
 # mkdocs documentation
 /site
+
+invoice.pdb
