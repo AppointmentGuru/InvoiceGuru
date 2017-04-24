@@ -7,7 +7,8 @@
     :gutter="20"
     justify="space-between" >
     <el-col :span="8">
-      <img :src="value.data.logo" />
+      <!-- <img :src="value.data.logo" /> -->
+      <uploader ></uploader>
     </el-col>
     <el-col :span="5">
       <h1>INVOICE</h1> <br/>
@@ -149,11 +150,13 @@
 </template>
 
 <script>
+import Uploader from './Uploader'
 export default {
   name: 'InvoiceBuilder',
   props: {
     value: { type: Object, required: true }
   },
+  components: { Uploader },
   data () {
     return {
       invoice: JSON.stringify(this.value),

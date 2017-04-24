@@ -44,68 +44,70 @@ class Command(BaseCommand):
         '''run the command'''
         today = datetime.today().strftime('%d %b %Y')
         data = {
-          "from": "Christo Crampton\n64 2nd ave, Parkhurst, Johannesburg",
-          "to": "Tangent Solutions\nCulross Court, 16 Culross road, Bryanston, Johannesburg",
+          "from": "Kirsten Lawlor Biokineticist\nPractice number: 0290548\n34 Ashford road, Parkwood",
+          "to": "Joe Soap, \nSome address, somewhere",
           "number": "INV-2",
           "currency": "ZAR",
           "date": "2017-04-25",
+          "logo": "http://beta.appointmentguru.co/media/practitioner/profile/kirsten-lawlor.jpg",
           "items": [
             {
-              "name": "[2017-03-03] consultation",
-              # "quantity": 1,
-              "unit_cost": "4000.00",
-              "description": "Building APIs with Python, Django and Django Rest Framework"
+              "name": "21 Jan 2016",
+              "quantity": 1,
+              "unit_cost": "92",
+              "description": "Treatment code: 91923, ICD10 code: M54.57"
             },
             {
-              "name": "[2017-03-03] consultation",
-              # "quantity": 1,
-              "unit_cost": "4000.00",
-              "description": "VusJS for Professionals"
+              "name": "21 Jan 2016",
+              "quantity": 1,
+              "unit_cost": "80",
+              "description": "Treatment code: 91926, ICD10 code: M54.57"
             },
             {
-              "name": "[2017-03-06] consultation",
-              # "quantity": 1,
-              "unit_cost": "4000.00",
-              "description": "Vodacom consultation"
+              "name": "21 Jan 2016",
+              "quantity": "1",
+              "unit_cost": "80",
+              "description": "Treatment code: 91927, ICD10 code: M54.57"
             },
             {
-              "name": "[2017-03-29] consultation",
-              # "quantity": 1,
-              "unit_cost": "4000.00",
-              "description": "Building APIs with Python, Django and Django Rest Framework"
+              "name": "25 Jan 2016",
+              "quantity": "1",
+              "unit_cost": "92",
+              "description": "Treatment code: 91923, ICD10 code: M54.57"
             },
             {
-              "name": "[2017-03-29] consultation",
-              # "quantity": 1,
-              "unit_cost": "4000.00",
-              "description": "VusJS for Professionals"
+              "name": "25 Jan 2016",
+              "quantity": "1",
+              "unit_cost": "80",
+              "description": "Treatment code: 91926, ICD10 code: M54.57"
             },
             {
-              "name": "[2017-04-06] consultation",
-              # "quantity": 1,
-              "unit_cost": "4000.00",
-              "description": "Building APIs with Python, Django and Django Rest Framework"
+              "name": "25 Jan 2016",
+              "quantity": "1",
+              "unit_cost": "80",
+              "description": "Treatment code: 91927, ICD10 code: M54.57"
             },
             {
-              "name": "[2017-04-06] consultation",
-              # "quantity": 1,
-              "unit_cost": "4000.00",
-              "description": "VusJS for Professionals"
+              "name": "28 Jan 2016",
+              "quantity": "1",
+              "unit_cost": "92",
+              "description": "Treatment code: 91927, ICD10 code: M54.57"
             },
             {
-              "name": "[2017-04-24] consultation",
-              # "quantity": 1,
-              "unit_cost": "4000.00",
-              "description": "Building APIs with Python, Django and Django Rest Framework"
+              "name": "28 Jan 2016",
+              "quantity": "1",
+              "unit_cost": "80",
+              "description": "Treatment code: 91933, ICD10 code: M54.57"
             },
             {
-              "name": "[2017-04-24] consultation",
-              # "quantity": 1,
-              "unit_cost": "4000.00",
-              "description": "VusJS for Professionals"
+              "name": "28 Jan 2016",
+              "quantity": "1",
+              "unit_cost": "80",
+              "description": "Treatment code: 91923, ICD10 code: M54.57"
             }
           ],
-          "notes": "Account details: \nBank: FNB, \nBranch code: 250655\nAccount number: 60232195566"
+          "notes": "Account details:\nBank: FNB, Branch code: 250655, Account number: 1234567890\nPlease use reference no: ABC-1234\nE-mail proof of payment to: kirsten@appointmentguru.co, use your reference no. as the subject line\nBook your next appointment online at: http://bookme.guru/kirstenlawlor/",
+          "due_date": "2017-05-24"
         }
         headers = {'Content-Type': 'application/json', 'Accept':'application/json'}
         pdf = requests.post(
