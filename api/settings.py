@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
 
     'rest_framework',
 
@@ -124,3 +125,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_ROOT = './'
 INVOICE_GENERATOR_URL = 'https://invoice-generator.com'
+
+# from .custom_settings import *

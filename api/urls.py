@@ -16,8 +16,10 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from invoice.api import router
+from invoice import views
 
 urlpatterns = [
+    url(r'^invoice/', views.invoice, name='invoice'),
     url(r'^admin/', admin.site.urls),
     url(r'^', include(router.urls)),
 ]

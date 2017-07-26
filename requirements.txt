@@ -3,14 +3,18 @@ djangorestframework==3.4.1
 gunicorn==19.6.0
 psycopg2==2.6.2
 requests==2.11.1
-raven
-newrelic
+docker
+python-dateutil
 
-django-cors-middleware
 django-filter
-django-crispy-forms
 django_markdown2
 django-anymail
 pytz
-twilio
+
+raven
+newrelic
+
+coverage
 faker
+ipdb
+ipython

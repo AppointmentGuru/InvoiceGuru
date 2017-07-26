@@ -1,0 +1,11 @@
+version: "3"
+services:
+  db:
+    image: postgres:9.5
+  sut:
+    build: .
+    command: sh /code/test.sh
+    depends_on:
+      - db
+    volumes:
+      - .:/code

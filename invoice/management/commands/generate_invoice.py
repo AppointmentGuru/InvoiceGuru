@@ -44,7 +44,7 @@ class Command(BaseCommand):
         '''run the command'''
         today = datetime.today().strftime('%d %b %Y')
         data = {
-          "from": "Kirsten Lawlor Biokineticist\nPractice number: 0290548\n34 Ashford road, Parkwood",
+          "from": "Sarah Eatwell\n23 Parliament road, Parkmore",
           "to": "Joe Soap, \nSome address, somewhere",
           "number": "INV-2",
           "currency": "ZAR",
