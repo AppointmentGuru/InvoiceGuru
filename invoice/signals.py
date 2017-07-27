@@ -11,6 +11,6 @@ def invoice_created(sender, instance, created, **kwargs):
     if instance.invoice_number is None:
         instance.invoice_number = generate_invoice_number(instance)
 
-    pdf = generate_pdf(instance)
-    instance.save()
+    # pdf = generate_pdf(instance)
+    # instance.save()
 

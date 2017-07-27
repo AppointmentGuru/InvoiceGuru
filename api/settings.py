@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
 
+    'storages',
     'rest_framework',
 
     'invoice', 'api',
@@ -52,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'api.middleware.KongUserMiddleware'
 ]
 
 ROOT_URLCONF = 'api.urls'
@@ -126,4 +128,4 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = './'
 INVOICE_GENERATOR_URL = 'https://invoice-generator.com'
 
-# from .custom_settings import *
+from .custom_settings import *

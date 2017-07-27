@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 INVOICE_STATUSES = [
     ('new', 'new'),
@@ -32,6 +33,16 @@ curl -i https://invoice-generator.com \
   -d terms="No need to submit payment. You will be auto-billed for this invoice." \
 > invoice.vat.pdf && open invoice.vat.pdf
 '''
+
+"""
+class InvoiceSettings(models.Model):
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name =  models.CharField(max_length=255, blank=True, null=True)
+
+    # configs:
+    template = models.CharField(max_length=255, blank=True, null=True, help_text='The base template to use for invoices using these settings')
+"""
 
 class Invoice(models.Model):
 
