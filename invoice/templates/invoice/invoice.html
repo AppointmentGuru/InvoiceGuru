@@ -1,0 +1,6 @@
+<h3>Your invoice</h3>
+
+{% for appointment in appointments %}
+<strong>{{appointment.title}}</strong>
+<pre>{{appointment}}</pre>
+{% endfor %}
