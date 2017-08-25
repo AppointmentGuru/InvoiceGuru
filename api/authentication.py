@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model()
+from django.contrib.auth import get_user_model
 from rest_framework import authentication
 from rest_framework import exceptions
 
