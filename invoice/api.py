@@ -1,10 +1,10 @@
 from rest_framework import routers, serializers, viewsets
-from .models import Invoice, LineItem
+from .models import Invoice
 
 class InvoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Invoice
-        fields = '__all__'
+        fields = ['practitioner_id', 'customer_id', 'title', 'status', 'context', 'template']
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):

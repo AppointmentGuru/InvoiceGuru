@@ -7,14 +7,8 @@ from datetime import datetime
 from dateutil.parser import parse
 
 import requests, decimal, random, json
+from django.conf import settings
 
-template_registry = {
-    'basic': {
-        'filename': 'basic.html',
-        'title': 'A simple invoice template',
-        'description': 'A quick and easy template for simple invoices'
-    }
-}
 
 @csrf_exempt
 def invoice(request):
@@ -27,7 +21,7 @@ def invoice(request):
         pass
 
     template_key = request.GET.get('template', 'basic')
-    template_data = template_registry.get(template_key)
+    template_data = settings.TEMPLATE_REGISTRY.get(template_key)
     template_path = 'invoice/templates/{}'.format(template_data.get('filename', 'basic.html'))
 
     for appt in context.get('appointments', []):
