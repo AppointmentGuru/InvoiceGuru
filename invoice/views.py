@@ -8,49 +8,12 @@ from dateutil.parser import parse
 
 import requests, decimal, random, json
 
-DEFAULT_CONTEXT = {
-    "invoice_number": "# LJ-20170825-374",
-    "from_string": "Christo Crampton\n64 2nd ave, \nParkhurst \nJohannesburg",
-    "customer_info": "Vumatel (Pty) Ltd\nVAT reg: 4020266740 \nAddress: PO Box 1811 \nParklands\n2121",
-    "invoice_date": "2017-08-25",
-    "due_date": "2017-08-25",
-    "notes": "**Banking details:**\nChristo Crampton\nFNB\nAcc no: 60232195566\nBranch code: 252505",
-    "invoice_total": 8000,
-    "total_due": 8000,
-    "total_paid": 0,
-    "paid_in_full": False,
-    "appointments": [
-        {
-            "id": 8681,
-            "start_time": "2017-08-15T07:00:00Z",
-            "end_time": "2017-08-15T16:00:00Z",
-            "title": "Luana Jordaan",
-            "full_name": "Luana Jordaan",
-            "client": 678,
-            "practitioner": 1,
-            "status": "N",
-            "currency": "ZAR",
-            "price": "4000.00",
-            "product": 88,
-            "notes": None,
-            "invoice_description": None
-        },
-        {
-            "id": 8868,
-            "start_time": "2017-08-24T07:00:00Z",
-            "end_time": "2017-08-24T15:05:00Z",
-            "title": "Luana Jordaan",
-            "full_name": "Luana Jordaan",
-            "client": 678,
-            "practitioner": 1,
-            "status": "N",
-            "currency": "ZAR",
-            "price": "4000.00",
-            "product": 88,
-            "notes": None,
-            "invoice_description": None
-        }
-    ]
+template_registry = {
+    'basic': {
+        'filename': 'basic.html',
+        'title': 'A simple invoice template',
+        'description': 'A quick and easy template for simple invoices'
+    }
 }
 
 @csrf_exempt
@@ -63,10 +26,14 @@ def invoice(request):
     except json.decoder.JSONDecodeError:
         pass
 
+    template_key = request.GET.get('template', 'basic')
+    template_data = template_registry.get(template_key)
+    template_path = 'invoice/templates/{}'.format(template_data.get('filename', 'basic.html'))
+
     for appt in context.get('appointments', []):
         appt['start_time_formatted'] = parse(appt.get('start_time'))
 
-    return render(request, 'invoice/templates/basic.html', context=context)
+    return render(request, template_path, context=context)
 
 """
     token = request.GET.get('token', None)
