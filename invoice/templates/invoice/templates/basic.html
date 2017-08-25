@@ -1,4 +1,5 @@
-{% load humanize %}
+<!-- {% load humanize %} -->
+{% load md2 %}
 <!doctype html>
 <html>
 <head>
@@ -142,7 +143,7 @@
 						<tr>
 							<!--<td></td>-->
 							<td style='float:right' >
-								Date: {% now "D d M Y" %}</h3><br>
+								Date: {{invoice_date}}</h3><br>
 							</td>
 						</tr>
 					</table>
@@ -154,19 +155,12 @@
 					<table>
 						<tr>
 							<td>
-Christo Crampton<br/>
-64 2nd ave,<br/>
-Parkhurst<br/>
-Johannesburg
-
+{{from_string|linebreaks}}
 							</td>
 
 							<td>
-Vumatel (Pty) Ltd<br/>
-VAT reg: 4020266740<br/>
-PO Box 1811<br/>
-Parklands<br/>
-2121
+<strong>Bill to:</strong><br/>
+{{customer_info|linebreaks}}
 							</td>
 						</tr>
 					</table>
@@ -191,17 +185,13 @@ Parklands<br/>
 			<tr class="total">
 				<td></td>
 				<td>
-				   Total: R{{total|intcomma}}
+				   Total: R{{total_due|intcomma}}
 				</td>
 			</tr>
 			<tr>
 				<td>
 				<strong>Notes:</strong>
-Banking details:<br/>
-Christo Crampton<br/>
-Bank: FNB<br/>
-Acc no: 60232195566<br/>
-Branch code: 252505<br/>
+{{notes|markdown|linebreaks}}
 				</td>
 				<td>
 
