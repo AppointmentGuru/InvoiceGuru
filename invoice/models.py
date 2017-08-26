@@ -33,7 +33,7 @@ class Invoice(models.Model):
     status = models.CharField(max_length=10, choices=INVOICE_STATUSES, default='new', db_index=True)
 
     context = JSONField(default={})
-    template = models.CharField(max_length=255,blank=True, null=True)
+    template = models.CharField(max_length=255,blank=True, null=True, choices=TEMPLATES)
 
     currency = models.CharField(max_length=4,blank=True, null=True, default='ZAR')
     invoice_amount = models.DecimalField(decimal_places=2, max_digits=10, default=0, db_index=True)

@@ -19,7 +19,7 @@ from invoice.api import router
 from invoice import views
 
 urlpatterns = [
-    url(r'^invoice/', views.invoice, name='invoice'),
+    url(r'^invoice/(?P<pk>[0-9]+)/', views.invoice, name='invoice_view'),
     url(r'^admin/', admin.site.urls),
     url(r'^', include(router.urls)),
 ]
