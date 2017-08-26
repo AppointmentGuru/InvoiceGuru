@@ -21,3 +21,4 @@ coverage
 faker
 ipdb
 ipython
+codacy-coverage

@@ -28,6 +28,7 @@ class Invoice(models.Model):
     customer_id = models.CharField(max_length=128, db_index=True)
     object_ids = ArrayField(models.CharField(max_length=100), default=[], db_index=True)
 
+    invoice_number = models.CharField(max_length=255,blank=True, null=True)
     title = models.CharField(max_length=255,blank=True, null=True)
     status = models.CharField(max_length=10, choices=INVOICE_STATUSES, default='new', db_index=True)
 

@@ -1,13 +1,8 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-
-from functools import reduce
-from datetime import datetime
+import json
 from dateutil.parser import parse
-
-import requests, decimal, random, json
 from django.conf import settings
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
 
 @csrf_exempt
