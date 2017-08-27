@@ -9,3 +9,5 @@ services:
       - db
     volumes:
       - .:/code
+    environment:
+      - CODACY_PROJECT_TOKEN=7d6d9bbae77942bdacf0ad722b77264b
