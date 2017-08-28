@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
+import uuid
 
 INVOICE_STATUSES = [
     ('new', 'new'),
@@ -10,6 +11,10 @@ INVOICE_STATUSES = [
 ]
 
 TEMPLATES = [(key, '{} - {}'.format(key, values.get('title'))) for key, values in settings.TEMPLATE_REGISTRY.items()]
+
+def get_uuid():
+  return str(uuid.uuid4())
+
 
 """
 class InvoiceSettings(models.Model):
@@ -33,7 +38,9 @@ class Invoice(models.Model):
     status = models.CharField(max_length=10, choices=INVOICE_STATUSES, default='new', db_index=True)
 
     context = JSONField(default={})
-    template = models.CharField(max_length=255,blank=True, null=True, choices=TEMPLATES)
+    template = models.CharField(max_length=255, blank=True, null=True, choices=TEMPLATES)
+
+    password = models.CharField(max_length=255, blank=True, null=True, default=get_uuid)
 
     currency = models.CharField(max_length=4,blank=True, null=True, default='ZAR')
     invoice_amount = models.DecimalField(decimal_places=2, max_digits=10, default=0, db_index=True)

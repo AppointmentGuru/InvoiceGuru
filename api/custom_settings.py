@@ -31,3 +31,16 @@ DATABASES = {
 db_password = os.environ.get('DATABASE_PASSWORD', False)
 if db_password:
     DATABASES.get('default').update({'PASSWORD': db_password})
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
+    # 'DEFAULT_PERMISSION_CLASSES': (
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'kong_oauth.drf_authbackends.KongDownstreamAuthHeadersAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100
+}

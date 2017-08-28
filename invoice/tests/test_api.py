@@ -1,6 +1,7 @@
 from django.test import TestCase
-from api.testutils import create_mock_invoice
+
 from ..models import Invoice
+
 
 class ApiRootTestCase(TestCase):
 
@@ -15,4 +16,8 @@ class ApiRootTestCase(TestCase):
             'HTTP_X_AUTHENTICATED_USERID': '1'
         }
         response = self.client.get('/', **headers)
-        assert response.status_code == 200
+        assert self.response.status_code == 200, \
+            'Expected 200. got: {} {}'.format(
+                self.response.status_code,
+                self.response.context)
+

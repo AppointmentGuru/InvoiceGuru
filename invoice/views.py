@@ -21,7 +21,6 @@ def invoice(request, pk):
 
     return render(request, template_path, context=context)
 
-
 # docker run -v $(pwd):/downloads/ aquavitae/weasyprint weasyprint http://weasyprint.org /downloads/invoice.pdf
 
 # import docker, os

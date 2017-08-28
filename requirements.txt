@@ -10,6 +10,8 @@ markdown2
 docker
 python-dateutil
 
+kong_oauth==0.1
+
 django-filter
 django-anymail
 pytz
