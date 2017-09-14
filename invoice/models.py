@@ -28,6 +28,9 @@ class InvoiceSettings(models.Model):
 
 class Invoice(models.Model):
 
+    def __str__(self):
+        return '#{}: {}'.format(self.invoice_number, self.title)
+
     # relationships
     practitioner_id = models.CharField(max_length=128, db_index=True)
     customer_id = models.CharField(max_length=128, db_index=True)

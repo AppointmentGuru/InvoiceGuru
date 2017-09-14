@@ -63,6 +63,12 @@
 		text-align:left;
 	}
 
+	.invoice-box table .spacer {
+		height: 40px;
+	}
+	.invoice-box table .spacer td {
+		border-top: solid 1px #ccc;
+	}
 	.invoice-box table td{
 		padding:5px;
 		vertical-align:top;
@@ -70,6 +76,10 @@
 
 	.invoice-box table tr td:nth-child(2){
 		text-align:right;
+	}
+
+	.invoice-box .sub-heading {
+		font-style: italic;
 	}
 
 	.invoice-box table tr.top table td{
@@ -122,6 +132,16 @@
 			text-align:center;
 		}
 	}
+
+	.li-table {
+		border: solid 1px;
+	}
+	.li-table thead th{
+		background-color: #f1f1f1;
+		border-bottom: solid 1px #ccc;
+	}
+	.li-table tr {
+	}
 	</style>
 </head>
 
@@ -155,12 +175,17 @@
 					<table>
 						<tr>
 							<td>
-{{from_string|linebreaks}}
+								<strong>Invioced by:</strong><br/>
+								{{from_string|linebreaks}}
 							</td>
 
 							<td>
 <strong>Bill to:</strong><br/>
 {{customer_info|linebreaks}}
+{% if medicalaid_info %}
+<strong>Medical Aid:</strong><br/>
+{{medicalaid_info|linebreaks}}
+{% endif %}
 							</td>
 						</tr>
 					</table>
@@ -171,23 +196,47 @@
 				<td>{{appointment.start_time_formatted|date:'D d M Y'}}</td>
 				<td></td>
 			</tr>
+			{% if appointment.invoice_description %}
+			<tr class="sub-heading">
+				<td colspan='2'>{{appointment.invoice_description}}</td>
+			</tr>
+			{% endif %}
+			{% if appointment.lineitems %}
 			<tr class="item">
-				<td>
-					{{appointment.invoice_description}}
+				<td colspan='2'>
+					{% if appointment.lineitems %}
+						{% include 'invoice/templates/includes/lineitemtable.html' with lineitems=appointment.lineitems %}
+					{% endif %}
 				</td>
-
+			</tr>
+			{% endif %}
+			<tr>
+				<td></td>
 				<td>
 					R{{appointment.price|intcomma}}
 				</td>
 			</tr>
+			<tr class='spacer' ><td colspan="2" ></td></tr>
 			{% endfor %}
 
 			<tr class="total">
 				<td></td>
 				<td>
-				   Total: R{{total_due|intcomma}}
+				   Total: R{{invoice_total|intcomma}}
 				</td>
 			</tr>
+			{% if banking_details %}
+			<tr>
+				<td>
+				<strong>Banking details:</strong>
+{{banking_details|markdown|linebreaks}}
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			{% endif %}
+			{% if notes %}
 			<tr>
 				<td>
 				<strong>Notes:</strong>
@@ -197,6 +246,7 @@
 
 				</td>
 			</tr>
+			{% endif %}
 		</table>
 	</div>
 </body>

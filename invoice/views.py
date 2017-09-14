@@ -11,7 +11,7 @@ def invoice(request, pk):
 
     invoice = get_object_or_404(Invoice, pk=pk)
 
-    template_key = request.GET.get('template', 'basic')
+    template_key = request.GET.get('template', invoice.template)
     template_data = settings.TEMPLATE_REGISTRY.get(template_key)
     template_path = 'invoice/templates/{}'.format(template_data.get('filename', 'basic.html'))
 
