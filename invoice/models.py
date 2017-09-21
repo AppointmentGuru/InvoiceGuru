@@ -41,7 +41,7 @@ class Invoice(models.Model):
     status = models.CharField(max_length=10, choices=INVOICE_STATUSES, default='new', db_index=True)
 
     context = JSONField(default={})
-    template = models.CharField(max_length=255, blank=True, null=True, choices=TEMPLATES)
+    template = models.CharField(max_length=255, blank=True, null=True, choices=TEMPLATES, default='basic')
 
     password = models.CharField(max_length=255, blank=True, null=True, default=get_uuid)
 

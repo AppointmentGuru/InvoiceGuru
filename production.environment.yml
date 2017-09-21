@@ -17,3 +17,9 @@ docker_environment:
     value: "{{aws_access_key}}"
   - key: AWS_SECRET_ACCESS_KEY
     value: "{{aws_secret_key}}"
+  - key: PUBNUB_PUBLISH_KEY
+    value: "{{pubnub_publish_key}}"
+  - key: PUBNUB_SUBSCRIBE_KEY
+    value: "{{pubnub_subscribe_key}}"
+  - key: PUBNUB_SCHOOL_CHANNEL_PREFIX
+    value: "{{pubsub_channel}}"

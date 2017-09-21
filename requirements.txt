@@ -6,11 +6,13 @@ requests==2.11.1
 django-storages==1.6.3
 boto==2.48.0
 django-markdown2==0.3.0
+pubnub
 markdown2
 docker
 python-dateutil
 
 kong_oauth==0.1
+school_pubsub
 
 django-filter
 django-anymail
@@ -19,6 +21,7 @@ pytz
 raven
 newrelic
 
+responses
 coverage
 faker
 ipdb

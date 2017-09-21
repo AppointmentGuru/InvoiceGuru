@@ -1,11 +1,19 @@
+def get_secret(f):
+    '''Returns a docker secret'''
+    try:
+        return open('/run/secrets/{}'.format(f)).read().rstrip()
+    except IOError:
+        return os.environ.get(f)
+
+
 import os
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get("ALLOWED_HOSTS", '').split(',')]
 
 # aws storage
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 AWS_AUTO_CREATE_BUCKET = True
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_ACCESS_KEY_ID = get_secret('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = get_secret('AWS_SECRET_ACCESS_KEY')
 AWS_S3_REGION_NAME = 'eu-central-1'
 # AWS_S3_CUSTOM_DOMAIN = '{}.s3.amazonaws.com'.format(AWS_STORAGE_BUCKET_NAME)
 STATIC_URL = "https://s3.amazonaws.com/{}/".format(AWS_STORAGE_BUCKET_NAME)
@@ -44,3 +52,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100
 }
+
+FUNCTIONGURU_URL = 'https://functionguru.appointmentguru.co'
+PUB_SUB_BACKEND = ('backends', 'PubNubBackend')
+PUB_SUB_CHANNEL = get_secret('PUBNUB_SCHOOL_CHANNEL_PREFIX')
+class PUBLISHKEYS:
+    '''A config of the events published by this service'''
+    invoice_sent='invoice_sent'
