@@ -8,8 +8,8 @@ from .models import Invoice
 
 @csrf_exempt
 def invoice(request, pk):
-
-    invoice = get_object_or_404(Invoice, pk=pk)
+    password = request.GET.get('key')
+    invoice = get_object_or_404(Invoice, pk=pk, password=password)
 
     template_key = request.GET.get('template', invoice.template)
     template_data = settings.TEMPLATE_REGISTRY.get(template_key)

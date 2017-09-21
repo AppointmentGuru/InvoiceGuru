@@ -12,7 +12,7 @@ docker
 python-dateutil
 
 kong_oauth==0.1
-school_pubsub
+school_pubsub==0.3
 
 django-filter
 django-anymail
