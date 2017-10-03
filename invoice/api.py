@@ -21,7 +21,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def send(self, request, pk):
         invoice = Invoice.objects.get(id=pk)
 
-        to_email = request.POST.get('to_email')
+        to_email = request.data.get('to_email')
         # update the status of all appointments
         # update invoice status
         send_invoice(invoice, to_email)
