@@ -38,6 +38,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         invoice = Invoice.objects.get(id=pk)
         invoice.status = 'paid'
+        invoice.save()
 
         data = InvoiceSerializer(invoice).data
         publish(settings.PUBLISHKEYS.invoice_paid, data)
