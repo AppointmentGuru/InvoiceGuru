@@ -33,6 +33,16 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         publish(settings.PUBLISHKEYS.invoice_sent, data)
         return response.Response(data)
 
+    @decorators.detail_route(methods=['post', 'get'])
+    def paid(self, request, pk):
+
+        invoice = Invoice.objects.get(id=pk)
+        invoice.status = 'paid'
+
+        data = InvoiceSerializer(invoice).data
+        publish(settings.PUBLISHKEYS.invoice_paid, data)
+        return response.Response(data)
+
 
 router = routers.DefaultRouter()
 router.register(r'invoices', InvoiceViewSet)

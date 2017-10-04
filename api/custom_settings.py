@@ -60,3 +60,4 @@ PUB_SUB_CHANNEL = get_secret('PUBNUB_SCHOOL_CHANNEL_PREFIX')
 class PUBLISHKEYS:
     '''A config of the events published by this service'''
     invoice_sent='invoice_sent'
+    invoice_paid='invoice_paid'

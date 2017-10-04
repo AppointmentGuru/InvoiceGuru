@@ -23,8 +23,8 @@ def get_headers(user_id, consumer='appointmentguru'):
 def send_invoice(invoice, to, transport='email'):
     url = '{}/service/'.format(settings.FUNCTIONGURU_URL)
 
-    invoice_url = "https://invoiceguru.appointmentguru.co/invoice/{}/"\
-                    .format(invoice.id)
+    invoice_url = "https://invoiceguru.appointmentguru.co/invoice/{}/?key={}"\
+                    .format(invoice.id, invoice.password)
     invoice_date = invoice.context.get('due_date')
     subject = 'Your invoice for {}'.format(invoice_date)
     message = """Hi
