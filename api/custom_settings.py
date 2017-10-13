@@ -8,7 +8,6 @@ def get_secret(f):
 
 import os
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get("ALLOWED_HOSTS", '').split(',')]
-
 # aws storage
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 AWS_AUTO_CREATE_BUCKET = True
@@ -56,6 +55,11 @@ REST_FRAMEWORK = {
 FUNCTIONGURU_URL = 'https://functionguru.appointmentguru.co'
 PUB_SUB_BACKEND = ('backends', 'PubNubBackend')
 PUB_SUB_CHANNEL = get_secret('PUBNUB_SCHOOL_CHANNEL_PREFIX')
+
+# service dependencies:
+MEDICALAIDGURU_API = 'http://medicalaidguru'
+APPOINTMENTGURU_API = 'http://appointmentguru'
+# APPOINTMENTGURU_API = 'https://swarm.appointmentguru.co/v1'
 
 class PUBLISHKEYS:
     '''A config of the events published by this service'''

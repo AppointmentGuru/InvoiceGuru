@@ -5,6 +5,28 @@ services:
     image: postgres:9.5
     volumes:
       - "invoiceguru-postgres-db-volume:/var/lib/postgresql/data"
+      - ./appointmentguru.sql:/code/appointmentguru.sql
+      - ./medicalaidguru.sql:/code/medicalaidguru.sql
+      - ./invoiceguru.sql:/code/invoiceguru.sql
+
+  # dependencies:
+  appointmentguru:
+    image: appointmentguru/appointmentguru:swarm
+    command: sh /code/run.sh
+    env_file:
+      - env.dev
+    environment:
+      - DATABASE_NAME=appointmentguru_appointmentguru
+
+  medicalaidguru:
+    image: appointmentguru/medicalaidguru:latest
+    command: sh /code/run.sh
+    env_file:
+      - env.dev
+    environment:
+      - DATABASE_NAME=appointmentguru_medicalaidguru
+
+  # app:
   web:
     restart: on-failure:10
     build: .
@@ -16,6 +38,8 @@ services:
       - "8000:8000"
     env_file:
       - env.dev
+    environment:
+      - DATABASE_NAME=appointmentguru_invoiceguru
 
 volumes:
   invoiceguru-postgres-db-volume:

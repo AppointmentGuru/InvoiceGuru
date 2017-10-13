@@ -52,6 +52,9 @@ class Invoice(models.Model):
     date = models.DateField(auto_now_add = True, db_index=True)
     due_date = models.DateField(blank=True, null=True, db_index=True)
 
+    invoice_period_from = models.DateField(db_index=True, blank=True, null=True)
+    invoice_period_to = models.DateField(db_index=True, blank=True, null=True)
+
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     modified_date = models.DateTimeField(auto_now=True, db_index=True)
 

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     'storages',
     'rest_framework',
+    'django_filters',
     'django_markdown2',
 
     'invoice', 'api',
