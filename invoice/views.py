@@ -4,6 +4,7 @@ from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 
+from .helpers import fetch_data, to_context
 from .models import Invoice
 
 @csrf_exempt
@@ -20,6 +21,16 @@ def invoice(request, pk):
         appt['start_time_formatted'] = parse(appt.get('start_time'))
 
     return render(request, template_path, context=context)
+
+@csrf_exempt
+def preview(request):
+    practitioner_id = request.GET.get('practitioner_id')
+    appointment_ids = request.GET.get('appointment_ids', '').split(',')
+    client_id = request.GET.get('client_id')
+
+    practitioner, appointments, medical_record = fetch_data(practitioner_id, appointment_ids, client_id)
+    context = to_context(practitioner, appointments, medical_record)
+    return render(request, 'invoice/templates/basic.html', context=context)
 
 # docker run -v $(pwd):/downloads/ aquavitae/weasyprint weasyprint http://weasyprint.org /downloads/invoice.pdf
 

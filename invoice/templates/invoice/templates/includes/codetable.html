@@ -1,0 +1,16 @@
+<table class='data-table' >
+    <thead>
+        <tr class='head' >
+            {% for header in codes.headers %}
+            <td>{{header}}</td>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in codes.data %}
+        <tr class='item' >
+            {% for v in row %}<td>{{v}}</td>{% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

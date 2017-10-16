@@ -2,6 +2,7 @@ from rest_framework import routers, viewsets, decorators, response
 from .models import Invoice
 from .serializers import InvoiceSerializer
 from .guru import send_invoice, publish
+from .helpers import to_context, fetch_data
 from django.db.models import Q
 from django.conf import settings
 import requests, json
@@ -45,33 +46,10 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         practitioner_id = request.GET.get('practitioner_id')
         appointment_ids = request.GET.get('appointment_ids', '').split(',')
         client_id = request.GET.get('client_id')
-        headers = {
-            'X_ANONYMOUS_CONSUMER': 'false',
-            'X_AUTHENTICATED_USERID': str(practitioner_id),
-        }
 
-        # getme:
-        url = '{}/api/practitioners/{}/'.format(settings.APPOINTMENTGURU_API, practitioner_id)
-        practitioner = requests.get(url, headers=headers).json()
-
-        appointments = []
-        for appointment_id in appointment_ids:
-            url = '{}/api/appointments/{}/'.format(settings.APPOINTMENTGURU_API, appointment_id)
-            print(url)
-            result = requests.get(url, headers=headers)
-            print(result)
-            if result.status_code == 200:
-                appointments.append(result.json())
-
-        url = '{}/records/{}'.format(settings.MEDICALAIDGURU_API, client_id)
-        record_request = requests.get(url, headers=headers)
-        medical_record = {}
-        if record_request.status_code == 200:
-            medical_record = record_request.json()
+        practitioner, appointments, medical_record = fetch_data(practitioner_id, appointment_ids, client_id)
         data = {
-            "practitioner": practitioner,
-            "appointments": appointments,
-            "record": medical_record
+            "context": to_context(practitioner, appointments, medical_record),
         }
 
         return response.Response(data)
