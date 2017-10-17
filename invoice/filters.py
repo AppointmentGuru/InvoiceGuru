@@ -1,6 +1,12 @@
+'''
+Filters for use with Invoices
+'''
+from rest_framework import filters
 from .models import Invoice
+from django_filters.rest_framework import FilterSet
+import django_filters
 
-class InvoiceFilter(filters.FilterSet):
+class InvoiceFilter(FilterSet):
     	# time needs to be in the format: 2016-10-17 11:34:51
     after_utc = django_filters.DateFilter(name="date", lookup_expr='gte')
     before_utc = django_filters.DateFilter(name="date", lookup_expr='lte')
@@ -9,5 +15,5 @@ class InvoiceFilter(filters.FilterSet):
 
     class Meta:
         model = Invoice
-        fields = ['practitioner_id', 'practitioner_id', 'invoice_number', 'date', 'due_date']
+        fields = ['practitioner_id', 'invoice_number', 'date',]
 

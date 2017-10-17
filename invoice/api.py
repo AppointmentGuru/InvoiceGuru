@@ -1,11 +1,12 @@
 from rest_framework import routers, viewsets, decorators, response
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import Invoice
 from .serializers import InvoiceSerializer
 from .guru import send_invoice, publish
 from .helpers import to_context, fetch_data
+from .filters import InvoiceFilter
 from django.db.models import Q
 from django.conf import settings
-import requests, json
 
 class Guru:
 
@@ -30,6 +31,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
     ordering = ['-id',]
+
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = InvoiceFilter
 
     def get_queryset(self):
         user = self.request.user
