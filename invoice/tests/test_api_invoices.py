@@ -30,7 +30,7 @@ class InvoiceAppointmentsTestCase(TestCase):
         self.url = reverse('invoice-appointments', args=(invoice.pk,))
         headers = get_proxy_headers(invoice.practitioner_id)
         data = {
-            'appointments': ["1","2","3"]
+            'appointments': [1,2,3]
         }
         self.response = self.client.post(self.url, json.dumps(data), content_type='application/json', **headers)
 
@@ -39,11 +39,18 @@ class InvoiceAppointmentsTestCase(TestCase):
 
     def test_result_contants_appointment_response(self):
         appointments = self.response.json().get('context').get('appointments')
-        for index, id in enumerate([1,2,3]):
+        for index, id in enumerate(["1","2","3"]):
             actual = appointments[index].get('id')
             assert actual == id,\
                 'Expected: {}. Got: {}'.format(id, actual)
 
+    def test_only_practitioner_can_access(self):
+        user = create_mock_user('joe')
+        invoice = create_mock_invoice()
+        url = reverse('invoice-appointments', args=(invoice.pk,))
+        headers = get_proxy_headers(user.id)
+        response = self.client.post(url, json.dumps({}), content_type='application/json', **headers)
+        assert response.status_code == 404
 
 class ApiInvoiceListTestCase(TestCase):
 
