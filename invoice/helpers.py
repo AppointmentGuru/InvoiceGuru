@@ -127,39 +127,9 @@ def to_context(practitioner={}, appointments={}, medical_record={}):
     p = practitioner.get('profile', {})
 
     total = 0
-    codes = [{
-        "id": 33,
-        "icd10": "M2.5",
-        "procedure": None,
-        "process": "2010",
-        "currency": "ZAR",
-        "nappi": None,
-        "description": None,
-        "price": "123.00",
-        "appointment": 9863
-    }, {
-        "id": 32,
-        "icd10": "M2.4",
-        "procedure": None,
-        "process": "4567",
-        "currency": "ZAR",
-        "nappi": None,
-        "description": None,
-        "price": "123.00",
-        "appointment": 9863
-    }, {
-        "id": 31,
-        "icd10": "M2.4",
-        "procedure": None,
-        "process": "1234",
-        "currency": "ZAR",
-        "nappi": None,
-        "description": None,
-        "price": "123.00",
-        "appointment": 9863
-    }]
     for appointment in appointments:
         total += float(appointment.get('price'))
+        codes = appointment.get('codes', [])
         appointment.update({
             'codes': codes_to_table(codes),
             'start_time_formatted': parse(appointment.get('start_time'))
