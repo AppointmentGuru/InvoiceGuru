@@ -2,6 +2,13 @@ from django.conf import settings
 from dateutil.parser import parse
 import requests
 
+
+def get_headers(practitioner_id):
+    return {
+        'X_ANONYMOUS_CONSUMER': 'false',
+        'X_AUTHENTICATED_USERID': str(practitioner_id),
+    }
+
 class Person:
 
     def __init__(self, person):
@@ -91,22 +98,23 @@ def medical_aid(data):
 
     return ('\n').join(lines)
 
-def fetch_data(practitioner_id, appointment_ids, client_id):
-    headers = {
-        'X_ANONYMOUS_CONSUMER': 'false',
-        'X_AUTHENTICATED_USERID': str(practitioner_id),
-    }
-
-    # getme:
-    url = '{}/api/practitioners/{}/'.format(settings.APPOINTMENTGURU_API, practitioner_id)
-    practitioner = requests.get(url, headers=headers).json()
-
+def fetch_appointments(practitioner_id, appointment_ids):
+    headers = get_headers(practitioner_id)
     appointments = []
     for appointment_id in appointment_ids:
         url = '{}/api/appointments/{}/'.format(settings.APPOINTMENTGURU_API, appointment_id)
         result = requests.get(url, headers=headers)
         if result.status_code == 200:
             appointments.append(result.json())
+    return appointments
+
+def fetch_data(practitioner_id, appointment_ids, client_id):
+    # getme:
+    headers = get_headers(practitioner_id)
+    url = '{}/api/practitioners/{}/'.format(settings.APPOINTMENTGURU_API, practitioner_id)
+    practitioner = requests.get(url, headers=headers).json()
+
+    appointments = fetch_appointments(appointment_ids)
 
     url = '{}/records/{}'.format(settings.MEDICALAIDGURU_API, client_id)
     record_request = requests.get(url, headers=headers)
@@ -134,8 +142,6 @@ def to_context(practitioner={}, appointments={}, medical_record={}):
             'codes': codes_to_table(codes),
             'start_time_formatted': parse(appointment.get('start_time'))
         })
-
-
 
     return {
         "notes": "",

@@ -4,6 +4,46 @@ from django.urls import reverse
 from api.testutils import create_mock_invoice, create_mock_user, get_proxy_headers
 from ..models import Invoice
 
+import responses, json
+
+class InvoiceAppointmentsTestCase(TestCase):
+
+    @responses.activate
+    def setUp(self):
+        responses.add(
+            responses.GET,
+            'http://appointmentguru/api/appointments/1/',
+            json={'id': '1'},
+            status=200)
+        responses.add(
+            responses.GET,
+            'http://appointmentguru/api/appointments/2/',
+            json={'id': '2'},
+            status=200)
+        responses.add(
+            responses.GET,
+            'http://appointmentguru/api/appointments/3/',
+            json={'id': '3'},
+            status=200)
+
+        invoice = create_mock_invoice()
+        self.url = reverse('invoice-appointments', args=(invoice.pk,))
+        headers = get_proxy_headers(invoice.practitioner_id)
+        data = {
+            'appointments': ["1","2","3"]
+        }
+        self.response = self.client.post(self.url, json.dumps(data), content_type='application/json', **headers)
+
+    def test_is_ok(self):
+        assert self.response.status_code == 200
+
+    def test_result_contants_appointment_response(self):
+        appointments = self.response.json().get('context').get('appointments')
+        for index, id in enumerate([1,2,3]):
+            actual = appointments[index].get('id')
+            assert actual == id,\
+                'Expected: {}. Got: {}'.format(id, actual)
+
 
 class ApiInvoiceListTestCase(TestCase):
 

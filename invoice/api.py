@@ -1,12 +1,15 @@
 from rest_framework import routers, viewsets, decorators, response
+
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from django.conf import settings
+
 from .models import Invoice
 from .serializers import InvoiceSerializer
 from .guru import send_invoice, publish
-from .helpers import to_context, fetch_data
+from .helpers import to_context, fetch_data, fetch_appointments
 from .filters import InvoiceFilter
-from django.db.models import Q
-from django.conf import settings
 
 class Guru:
 
@@ -56,6 +59,22 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             "context": to_context(practitioner, appointments, medical_record),
         }
 
+        return response.Response(data)
+
+    @decorators.detail_route(methods=['post'])
+    def appointments(self, request, pk=None):
+        '''
+        Send a list of appointment_ids and we add the full context to the invoice
+        '''
+        invoice = get_object_or_404(Invoice, pk=pk)
+        appointment_ids = request.data.get('appointments', '')
+        appointments = fetch_appointments(invoice.practitioner_id, appointment_ids)
+
+        invoice.context.update({
+            'appointments': appointments
+        })
+        invoice.save()
+        data = InvoiceSerializer(invoice).data
         return response.Response(data)
 
     @decorators.detail_route(methods=['post', 'get'])
