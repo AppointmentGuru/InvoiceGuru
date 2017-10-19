@@ -30,7 +30,7 @@ class InvoiceAppointmentsTestCase(TestCase):
         self.url = reverse('invoice-appointments', args=(invoice.pk,))
         headers = get_proxy_headers(invoice.practitioner_id)
         data = {
-            'appointments': [1,2,3]
+            'appointments': '1,2,3'
         }
         self.response = self.client.post(self.url, json.dumps(data), content_type='application/json', **headers)
 
