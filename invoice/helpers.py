@@ -36,7 +36,7 @@ class Person:
         return '{} {}'.format(self._('first_name'), self._('last_name'))
 
     def person_to_string(self):
-
+        if self.person is None: return ''
         full_name = self.fullname()
         address = self._('home_address', self._('postal_address', self._('work_address')))
         contact = 'E-mail: {}\nMobile: {}'.format(self._('email'), self._('cell_phone'))
