@@ -67,7 +67,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         Send a list of appointment_ids and we add the full context to the invoice
         '''
         invoice = get_object_or_404(Invoice, pk=pk, practitioner_id=request.user.id)
-        appointment_ids = request.data.get('appointments', '')
+        appointment_ids = request.data.get('appointments', [])
+        print(appointment_ids)
+        print(request.data)
         appointments = fetch_appointments(invoice.practitioner_id, appointment_ids)
 
         invoice.context.update({
