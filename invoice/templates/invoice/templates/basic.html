@@ -205,46 +205,56 @@
 				</td>
 			</tr>
 			{% for appointment in appointments %}
-			<tr class="heading">
-				<td>{{appointment.full_name}}. {{appointment.start_time_formatted|date:'D d M Y'}}</td>
-				<td></td>
-			</tr>
-			{% if appointment.invoice_description %}
-			<tr class="sub-heading">
-				<td colspan='2'>{{appointment.invoice_description}}</td>
-			</tr>
-			{% endif %}
-			{% if appointment.codes %}
-			<tr class="item">
-				<td colspan='2'>
-					{% if appointment.codes %}
-						{% include 'invoice/templates/includes/codetable.html' with codes=appointment.codes %}
-					{% endif %}
-				</td>
-			</tr>
-			{% endif %}
-			{% if appointment.lineitems %}
-			<tr class="item">
-				<td colspan='2'>
-					{% if appointment.lineitems %}
-						{% include 'invoice/templates/includes/lineitemtable.html' with lineitems=appointment.lineitems %}
-					{% endif %}
-				</td>
-			</tr>
-			{% endif %}
-			<tr>
-				<td></td>
-				<td>
-					R{{appointment.price|intcomma}}
-				</td>
-			</tr>
-			<tr class='spacer' ><td colspan="2" ></td></tr>
+				<tr class="heading">
+					<td>{{appointment.full_name}}. {{appointment.start_time_formatted|date:'D d M Y'}}</td>
+					<td></td>
+				</tr>
+				{% if appointment.invoice_description %}
+				<tr class="sub-heading">
+					<td colspan='2'>{{appointment.invoice_description}}</td>
+				</tr>
+				{% endif %}
+				{% if appointment.codes_formatted %}
+				<tr class="item">
+					<td colspan='2'>
+						{% include 'invoice/templates/includes/codetable.html' with codes=appointment.codes_formatted %}
+					</td>
+				</tr>
+				{% endif %}
+				{% if appointment.lineitems %}
+				<tr class="item">
+					<td colspan='2'>
+						{% if appointment.lineitems %}
+							{% include 'invoice/templates/includes/lineitemtable.html' with lineitems=appointment.lineitems %}
+						{% endif %}
+					</td>
+				</tr>
+				{% endif %}
+				<tr class='item' >
+					<td style='text-align:right;'>Sub-total</td>
+					<td style='padding-right:10px;' >
+						{{invoice.currency}} {{appointment.price|intcomma}}
+					</td>
+				</tr>
+				<tr class='spacer' ><td colspan="2" ></td></tr>
 			{% endfor %}
 
 			<tr class="total">
-				<td></td>
+				<td style='text-align:right;'>Invoice total: </td>
 				<td>
-				   Total: R{{invoice_total|intcomma}}
+				   {{invoice.currency}} {{invoice.invoice_total|intcomma}}
+				</td>
+			</tr>
+			<tr class="total">
+				<td style='text-align:right;'>Amount paid: </td>
+				<td>
+					{{invoice.currency}} {{invoice.amount_paid|intcomma}}
+				</td>
+			</tr>
+			<tr class="total">
+				<td style='text-align:right;' >Amount due: </td>
+				<td>
+					{{invoice.currency}} {{amount_due|intcomma}}
 				</td>
 			</tr>
 			{% if banking_details %}
