@@ -14,5 +14,5 @@ class InvoiceSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = ['id', 'practitioner_id', 'customer_id', 'title', 'status',
                   'context', 'template', 'password', 'invoice_period_from',
-                  'invoice_period_to', 'invoice_amount', 'amount_paid']
+                  'invoice_period_to', 'currency', 'invoice_amount', 'amount_paid']
         ordering = ('date', 'created',)
