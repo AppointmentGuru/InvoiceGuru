@@ -1,4 +1,6 @@
-import json
+'''
+Views for displaying invoices
+'''
 from dateutil.parser import parse
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404

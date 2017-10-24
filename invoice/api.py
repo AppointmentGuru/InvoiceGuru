@@ -22,15 +22,10 @@ class Guru:
     }
     def __init__(self, service, authenticated_user_id):
         self.base_url = self.services.get(service)
-        self.headers = headers = {
+        self.headers = {
             'X_ANONYMOUS_CONSUMER': 'false',
             'X_AUTHENTICATED_USERID': str(authenticated_user_id),
         }
-
-    '''
-    def call(self, verb, path, data):
-        url = '{}/api/practitioners/{}/'.format(settings.APPOINTMENTGURU_API, practitioner_id)
-    '''
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):

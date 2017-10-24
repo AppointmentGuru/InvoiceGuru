@@ -1,7 +1,6 @@
 '''
 Filters for use with Invoices
 '''
-from rest_framework import filters
 from .models import Invoice
 from django_filters.rest_framework import FilterSet
 import django_filters

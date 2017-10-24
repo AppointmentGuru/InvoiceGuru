@@ -1,4 +1,7 @@
-from django.db.models.signals import pre_save, post_save
+'''
+Signals for Invoice model
+'''
+from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from .models import Invoice
 from dateutil.parser import parse

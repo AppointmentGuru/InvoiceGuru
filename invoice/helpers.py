@@ -12,28 +12,6 @@ def get_headers(practitioner_id):
 class Person:
 
     def __init__(self, person):
-        '''
-{
-    "id": 95,
-    "first_name": "Christo",
-    "last_name": "Crampton",
-    "id_number": "8209195149082",
-    "password_number": null,
-    "home_phone": "",
-    "work_phone": "",
-    "cell_phone": "+27832566533",
-    "email": "christo@appointmentguru.co",
-    "home_language": "English",
-    "marital_status": "Married",
-    "gender": "M",
-    "home_address": "64 2nd avenue, Parkhurst",
-    "work_address": "64 2nd avenue, Parkhurst",
-    "postal_address": "64 2nd avenue, Parkhurst",
-    "employer": "AppointmentGuru",
-    "notes": "",
-    "date_of_birth": "1982-09-19"
-}
-        '''
         self.person = person
 
     def _(self, key, default=''):
