@@ -41,6 +41,8 @@ class InvoiceConstructTestCase(TestCase):
         headers = get_proxy_headers(1)
         data = {
             'context': {
+                'practitioner_id': '1',
+                'customer_id': '2',
                 'title': 'This is a test',
                 'invoice_period_from': '2017-09-01',
                 'invoice_period_to': '2017-09-30',
@@ -64,6 +66,8 @@ class InvoiceConstructTestCase(TestCase):
 
         invoice = Invoice.objects.first()
         extra_fields = {
+            'practitioner_id': '1',
+            'customer_id': '2',
             'title': 'This is a test',
             # 'invoice_period_from': '2017-09-01',
             # 'invoice_period_to': '2017-09-30',

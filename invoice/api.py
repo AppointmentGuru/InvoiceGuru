@@ -73,7 +73,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             invoice = Invoice()
             invoice.context = context
 
-            extra_fields = ['title', 'invoice_period_from', 'invoice_period_to', 'date', 'due_date']
+            extra_fields = ['practitioner_id', 'customer_id',
+                            'title', 'invoice_period_from',
+                            'invoice_period_to', 'date', 'due_date']
             for field in extra_fields:
                 value = context.get(field, None)
                 if value is not None:
