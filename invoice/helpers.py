@@ -114,7 +114,7 @@ def fetch_data(practitioner_id, appointment_ids, client_id):
     url = '{}/api/practitioners/{}/'.format(settings.APPOINTMENTGURU_API, practitioner_id)
     practitioner = requests.get(url, headers=headers).json()
 
-    appointments = fetch_appointments(appointment_ids)
+    appointments = fetch_appointments(practitioner_id, appointment_ids)
 
     url = '{}/records/{}'.format(settings.MEDICALAIDGURU_API, client_id)
     record_request = requests.get(url, headers=headers)
@@ -124,7 +124,7 @@ def fetch_data(practitioner_id, appointment_ids, client_id):
 
     return (practitioner, appointments, medical_record)
 
-def to_context(practitioner={}, appointments={}, medical_record={}):
+def to_context(practitioner={}, appointments={}, medical_record={}, default_context={}, format_times = True):
     '''
     Given the above objects, create an invoice context json obj
     '''
@@ -140,26 +140,27 @@ def to_context(practitioner={}, appointments={}, medical_record={}):
         codes = appointment.get('codes', [])
         appointment.update({
             'codes': codes_to_table(codes),
-            'start_time_formatted': parse(appointment.get('start_time'))
         })
+        if format_times:
+            appointment.update({
+                'start_time_formatted': parse(appointment.get('start_time'))
+            })
 
-    return {
+    default_context.update({
         "notes": "",
         "from_string": from_string,
         "practice_name": p.get('practice_name'),
         "practice_number": p.get('practice_number'),
-        "invoice_date": "2017-10-09",
         "patient_info": patient_info,
         "account_info": account_info,
         "customer_info": patient_info,
         "invoice_total": 0,
-        "invoice_number": "2017-10-09-4825",
         "banking_details": p.get('banking_details', ''),
         "medicalaid_info": medical_aid(medical_record.get('medical_aid', {})),
         "practitioner_id": practitioner.get('id'),
-        "due_date": "2017-10-09",
         "appointments": appointments
-    }
+    })
+    return default_context
 
 
 '''

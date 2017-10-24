@@ -1,4 +1,7 @@
-from rest_framework import routers, viewsets, decorators, response
+'''
+InvoiceGuru API
+'''
+from rest_framework import routers, viewsets, decorators, response, status
 
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
@@ -45,7 +48,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             Q(customer_id=user.id)
         )
 
-    @decorators.list_route(methods=['get'])
+    @decorators.list_route(methods=['get', 'post'])
     def construct(self, request):
         '''
         Given a practitioner_id, list of appointments, and customer_id, construct an invoice context
@@ -53,13 +56,33 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         practitioner_id = request.GET.get('practitioner_id')
         appointment_ids = request.GET.get('appointment_ids', '').split(',')
         client_id = request.GET.get('client_id')
-
+        default_context = request.data.get('context', {})
         practitioner, appointments, medical_record = fetch_data(practitioner_id, appointment_ids, client_id)
-        data = {
-            "context": to_context(practitioner, appointments, medical_record),
-        }
 
-        return response.Response(data)
+        context = to_context(
+                    practitioner,
+                    appointments,
+                    medical_record,
+                    default_context=default_context,
+                    format_times = False)
+        data = {
+            "context": context,
+        }
+        result_code = status.HTTP_200_OK
+        if request.method == 'POST':
+            invoice = Invoice()
+            invoice.context = context
+
+            extra_fields = ['title', 'invoice_period_from', 'invoice_period_to', 'date', 'due_date']
+            for field in extra_fields:
+                value = context.get(field, None)
+                if value is not None:
+                    setattr(invoice, field, value)
+
+            invoice.save()
+            result_code = status.HTTP_201_CREATED
+
+        return response.Response(data, status=result_code)
 
     @decorators.detail_route(methods=['post'])
     def appointments(self, request, pk=None):
