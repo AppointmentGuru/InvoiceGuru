@@ -72,7 +72,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             invoice = Invoice()
             invoice.context = context
-
+            invoice.practitioner_id = practitioner_id
+            invoice.customer_id = client_id
             extra_fields = ['practitioner_id', 'customer_id',
                             'title', 'invoice_period_from',
                             'invoice_period_to', 'date', 'due_date']

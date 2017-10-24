@@ -41,8 +41,6 @@ class InvoiceConstructTestCase(TestCase):
         headers = get_proxy_headers(1)
         data = {
             'context': {
-                'practitioner_id': '1',
-                'customer_id': '2',
                 'title': 'This is a test',
                 'invoice_period_from': '2017-09-01',
                 'invoice_period_to': '2017-09-30',
@@ -66,8 +64,6 @@ class InvoiceConstructTestCase(TestCase):
 
         invoice = Invoice.objects.first()
         extra_fields = {
-            'practitioner_id': '1',
-            'customer_id': '2',
             'title': 'This is a test',
             # 'invoice_period_from': '2017-09-01',
             # 'invoice_period_to': '2017-09-30',
@@ -79,6 +75,13 @@ class InvoiceConstructTestCase(TestCase):
             assert actual == value, \
                 'Expected {} to be {}. Got: {}'.format(key, value, actual)
 
+    def test_sets_practitioner_id(self):
+        invoice = Invoice.objects.first()
+        assert invoice.practitioner_id == '1'
+
+    def test_sets_customer_id(self):
+        invoice = Invoice.objects.first()
+        assert invoice.customer_id == '4'
 
 class InvoiceAppointmentsTestCase(TestCase):
 
