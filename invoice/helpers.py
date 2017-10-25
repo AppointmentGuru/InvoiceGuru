@@ -102,7 +102,7 @@ def fetch_data(practitioner_id, appointment_ids, client_id):
 
     return (practitioner, appointments, medical_record)
 
-def to_context(practitioner={}, appointments={}, medical_record={}, default_context={}, format_times = True):
+def to_context(practitioner={}, appointments={}, medical_record={}, default_context={}, format_times = True, format_codes = True):
     '''
     Given the above objects, create an invoice context json obj
     '''
@@ -115,10 +115,11 @@ def to_context(practitioner={}, appointments={}, medical_record={}, default_cont
     total = 0
     for appointment in appointments:
         total += float(appointment.get('price'))
-        codes = appointment.get('codes', [])
-        appointment.update({
-            'codes': codes_to_table(codes),
-        })
+        if format_codes:
+            codes = appointment.get('codes', [])
+            appointment.update({
+                'codes': codes_to_table(codes),
+            })
         if format_times:
             appointment.update({
                 'start_time_formatted': parse(appointment.get('start_time'))

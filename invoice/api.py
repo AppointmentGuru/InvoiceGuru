@@ -59,7 +59,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                     appointments,
                     medical_record,
                     default_context=default_context,
-                    format_times = False)
+                    format_times = False,
+                    format_codes = False)
         data = {
             "context": context,
         }

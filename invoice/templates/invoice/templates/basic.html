@@ -206,7 +206,11 @@
 			</tr>
 			{% for appointment in appointments %}
 				<tr class="heading">
+					{% if appointment.invoice_title %}
+					<td>{{appointment.invoice_title}}</td>
+					{% else %}
 					<td>{{appointment.full_name}}. {{appointment.start_time_formatted|date:'D d M Y'}}</td>
+					{% endif %}
 					<td></td>
 				</tr>
 				{% if appointment.invoice_description %}
