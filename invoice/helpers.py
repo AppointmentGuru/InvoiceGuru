@@ -130,6 +130,7 @@ def to_context(practitioner={}, appointments={}, medical_record={}, default_cont
         "from_string": from_string,
         "practice_name": p.get('practice_name'),
         "practice_number": p.get('practice_number'),
+        "logo": p.get('logo_picture'),
         "patient_info": patient_info,
         "account_info": account_info,
         "customer_info": patient_info,
