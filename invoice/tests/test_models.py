@@ -10,6 +10,4 @@ class CreateInvoiceTestCase(TestCase):
     def test_create_invoice(self):
         Invoice.objects.get(id=self.invoice.id)
 
-    def test_create_invoice_creates_pdf(self):
-        pass
 

@@ -44,6 +44,7 @@ class Invoice(models.Model):
     template = models.CharField(max_length=255, blank=True, null=True, choices=TEMPLATES, default='basic')
 
     password = models.CharField(max_length=255, blank=True, null=True, default=get_uuid)
+    customer_password = models.CharField(max_length=255, blank=True, null=True, default=get_uuid)
 
     currency = models.CharField(max_length=4,blank=True, null=True, default='ZAR')
     invoice_amount = models.DecimalField(decimal_places=2, max_digits=10, default=0, db_index=True)
@@ -57,5 +58,15 @@ class Invoice(models.Model):
 
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     modified_date = models.DateTimeField(auto_now=True, db_index=True)
+
+    @property
+    def admin_invoice_url(self):
+        base = settings.INVOICEGURU_BASE_URL
+        return '{}/invoice/{}?key={}'.format(base, self.pk, self.password)
+
+    @property
+    def customer_invoice_url(self):
+        base = settings.INVOICEGURU_BASE_URL
+        return '{}/invoice/{}?key={}'.format(base, self.pk, self.customer_password)
 
 from .signals import *

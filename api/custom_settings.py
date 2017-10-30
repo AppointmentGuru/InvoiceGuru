@@ -61,6 +61,8 @@ MEDICALAIDGURU_API = 'http://medicalaidguru'
 APPOINTMENTGURU_API = 'http://appointmentguru'
 # APPOINTMENTGURU_API = 'https://swarm.appointmentguru.co/v1'
 
+INVOICEGURU_BASE_URL = 'http://invoiceguru.appointmentguru.co'
+
 class PUBLISHKEYS:
     '''A config of the events published by this service'''
     invoice_sent='invoice_sent'

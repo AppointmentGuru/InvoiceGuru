@@ -43,7 +43,7 @@ def create_mock_invoice(practitioner_id=None, customer_id=None):
                 "total_due": 0,
                 "total_paid": 0,
                 "customer_id": 655,
-                "from_string": "Mumtaz Chohan Gani\nE-mail: biomcg@gmail.com\nPhone: +27824481890\n",
+                "from_string": "Sarah Eatwell\nE-mail: tech@appointmentguru.co\nPhone: +27832566533\n",
                 "appointments": [{
                     "id": 8148,
                     "notes": None,
@@ -55,13 +55,13 @@ def create_mock_invoice(practitioner_id=None, customer_id=None):
                     "currency": "ZAR",
                     "end_time": "2017-08-10T13:15:00Z",
                     "included": True,
-                    "full_name": "Mathew",
+                    "full_name": "Joe Soap",
                     "lineitems": [{
                         "id": 16,
                         "fields": ["icd10", "procedureCode"],
                         "owners": ["363"],
                         "values": [
-                            ["M25.58", "91923, 91929, 91931"]
+                            ["M25.12", "91923, 91929, 91931"]
                         ],
                         "object_ids": ["appointment:8148"]
                     }],
@@ -135,12 +135,12 @@ def create_mock_invoice(practitioner_id=None, customer_id=None):
                 }],
                 "invoice_date": "2017-09-14",
                 "paid_in_full": False,
-                "patient_info": "Matthew de Klerk\n",
-                "customer_info": "Angela de Klerk\n16 Saxonwold Drive, Saxonwold, Johannesburg, 2196",
+                "patient_info": "Joe Soap\n",
+                "customer_info": "Jane Soap\n16 Some place, Somewhere, Johannesburg, 2196",
                 "invoice_total": 0,
                 "invoice_number": "2017-09-14-3139",
-                "banking_details": "Mumtaz Gani\nFNB\nFordsburg\n252505\nCheque Account\n62096047678",
-                "medicalaid_info": "Medical Aid: BankMed\nMedical Aid Number: 543644680\nMain Member: Angela de Klerk\n",
+                "banking_details": "Sarah Eatwell\nBank of AppointmentGuru\n252505\nCheque Account\1234567890",
+                "medicalaid_info": "Medical Aid: Discovery\nMedical Aid Number: 123456789\nMain Member: Jane Soap\n",
                 "practitioner_id": 363
             }
         }

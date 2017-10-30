@@ -8,7 +8,7 @@ from api.testutils import create_mock_invoice
 class InvoicePreSaveTestCase(TestCase):
 
     def setUp(self):
-        self.invoice = create_mock_invoice
+        self.invoice = create_mock_invoice()
 
     def test_it_sets_fields_from_context(self):
         pass

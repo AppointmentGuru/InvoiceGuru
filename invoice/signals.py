@@ -37,5 +37,8 @@ def apply_context(sender, instance, **kwargs):
 
     print(instance.object_ids)
 
+    if instance.status == 'paid':
+        instance.amount_paid = instance.invoice_amount
+    print(instance.amount_paid)
     if instance.title is None:
         instance.title = instance.invoice_number

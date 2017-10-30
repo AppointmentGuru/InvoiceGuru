@@ -79,6 +79,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                     setattr(invoice, field, value)
 
             invoice.save()
+            data['id'] = invoice.id
             result_code = status.HTTP_201_CREATED
 
         return response.Response(data, status=result_code)
@@ -119,8 +120,12 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
     @decorators.detail_route(methods=['post', 'get'])
     def paid(self, request, pk):
+        '''
+        Mark an invoice as paid
+        '''
 
         invoice = Invoice.objects.get(id=pk)
+        invoice.amount_paid = invoice.invoice_amount
         invoice.status = 'paid'
         invoice.save()
 

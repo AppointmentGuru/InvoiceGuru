@@ -43,6 +43,32 @@
 	.highlight-grey {
 		background:#eee;
 		color:#333;
+		padding:5px;
+	}
+	.highlight-paid {
+		color: #fff;
+    	background-color: #1b9e1b;
+	}
+
+	.amount-due {
+		border: solid 1px #ccc;
+		text-align:center;
+		width: 200px;
+		padding: 0px;
+	}
+	.amount-due.paid {
+		border: solid 1px #1b9e1b;
+	}
+	.amount-due .metric {
+		font-size: 150%;
+		font-weight: bold;
+		padding:5px;
+	}
+
+	.status.status-paid {
+		color: #fff;
+    	background-color: #1b9e1b;
+		text-transform: uppercase;
 	}
 
 	.invoice-box{
@@ -165,20 +191,39 @@
 				<td colspan="2">
 					<table>
 						<tr>
-							<!--<td class="title">
-								 <img src="https://appointmentguru.co/assets/img/guru/appointment-logo.png" style="width:100%; max-width:300px;">
-							</td>-->
+							{% if logo %}
+							<td class="title">
+								 <img src="{{logo}}" style="max-width:300px; max-height:150px;">
+							</td>
+							{% endif %}
 
-							<td>
-								<h3 class='highlight-grey' style='padding:5px;float:right;' >Invoice #: {{invoice_number}}</h3><br>
+							<td style='text-align:right;' >
+								<h3 ><span class='highlight-grey highlight-{{invoice.status}}' >Invoice #: {{invoice_number}}</span></h3><br>
+								<div class='clear;both;' ></div>
+								{% if invoice.date %}
+								<div>
+									</div><strong>Date:</strong>: {{invoice.date}}
+								</div>
+								{% endif %}
+								{% if invoice.date %}
+								<div>
+									</div><strong>Due date:</strong>: {{invoice.due_date}}
+								</div>
+								{% endif %}
 							</td>
 						</tr>
-						<tr>
-							<!--<td></td>-->
+						<!-- <tr>
+
 							<td style='float:right' >
-								Date: {{invoice_date}}</h3><br>
+								{% if invoice.date %}
+								<h3>Date: {{invoice.date}}<br>
+								{% endif %}
+								{% if invoice.date %}
+								Due date: {{invoice.due_date}}
+								{% endif %}
+								</h3>
 							</td>
-						</tr>
+						</tr> -->
 					</table>
 				</td>
 			</tr>
@@ -190,6 +235,18 @@
 							<td>
 								<strong>Invoiced by:</strong><br/>
 								{{from_string|linebreaks}}
+
+								<div class='amount-due {{invoice.status}}' >
+									<strong>Amount due: </strong>
+									<div class='metric'>
+											{{invoice.currency}} {{amount_due|intcomma}}
+									</div>
+									{% if invoice.status == 'paid' %}
+									<div class='status status-{{invoice.status}}' >
+										{{invoice.status}}
+									</div>
+									{% endif %}
+								</div>
 							</td>
 
 							<td>
