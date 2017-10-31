@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from .models import Invoice
 from dateutil.parser import parse
 from decimal import Decimal
+import random
 
 @receiver(pre_save, sender=Invoice, dispatch_uid="invoice.signals.apply_context")
 def apply_context(sender, instance, **kwargs):
@@ -35,10 +36,12 @@ def apply_context(sender, instance, **kwargs):
     if instance.invoice_period_to is None and appointments_exist:
         instance.invoice_period_to = parse(appointments[-1].get('start_time')).date()
 
-    print(instance.object_ids)
+    if instance.invoice_number is None:
+        random_number = random.choice(range(1000,9999))
+        instance.invoice_number = 'INV-{}-{}'.format(random_number, instance.customer_id)
 
     if instance.status == 'paid':
         instance.amount_paid = instance.invoice_amount
-    print(instance.amount_paid)
+
     if instance.title is None:
         instance.title = instance.invoice_number
