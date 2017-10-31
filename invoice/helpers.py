@@ -96,19 +96,30 @@ def fetch_data(practitioner_id, appointment_ids, client_id):
 
     url = '{}/records/{}'.format(settings.MEDICALAIDGURU_API, client_id)
     record_request = requests.get(url, headers=headers)
-    medical_record = {}
+    medical_record = None
     if record_request.status_code == 200:
         medical_record = record_request.json()
 
     return (practitioner, appointments, medical_record)
 
-def to_context(practitioner={}, appointments={}, medical_record={}, default_context={}, format_times = True, format_codes = True):
+def extract_contact_from_appointments(appointments):
+
+    if len(appointments) < 0: return None
+    return appointments[0].get('full_name', None)
+
+def to_context(practitioner={}, appointments=[], medical_record=None, default_context={}, format_times = True, format_codes = True):
     '''
     Given the above objects, create an invoice context json obj
     '''
+    if medical_record is not None:
+        patient_info = Person(medical_record.get('patient', None)).person_to_string()
+        account_info = Person(medical_record.get('account_person', None)).person_to_string()
+        medical_aid_info = medical_aid(medical_record.get('medical_aid', {}))
+    else:
+        account_info = extract_contact_from_appointments(appointments)
+        patient_info = None
+        medical_aid_info = None
 
-    patient_info = Person(medical_record.get('patient', None)).person_to_string()
-    account_info = Person(medical_record.get('account_person', None)).person_to_string()
     from_string = practitioner_details(practitioner)
     p = practitioner.get('profile', {})
 
@@ -136,7 +147,7 @@ def to_context(practitioner={}, appointments={}, medical_record={}, default_cont
         "customer_info": patient_info,
         "invoice_total": 0,
         "banking_details": p.get('banking_details', ''),
-        "medicalaid_info": medical_aid(medical_record.get('medical_aid', {})),
+        "medicalaid_info": medical_aid_info,
         "practitioner_id": practitioner.get('id'),
         "appointments": appointments
     })

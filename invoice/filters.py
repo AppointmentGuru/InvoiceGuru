@@ -14,5 +14,5 @@ class InvoiceFilter(FilterSet):
 
     class Meta:
         model = Invoice
-        fields = ['practitioner_id', 'invoice_number', 'date',]
+        fields = ['practitioner_id', 'date', 'customer_id']
 

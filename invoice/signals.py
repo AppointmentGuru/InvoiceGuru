@@ -36,12 +36,12 @@ def apply_context(sender, instance, **kwargs):
     if instance.invoice_period_to is None and appointments_exist:
         instance.invoice_period_to = parse(appointments[-1].get('start_time')).date()
 
-    if instance.invoice_number is None:
-        random_number = random.choice(range(1000,9999))
-        instance.invoice_number = 'INV-{}-{}'.format(random_number, instance.customer_id)
+    # if instance.invoice_number is None:
+    #     random_number = random.choice(range(1000,9999))
+    #     instance.invoice_number = 'INV-{}-{}'.format(random_number, instance.customer_id)
 
     if instance.status == 'paid':
         instance.amount_paid = instance.invoice_amount
 
-    if instance.title is None:
-        instance.title = instance.invoice_number
+    # if instance.title is None:
+    #     instance.title = instance.invoice_number

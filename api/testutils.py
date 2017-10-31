@@ -36,7 +36,6 @@ def create_mock_invoice(practitioner_id=None, customer_id=None):
     data = {
         "practitioner_id": practitioner_id or FAKE.numerify(),
         "customer_id": customer_id or FAKE.numerify(),
-        "invoice_number": FAKE.numerify(),
         "context": {
                 "notes": "",
                 "due_date": "2017-09-14",

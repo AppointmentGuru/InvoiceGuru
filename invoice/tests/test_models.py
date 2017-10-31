@@ -10,4 +10,11 @@ class CreateInvoiceTestCase(TestCase):
     def test_create_invoice(self):
         Invoice.objects.get(id=self.invoice.id)
 
+    def test_invoice_number_generated(self):
 
+        self.invoice.title = 'Joe Soap'
+        assert self.invoice.invoice_number == 'JS-{}'.format(self.invoice.id)
+
+    def test_invoice_number_generated_with_no_title(self):
+        self.invoice.title = None
+        assert self.invoice.invoice_number == 'INV-{}'.format(self.invoice.id)

@@ -6,7 +6,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<title>Invoice {{invoice_number}}</title>
+	<title>Invoice {{invoice.invoice_number}}</title>
 
 
 	<!-- Favicon -->
@@ -198,7 +198,7 @@
 							{% endif %}
 
 							<td style='text-align:right;' >
-								<h3 ><span class='highlight-grey highlight-{{invoice.status}}' >Invoice #: {{invoice_number}}</span></h3><br>
+								<h3 ><span class='highlight-grey highlight-{{invoice.status}}' >Invoice #: {{invoice.invoice_number}}</span></h3><br>
 								<div class='clear;both;' ></div>
 								{% if invoice.date %}
 								<div>
