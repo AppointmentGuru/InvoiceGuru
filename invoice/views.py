@@ -23,7 +23,7 @@ def invoice(request, pk):
     for appt in context.get('appointments', []):
         appt['start_time_formatted'] = parse(appt.get('start_time'))
         codes = appt.get('codes', None)
-        if codes is not None:
+        if codes is not None and len(codes) > 0:
             appt['codes_formatted'] = codes_to_table(codes)
         invoice_total += Decimal(appt.get('price', 0))
 
