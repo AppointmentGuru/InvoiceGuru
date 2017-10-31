@@ -234,6 +234,8 @@
 						<tr>
 							<td>
 								<strong>Invoiced by:</strong><br/>
+								{% if practice_name %}<strong>Practice name:</strong> {{practice_name}}{% endif %}<br/>
+								{% if practice_number %}<strong>Practice number:</strong> {{practice_number}}{% endif %}
 								{{from_string|linebreaks}}
 
 								<div class='amount-due {{invoice.status}}' >
@@ -266,7 +268,13 @@
 					{% if appointment.invoice_title %}
 					<td>{{appointment.invoice_title}}</td>
 					{% else %}
-					<td>{{appointment.full_name}}. {{appointment.start_time_formatted|date:'D d M Y'}}</td>
+					<td>
+						{% if not appointment.codes_formatted %}
+							{{appointment.full_name}}. {{appointment.start_time_formatted|date:'D d M Y'}}
+						{% else %}
+						Appointment date: {{appointment.start_time_formatted|date:'D d M Y'}}
+						{% endif %}
+					</td>
 					{% endif %}
 					<td></td>
 				</tr>
@@ -278,15 +286,19 @@
 				{% if appointment.codes_formatted %}
 				<tr class="item">
 					<td colspan='2'>
-						{% include 'invoice/templates/includes/codetable.html' with codes=appointment.codes_formatted %}
+						{% include "invoice/templates/includes/codetable.html" with codes=appointment.codes_formatted patient_name=appointment.full_name appointment_date=appointment.start_time_formatted %}
 					</td>
 				</tr>
 				{% endif %}
+
 				{% if appointment.lineitems %}
 				<tr class="item">
 					<td colspan='2'>
 						{% if appointment.lineitems %}
-							{% include 'invoice/templates/includes/lineitemtable.html' with lineitems=appointment.lineitems %}
+							{% include 'invoice/templates/includes/lineitemtable.html'
+								with lineitems=appointment.lineitems
+								patient_name=appointment.full_name
+								appointment_date=start_time_formatted %}
 						{% endif %}
 					</td>
 				</tr>

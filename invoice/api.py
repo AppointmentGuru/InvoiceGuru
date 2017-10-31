@@ -80,6 +80,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
             invoice.save()
             data['id'] = invoice.id
+            data['password'] = invoice.password
             result_code = status.HTTP_201_CREATED
 
         return response.Response(data, status=result_code)

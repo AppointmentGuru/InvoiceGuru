@@ -1,6 +1,8 @@
 <table class='data-table' >
     <thead>
         <tr class='head' >
+            <td>Patient name</td>
+            <td>Date</td>
             {% for header in codes.headers %}
             <td>{{header}}</td>
             {% endfor %}
@@ -9,6 +11,8 @@
     <tbody>
         {% for row in codes.data %}
         <tr class='item' >
+            <td>{{patient_name}}</td>
+            <td>{{appointment_date|date:'d-m-Y'}}</td>
             {% for v in row %}<td>{{v}}</td>{% endfor %}
         </tr>
         {% endfor %}
