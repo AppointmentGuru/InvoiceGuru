@@ -236,7 +236,7 @@
 								<strong>Invoiced by:</strong><br/>
 								{% if practice_name %}<strong>Practice name:</strong> {{practice_name}}{% endif %}<br/>
 								{% if practice_number %}<strong>Practice number:</strong> {{practice_number}}{% endif %}
-								{{from_string|linebreaks}}
+								<!--email_off-->{{from_string|linebreaks}}<!--/email_off-->
 
 								<div class='amount-due {{invoice.status}}' >
 									<strong>Amount due: </strong>
@@ -253,11 +253,13 @@
 
 							<td>
 <strong>Bill to:</strong><br/>
+<!--email_off-->
 {{customer_info|linebreaks}}
 {% if medicalaid_info %}
 <strong>Medical Aid:</strong><br/>
 {{medicalaid_info|linebreaks}}
 {% endif %}
+<!--/email_off-->
 							</td>
 						</tr>
 					</table>
