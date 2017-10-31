@@ -111,7 +111,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         # update the status of all appointments
         # update invoice status
         send_invoice(invoice, to_email)
-        invoice.status = 'sent'
+        if invoice.status != 'paid':
+            invoice.status = 'sent'
         invoice.save()
         # send email to customer
 

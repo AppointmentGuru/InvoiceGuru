@@ -18,3 +18,9 @@ class CreateInvoiceTestCase(TestCase):
     def test_invoice_number_generated_with_no_title(self):
         self.invoice.title = None
         assert self.invoice.invoice_number == 'INV-{}'.format(self.invoice.id)
+
+    def test_it_ignores_letters(self):
+
+        self.invoice.title = "Christo [Test quickinvoice 1]"
+        assert self.invoice.invoice_number == 'CQ-{}'.format(self.invoice.id),\
+            'Number was: {}'.format(self.invoice.invoice_number)

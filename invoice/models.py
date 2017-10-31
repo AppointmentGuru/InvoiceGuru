@@ -62,7 +62,7 @@ class Invoice(models.Model):
     @property
     def invoice_number(self):
         if self.title is None: return 'INV-{}'.format(self.id)
-        initials = ("").join([word[0:1] for word in self.title.split(' ')])
+        initials = ("").join([word[0:1].upper() for word in self.title.split(' ') if word.isalpha()])
         return '{}-{}'.format(initials, self.id)
 
     @property
