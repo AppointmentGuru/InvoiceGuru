@@ -154,68 +154,66 @@ def to_context(practitioner={}, appointments=[], medical_record=None, default_co
     return default_context
 
 
-'''
+# {
+#     "notes": "",
+#     "due_date": "2017-10-09",
+#     "total_due": 0,
+#     "total_paid": 0,
+#     "customer_id": 678,
+#     "from_string": "Christo Crampton\nE-mail: christo@appointmentguru.co\nPhone: +27832566533\n",
+#     "appointments": [{
+#         "id": 9782,
+#         "end": "18:00",
+#         "notes": null,
+#         "price": "4000.00",
+#         "start": "08:00",
+#         "title": "Luana Jordaan",
+#         "client": 678,
+#         "status": "N",
+#         "product": 88,
+#         "currency": "ZAR",
+#         "end_time": "2017-10-02T16:00:00Z",
+#         "included": true,
+#         "full_name": "Luana Jordaan",
+#         "start_time": "2017-10-02T06:00:00Z",
+#         "practitioner": 1,
+#         "invoice_description": null
+#     }, {
+#         "id": 9952,
+#         "end": "17:00",
+#         "hour": 8,
+#         "notes": null,
+#         "price": "4000.00",
+#         "start": "08:00",
+#         "title": "Luana Jordaan",
+#         "client": 678,
+#         "status": "N",
+#         "styles": {
+#             "top": "120px",
+#             "height": "540px"
+#         },
+#         "endHour": 17,
+#         "product": 88,
+#         "currency": "ZAR",
+#         "end_time": "2017-10-10T15:00:00Z",
+#         "included": true,
+#         "full_name": "Luana Jordaan",
+#         "start_time": "2017-10-10T06:00:00Z",
+#         "practitioner": 1,
+#         "exactOverlapCount": 1,
+#         "invoice_description": null,
+#         "exactOverlapSequence": 0
+#     }],
+#     "invoice_date": "2017-10-09",
+#     "paid_in_full": false,
+#     "patient_info": "",
+#     "customer_info": "Luana Jordaan",
+#     "invoice_total": 0,
+#     "invoice_number": "2017-10-09-4825",
+#     "banking_details": null,
+#     "medicalaid_info": "",
+#     "practitioner_id": 1
+# }
 
-{
-    "notes": "",
-    "due_date": "2017-10-09",
-    "total_due": 0,
-    "total_paid": 0,
-    "customer_id": 678,
-    "from_string": "Christo Crampton\nE-mail: christo@appointmentguru.co\nPhone: +27832566533\n",
-    "appointments": [{
-        "id": 9782,
-        "end": "18:00",
-        "notes": null,
-        "price": "4000.00",
-        "start": "08:00",
-        "title": "Luana Jordaan",
-        "client": 678,
-        "status": "N",
-        "product": 88,
-        "currency": "ZAR",
-        "end_time": "2017-10-02T16:00:00Z",
-        "included": true,
-        "full_name": "Luana Jordaan",
-        "start_time": "2017-10-02T06:00:00Z",
-        "practitioner": 1,
-        "invoice_description": null
-    }, {
-        "id": 9952,
-        "end": "17:00",
-        "hour": 8,
-        "notes": null,
-        "price": "4000.00",
-        "start": "08:00",
-        "title": "Luana Jordaan",
-        "client": 678,
-        "status": "N",
-        "styles": {
-            "top": "120px",
-            "height": "540px"
-        },
-        "endHour": 17,
-        "product": 88,
-        "currency": "ZAR",
-        "end_time": "2017-10-10T15:00:00Z",
-        "included": true,
-        "full_name": "Luana Jordaan",
-        "start_time": "2017-10-10T06:00:00Z",
-        "practitioner": 1,
-        "exactOverlapCount": 1,
-        "invoice_description": null,
-        "exactOverlapSequence": 0
-    }],
-    "invoice_date": "2017-10-09",
-    "paid_in_full": false,
-    "patient_info": "",
-    "customer_info": "Luana Jordaan",
-    "invoice_total": 0,
-    "invoice_number": "2017-10-09-4825",
-    "banking_details": null,
-    "medicalaid_info": "",
-    "practitioner_id": 1
-}
-'''
 
 
