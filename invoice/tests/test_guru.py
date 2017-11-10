@@ -23,7 +23,7 @@ class InvoiceSendTestCase(TestCase):
 
         responses.add(
             responses.POST,
-            'https://communicationguru.appointmentguru.co/communications/',
+            'http://communicationguru/communications/',
             json=MESSAGE_SUCCESS_RESPONSE,
             status=201
         )
