@@ -1,7 +1,7 @@
 '''
 API for AppointmentGuru microservices
 '''
-import requests
+import requests, json
 from django.conf import settings
 from pubsub import get_backend
 
@@ -15,18 +15,19 @@ def publish(key, payload):
 
 def get_headers(user_id, consumer='appointmentguru'):
     return {
-        'HTTP_X_ANONYMOUS_CONSUMER': False,
+        'HTTP_X_ANONYMOUS_CONSUMER': 'False',
         'HTTP_X_AUTHENTICATED_USERID': user_id,
-        'HTTP_X_CONSUMER_USERNAME': consumer
+        'HTTP_X_CONSUMER_USERNAME': consumer,
     }
 
 def send_invoice(invoice, to, transport='email'):
-    url = '{}/service/'.format(settings.FUNCTIONGURU_URL)
+    url = '{}/communications/'.format(settings.COMMUNICATIONGURU_API)
 
-    invoice_url = "{}/invoice/{}/?key={}"\
-                    .format(settings.INVOICEGURU_BASE_URL,
-                            invoice.id,
-                            invoice.password)
+    # invoice_url = "{}/invoice/{}/?key={}"\
+    #                 .format(settings.INVOICEGURU_BASE_URL,
+    #                         invoice.id,
+    #                         invoice.password)
+    invoice_url = invoice.admin_invoice_url
     invoice_date = invoice.context.get('due_date')
     subject = 'Your invoice for {}'.format(invoice_date)
     message = """Hi
@@ -36,16 +37,21 @@ You can also view it online at:
 {}
 """.format(invoice_date, invoice_url)
 
-    command = "hug -f api.py -c handle {} {} '{}' '{}'"\
-        .format(
-            to,
-            invoice_url,
-            subject,
-            message
-        )
-
+    object_ids = [
+        'user:{}'.format(invoice.practitioner_id),
+        'user:{}'.format(invoice.customer_id)
+    ]
+    object_ids = object_ids + invoice.object_ids
+    from_email = invoice.sender_email
     data = {
-        "slug": "send_invoice",
-        "command": command
+        "owner": invoice.practitioner_id,
+        "object_ids": object_ids,
+        "subject": subject,
+        "message": message,
+        "preferred_transport": transport,
+        "attached_urls": [invoice_url],
+        "recipient_emails": [to],
+        "sender_email": from_email
     }
-    return requests.post(url, data)
+
+    return requests.post(url, json=data, headers=get_headers(invoice.practitioner_id))

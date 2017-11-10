@@ -26,6 +26,14 @@ services:
     environment:
       - DATABASE_NAME=appointmentguru_medicalaidguru
 
+  communicationguru:
+    image: appointmentguru/communicationguru:latest
+    command: sh /code/run.sh
+    env_file:
+      - env.dev
+    environment:
+      - DATABASE_NAME=appointmentguru_communicationguru
+
   # app:
   web:
     restart: on-failure:10
