@@ -15,9 +15,9 @@ def publish(key, payload):
 
 def get_headers(user_id, consumer='appointmentguru'):
     return {
-        'HTTP_X_ANONYMOUS_CONSUMER': 'False',
-        'HTTP_X_AUTHENTICATED_USERID': user_id,
-        'HTTP_X_CONSUMER_USERNAME': consumer,
+        'X_ANONYMOUS_CONSUMER': 'False',
+        'X_AUTHENTICATED_USERID': str(user_id),
+        'X_CONSUMER_USERNAME': consumer,
     }
 
 def send_invoice(invoice, to, transport='email'):
