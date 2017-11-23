@@ -34,9 +34,9 @@ def send_invoice(invoice, to_emails=None, to_phone=None):
     invoice_url = invoice.admin_invoice_url
     invoice_date = invoice.context.get('due_date')
     practice_name = invoice.context.get('practice_name', '')
-    subject = 'Your invoice from {} for {}'.format(practice_name, invoice_date)
+    subject = 'Your invoice from {} for {} is available.'.format(practice_name, invoice_date)
     if invoice.status == 'paid':
-        subject = 'Your receipt'
+        subject = 'Your receipt from {} is available.'.format(practice_name)
 
     short_message = subject
     message = """Hi
