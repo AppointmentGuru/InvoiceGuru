@@ -20,7 +20,11 @@ def get_headers(user_id, consumer='appointmentguru'):
         'X_CONSUMER_USERNAME': consumer,
     }
 
-def send_invoice(invoice, to=None, to_phone=None):
+def send_invoice(invoice, to_email=None, to_phone=None):
+    '''
+    Sends invoice to to_email and to_phone if they are available.
+    if neither is available, then the
+    '''
     url = '{}/communications/'.format(settings.COMMUNICATIONGURU_API)
 
     # invoice_url = "{}/invoice/{}/?key={}"\
@@ -59,16 +63,23 @@ You can also view it online at:
         "attached_urls": [invoice_url],
         "sender_email": from_email
     }
-
-    if to is not None:
+    total_recipients = []
+    if to_email is not None:
         data.update({
             "preferred_transport": "email",
-            "recipient_emails": [to],
+            "recipient_emails": [to_email],
         })
+        total_recipients.append(to_email)
     if to_phone is not None:
         data.update({
             "recipient_phone_number": to_phone,
             "preferred_transport": "sms",
         })
-    return requests.post(url, json=data, headers=get_headers(invoice.practitioner_id))
+        total_recipients.append(to_phone)
 
+    if len(total_recipients) > 0:
+        return requests.post(
+            url,
+            json=data,
+            headers=get_headers(invoice.practitioner_id))
+    return None

@@ -1,7 +1,7 @@
 '''
 InvoiceGuru API
 '''
-from rest_framework import routers, viewsets, decorators, response, status
+from rest_framework import routers, viewsets, decorators, response, status, filters
 
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
@@ -31,10 +31,11 @@ class Guru:
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
-    ordering = ['-id',]
 
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
     filter_class = InvoiceFilter
+    ordering_fields = ('date', 'due_date', 'id', 'date_created', 'invoice_amount')
+    ordering = ('-date',)
 
     def get_queryset(self):
         user = self.request.user
@@ -111,11 +112,10 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         to_phone = request.data.get('to_phone', None)
         # update the status of all appointments
         # update invoice status
-        if to_email is not None:
-            send_invoice(invoice, to_email)
-
-        if to_phone is not None:
-            send_invoice(invoice, to_phone=to_phone, transport='sms')
+        send_invoice(
+            invoice,
+            to_email=to_email,
+            to_phone=to_phone)
 
         if invoice.status != 'paid':
             invoice.status = 'sent'
