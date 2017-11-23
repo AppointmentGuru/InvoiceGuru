@@ -23,3 +23,5 @@ docker_environment:
     value: "{{pubnub_subscribe_key}}"
   - key: PUBNUB_SCHOOL_CHANNEL_PREFIX
     value: "{{pubsub_channel}}"
+  - key: GOOGLE_API_SHORTENER_TOKEN
+    value: "{{google_api_shortener_token}}"

@@ -65,6 +65,8 @@ COMMUNICATIONGURU_API = 'http://communicationguru'
 
 INVOICEGURU_BASE_URL = 'http://invoiceguru.appointmentguru.co'
 
+GOOGLE_API_SHORTENER_TOKEN = os.environ.get('GOOGLE_API_SHORTENER_TOKEN')
+
 class PUBLISHKEYS:
     '''A config of the events published by this service'''
     invoice_sent='invoice_sent'

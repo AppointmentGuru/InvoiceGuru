@@ -58,25 +58,35 @@ class Invoice(models.Model):
     invoice_period_from = models.DateField(db_index=True, blank=True, null=True)
     invoice_period_to = models.DateField(db_index=True, blank=True, null=True)
 
+    short_url = models.URLField(blank=True, null=True)
+
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     modified_date = models.DateTimeField(auto_now=True, db_index=True)
 
-    def get_short_url(self):
+    def get_short_url(self, force=False, admin_url=True):
         '''
-        curl https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyAzr7vesiaABVtif4OBTajwpbZ7CPJoFIM \
+        curl https://www.googleapis.com/urlshortener/v1/url?key=... \
             -H 'Content-Type: application/json' \
-            -d '{"longUrl": "http://www.google.com/"}'
+            -d '{"longUrl": "https://google.com"}'
         '''
-        return self.admin_invoice_url
+        url = 'https://www.googleapis.com/urlshortener/v1/url'
+        params = {
+            "key": settings.GOOGLE_API_SHORTENER_TOKEN
+        }
 
-        # if self.short_url is not None:
-        #     return self.short_url
-        # url = 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyAzr7vesiaABVtif4OBTajwpbZ7CPJoFIM'
+        if admin_url:
+            url_to_shorten = self.admin_invoice_url
+        else:
+            url_to_shorten = self.customer_invoice_url
 
-        # result = requests.get(url, json={'longUrl': this.admin_invoice_url})
-        # short_url = result.json().get('id')
-        # invoice.short_url = short_url
-        # invoice.save()
+        result = requests.post(
+            url,
+            json={'longUrl': url_to_shorten},
+            params=params)
+        short_url = result.json().get('id')
+        self.short_url = short_url
+        self.save()
+        return short_url
 
     @property
     def invoice_number(self):

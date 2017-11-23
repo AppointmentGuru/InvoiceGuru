@@ -24,3 +24,13 @@ class CreateInvoiceTestCase(TestCase):
         self.invoice.title = "Christo [Test quickinvoice 1]"
         assert self.invoice.invoice_number == 'CQ-{}'.format(self.invoice.id),\
             'Number was: {}'.format(self.invoice.invoice_number)
+
+    def test_password_is_short(self):
+
+        key = self.invoice.admin_invoice_url.split('?')[1]
+        assert len(key) == 12,\
+            'Expected params to be 12 chars. Expected something like: key=b4c8b930. Got: {}'.format(key)
+
+    def test_get_short_url(self):
+        url = self.invoice.get_short_url()
+        assert self.invoice.short_url == url

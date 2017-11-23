@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from api.testutils import create_mock_invoice, assert_response
 from .responses import MESSAGE_SUCCESS_RESPONSE
 from ..guru import publish, send_invoice
@@ -26,12 +26,21 @@ class InvoiceSendTestCase(TestCase):
             status=201
         )
 
+    def __expect_url_shortener_to_be_called(self):
+        responses.add(
+            responses.POST,
+            'https://www.googleapis.com/urlshortener/v1/url?key=1234',
+            json={ "kind": "urlshortener#url", "id": "https://goo.gl/0xP5", "longUrl": "https://google.com/" }
+        )
+
     def setUp(self):
         self.invoice = create_mock_invoice()
 
+    @override_settings(GOOGLE_API_SHORTENER_TOKEN='1234')
     @responses.activate
     def test_send_email(self):
         self.__add_response()
+        self.__expect_url_shortener_to_be_called()
         test_to_email = 'info@38.co.za'
         result = send_invoice(self.invoice, test_to_email)
         assert_response(result, 201)
@@ -40,9 +49,12 @@ class InvoiceSendTestCase(TestCase):
         assert data.get('preferred_transport') == 'email'
         assert data.get('recipient_emails') == [test_to_email]
 
+    @override_settings(GOOGLE_API_SHORTENER_TOKEN='1234')
     @responses.activate
     def test_send_sms(self):
         self.__add_response()
+        self.__expect_url_shortener_to_be_called()
+
         test_phone_number = '+27832566533'
         result = send_invoice(self.invoice, to_phone=test_phone_number)
 
