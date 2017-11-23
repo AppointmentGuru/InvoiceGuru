@@ -42,10 +42,9 @@ class InvoiceSendTestCase(TestCase):
         self.__add_response()
         self.__expect_url_shortener_to_be_called()
         test_to_email = 'info@38.co.za'
-        result = send_invoice(self.invoice, test_to_email)
-        assert_response(result, 201)
+        result = send_invoice(self.invoice, to_emails=[test_to_email])
 
-        data = json.loads(result.request.body)
+        data = json.loads(responses.calls[1].request.body)
         assert data.get('preferred_transport') == 'email'
         assert data.get('recipient_emails') == [test_to_email]
 
@@ -58,7 +57,31 @@ class InvoiceSendTestCase(TestCase):
         test_phone_number = '+27832566533'
         result = send_invoice(self.invoice, to_phone=test_phone_number)
 
-        data = json.loads(result.request.body)
+        data = json.loads(responses.calls[1].request.body)
 
         assert data.get('preferred_transport') == 'sms'
         assert data.get('recipient_phone_number') == test_phone_number
+
+    @override_settings(GOOGLE_API_SHORTENER_TOKEN='1234')
+    @responses.activate
+    def test_send_sms_and_multiple_emails(self):
+        self.__add_response()
+        self.__expect_url_shortener_to_be_called()
+
+        test_phone_number = '+27832566533'
+        result = send_invoice(
+                    self.invoice,
+                    to_emails=['joe@soap.com', 'jane@soap.com'],
+                    to_phone=test_phone_number)
+
+        assert len(responses.calls) == 3
+
+        email_request = json.loads(responses.calls[1].request.body)
+
+        assert email_request.get('preferred_transport') == 'email'
+        assert email_request.get('recipient_emails') == ['joe@soap.com', 'jane@soap.com']
+
+        sms_request = json.loads(responses.calls[2].request.body)
+
+        assert sms_request.get('preferred_transport') == 'sms'
+        assert sms_request.get('recipient_phone_number') == test_phone_number

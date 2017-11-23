@@ -20,7 +20,7 @@ def get_headers(user_id, consumer='appointmentguru'):
         'X_CONSUMER_USERNAME': consumer,
     }
 
-def send_invoice(invoice, to_email=None, to_phone=None):
+def send_invoice(invoice, to_emails=None, to_phone=None):
     '''
     Sends invoice to to_email and to_phone if they are available.
     if neither is available, then the
@@ -63,23 +63,35 @@ You can also view it online at:
         "attached_urls": [invoice_url],
         "sender_email": from_email
     }
-    total_recipients = []
-    if to_email is not None:
+    result_data = {
+        "to": [],
+        "results": []
+    }
+    if to_emails is not None and len(to_emails) > 0:
         data.update({
             "preferred_transport": "email",
-            "recipient_emails": [to_email],
+            "recipient_emails": to_emails,
         })
-        total_recipients.append(to_email)
+
+        result = requests.post(
+            url,
+            json=data,
+            headers=get_headers(invoice.practitioner_id))
+
+        result_data['results'].append(result.json())
+        result_data['to'] = to_emails
+
     if to_phone is not None:
         data.update({
             "recipient_phone_number": to_phone,
             "preferred_transport": "sms",
         })
-        total_recipients.append(to_phone)
-
-    if len(total_recipients) > 0:
-        return requests.post(
+        result = requests.post(
             url,
             json=data,
             headers=get_headers(invoice.practitioner_id))
-    return None
+
+        result_data['results'].append(result.json())
+        result_data['to'].append(to_phone)
+
+    return result_data
