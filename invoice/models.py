@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
-import uuid
+import uuid, requests
 
 INVOICE_STATUSES = [
     ('new', 'new'),
@@ -15,6 +15,8 @@ TEMPLATES = [(key, '{} - {}'.format(key, values.get('title'))) for key, values i
 def get_uuid():
   return str(uuid.uuid4())
 
+def get_short_uuid():
+    return str(uuid.uuid4()).split('-')[0]
 
 """
 class InvoiceSettings(models.Model):
@@ -43,8 +45,8 @@ class Invoice(models.Model):
     context = JSONField(default={})
     template = models.CharField(max_length=255, blank=True, null=True, choices=TEMPLATES, default='basic')
 
-    password = models.CharField(max_length=255, blank=True, null=True, default=get_uuid)
-    customer_password = models.CharField(max_length=255, blank=True, null=True, default=get_uuid)
+    password = models.CharField(max_length=255, blank=True, null=True, default=get_short_uuid)
+    customer_password = models.CharField(max_length=255, blank=True, null=True, default=get_short_uuid)
 
     currency = models.CharField(max_length=4,blank=True, null=True, default='ZAR')
     invoice_amount = models.DecimalField(decimal_places=2, max_digits=10, default=0, db_index=True)
@@ -58,6 +60,23 @@ class Invoice(models.Model):
 
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     modified_date = models.DateTimeField(auto_now=True, db_index=True)
+
+    def get_short_url(self):
+        '''
+        curl https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyAzr7vesiaABVtif4OBTajwpbZ7CPJoFIM \
+            -H 'Content-Type: application/json' \
+            -d '{"longUrl": "http://www.google.com/"}'
+        '''
+        return self.admin_invoice_url
+
+        # if self.short_url is not None:
+        #     return self.short_url
+        # url = 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyAzr7vesiaABVtif4OBTajwpbZ7CPJoFIM'
+
+        # result = requests.get(url, json={'longUrl': this.admin_invoice_url})
+        # short_url = result.json().get('id')
+        # invoice.short_url = short_url
+        # invoice.save()
 
     @property
     def invoice_number(self):

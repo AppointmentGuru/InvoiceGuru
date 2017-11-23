@@ -4,7 +4,7 @@ from .responses import MESSAGE_SUCCESS_RESPONSE
 from ..guru import publish, send_invoice
 from ..api import InvoiceSerializer
 
-import responses
+import responses, json
 
 class GuruTestCase(TestCase):
 
@@ -18,19 +18,35 @@ class GuruTestCase(TestCase):
 
 class InvoiceSendTestCase(TestCase):
 
-    @responses.activate
-    def setUp(self):
-
+    def __add_response(self):
         responses.add(
             responses.POST,
             'http://communicationguru/communications/',
             json=MESSAGE_SUCCESS_RESPONSE,
             status=201
         )
+
+    def setUp(self):
         self.invoice = create_mock_invoice()
-        self.result = send_invoice(self.invoice, 'info@38.co.za')
-        self.request = responses.calls[0].request
 
-    def test_send(self):
-        assert_response(self.result, 201)
+    @responses.activate
+    def test_send_email(self):
+        self.__add_response()
+        test_to_email = 'info@38.co.za'
+        result = send_invoice(self.invoice, test_to_email)
+        assert_response(result, 201)
 
+        data = json.loads(result.request.body)
+        assert data.get('preferred_transport') == 'email'
+        assert data.get('recipient_emails') == [test_to_email]
+
+    @responses.activate
+    def test_send_sms(self):
+        self.__add_response()
+        test_phone_number = '+27832566533'
+        result = send_invoice(self.invoice, to_phone=test_phone_number)
+
+        data = json.loads(result.request.body)
+
+        assert data.get('preferred_transport') == 'sms'
+        assert data.get('recipient_phone_number') == test_phone_number

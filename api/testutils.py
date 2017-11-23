@@ -43,6 +43,7 @@ def create_mock_invoice(practitioner_id=None, customer_id=None):
                 "total_due": 0,
                 "total_paid": 0,
                 "customer_id": 655,
+                "practice_name": "ACME Consulting",
                 "from_string": "Sarah Eatwell\nE-mail: tech@appointmentguru.co\nPhone: +27832566533\n",
                 "appointments": [{
                     "id": 8148,

@@ -20,7 +20,7 @@ def get_headers(user_id, consumer='appointmentguru'):
         'X_CONSUMER_USERNAME': consumer,
     }
 
-def send_invoice(invoice, to, transport='email'):
+def send_invoice(invoice, to=None, to_phone=None):
     url = '{}/communications/'.format(settings.COMMUNICATIONGURU_API)
 
     # invoice_url = "{}/invoice/{}/?key={}"\
@@ -29,7 +29,12 @@ def send_invoice(invoice, to, transport='email'):
     #                         invoice.password)
     invoice_url = invoice.admin_invoice_url
     invoice_date = invoice.context.get('due_date')
-    subject = 'Your invoice for {}'.format(invoice_date)
+    practice_name = invoice.context.get('practice_name', '')
+    subject = 'Your invoice from {} for {}'.format(practice_name, invoice_date)
+    if invoice.status == 'paid':
+        subject = 'Your receipt'
+
+    short_message = subject
     message = """Hi
 
 Attached please find your invoice for {}.
@@ -42,16 +47,28 @@ You can also view it online at:
         'user:{}'.format(invoice.customer_id)
     ]
     object_ids = object_ids + invoice.object_ids
+
     from_email = invoice.sender_email
+    short_message = "{}. {}".format(short_message, invoice.get_short_url())
     data = {
         "owner": invoice.practitioner_id,
         "object_ids": object_ids,
         "subject": subject,
         "message": message,
-        "preferred_transport": transport,
+        "short_message": short_message,
         "attached_urls": [invoice_url],
-        "recipient_emails": [to],
         "sender_email": from_email
     }
 
+    if to is not None:
+        data.update({
+            "preferred_transport": "email",
+            "recipient_emails": [to],
+        })
+    if to_phone is not None:
+        data.update({
+            "recipient_phone_number": to_phone,
+            "preferred_transport": "sms",
+        })
     return requests.post(url, json=data, headers=get_headers(invoice.practitioner_id))
+

@@ -107,13 +107,19 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def send(self, request, pk):
         invoice = Invoice.objects.get(id=pk)
 
-        to_email = request.data.get('to_email')
+        to_email = request.data.get('to_email', None)
+        to_phone = request.data.get('to_phone', None)
         # update the status of all appointments
         # update invoice status
-        send_invoice(invoice, to_email)
+        if to_email is not None:
+            send_invoice(invoice, to_email)
+
+        if to_phone is not None:
+            send_invoice(invoice, to_phone=to_phone, transport='sms')
+
         if invoice.status != 'paid':
             invoice.status = 'sent'
-        invoice.save()
+            invoice.save()
         # send email to customer
 
         data = InvoiceSerializer(invoice).data
