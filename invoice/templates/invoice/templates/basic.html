@@ -233,9 +233,9 @@
 					<table>
 						<tr>
 							<td>
-								<strong>Invoiced by:</strong><br/>
 								{% if practice_name %}<strong>Practice name:</strong> {{practice_name}}{% endif %}<br/>
 								{% if practice_number %}<strong>Practice number:</strong> {{practice_number}}{% endif %}
+								<strong>Invoiced by:</strong><br/>
 								<!--email_off-->{{from_string|linebreaks}}<!--/email_off-->
 
 								<div class='amount-due {{invoice.status}}' >
