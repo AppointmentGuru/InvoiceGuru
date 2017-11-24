@@ -14,8 +14,10 @@ class Person:
     def __init__(self, person):
         self.person = person
 
-    def _(self, key, default=''):
-        return self.person.get(key, default)
+    def _(self, key, default=None):
+        value = self.person.get(key, default)
+        if value is None: return ''
+        return value
 
     def fullname(self):
         return '{} {}'.format(self._('first_name'), self._('last_name'))
@@ -23,8 +25,13 @@ class Person:
     def person_to_string(self):
         if self.person is None: return ''
         full_name = self.fullname()
-        address = self._('home_address', self._('postal_address', self._('work_address')))
-        contact = 'E-mail: {}\nMobile: {}'.format(self._('email'), self._('cell_phone'))
+        address = self._(
+                    'home_address',
+                    self._('postal_address',
+                    self._('work_address')))
+        contact = 'E-mail: {}\nMobile: {}'.format(
+                        self._('email'),
+                        self._('cell_phone'))
         return '{}\n{}\n{}'.format(full_name, address, contact)
 
 def codes_to_table(codes):
@@ -70,9 +77,10 @@ def medical_aid(data):
     lines = [fullname]
 
     for field in fields:
-        value = data.get(field, '')
-        line = '{}: {}'.format(field, value)
-        lines.append(line)
+        value = data.get(field, None)
+        if value is not None:
+            line = '{}: {}'.format(field, value)
+            lines.append(line)
 
     return ('\n').join(lines)
 
