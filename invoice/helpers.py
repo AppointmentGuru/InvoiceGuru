@@ -79,7 +79,7 @@ def medical_aid(data):
     for field in fields:
         value = data.get(field, None)
         if value is not None:
-            line = '{}: {}'.format(field, value)
+            line = '{}: {}'.format(field.title(), value)
             lines.append(line)
 
     return ('\n').join(lines)
