@@ -252,9 +252,11 @@
 							</td>
 
 							<td>
+{% if customer_info %}
 <strong>Bill to:</strong><br/>
 <!--email_off-->
 {{customer_info|linebreaks}}
+{% endif %}
 {% if medicalaid_info %}
 <strong>Medical Aid:</strong><br/>
 {{medicalaid_info|linebreaks}}
