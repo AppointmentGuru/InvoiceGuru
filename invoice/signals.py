@@ -24,6 +24,7 @@ def apply_context(sender, instance, **kwargs):
 
     instance.invoice_amount = invoice_total
     instance.due_date = context.get('due_date')
+    instance.date = context.get('date')
 
     if instance.customer_id is None:
         instance.customer_id = context.get('customer_id')
