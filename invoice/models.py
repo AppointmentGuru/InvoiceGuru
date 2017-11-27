@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
+from django.utils import timezone
 import uuid, requests
 
 INVOICE_STATUSES = [
@@ -52,7 +53,7 @@ class Invoice(models.Model):
     invoice_amount = models.DecimalField(decimal_places=2, max_digits=10, default=0, db_index=True)
     amount_paid = models.DecimalField(decimal_places=2, max_digits=10, default=0, db_index=True)
 
-    date = models.DateField(auto_now_add = True, db_index=True)
+    date = models.DateField(default=timezone.now, db_index=True)
     due_date = models.DateField(blank=True, null=True, db_index=True)
 
     invoice_period_from = models.DateField(db_index=True, blank=True, null=True)
