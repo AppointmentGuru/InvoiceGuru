@@ -116,11 +116,11 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         to_phone = request.data.get('to_phone', None)
         # update the status of all appointments
         # update invoice status
-        send_invoice(
+        send_result = send_invoice(
             invoice,
             to_emails=to_emails,
             to_phone=to_phone)
-
+        print(send_result)
         if invoice.status != 'paid':
             invoice.status = 'sent'
             invoice.save()
