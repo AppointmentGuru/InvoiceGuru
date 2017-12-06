@@ -20,8 +20,8 @@ def invoices(request, practitioner, from_date, to_date):
     parsed_to = parser.parse(to_date)
     invoices = Invoice.objects.filter(
         practitioner_id=practitioner,
-        invoice_period_from__gte=parsed_from,
-        invoice_period_to__lte=parsed_to)
+        date__gte=parsed_from,
+        date__lte=parsed_to)
     context = {
         'invoices': invoices,
     }

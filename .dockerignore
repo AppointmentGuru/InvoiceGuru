@@ -2,3 +2,4 @@ ui
 db.sqlite
 env.dev
 notes.txt
+*.sql
