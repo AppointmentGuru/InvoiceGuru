@@ -19,6 +19,7 @@ from invoice.api import router
 from invoice import views
 
 urlpatterns = [
+    url(r'^bulk/preview/(?P<practitioner>[0-9]+)/(?P<from_date>[0-9]{4}-?[0-9]{2}-?[0-9]{2})/(?P<to_date>[0-9]{4}-?[0-9]{2}-?[0-9]{2})/', views.invoices, name='invoices_preview'),
     url(r'^invoice/preview/', views.preview, name='invoice_preview'),
     url(r'^invoice/(?P<pk>[0-9]+)/', views.invoice, name='invoice_view'),
     url(r'^admin/', admin.site.urls),

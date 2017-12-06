@@ -5,9 +5,27 @@ from dateutil.parser import parse
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import user_passes_test
 from decimal import Decimal
+from dateutil import parser
 from .helpers import fetch_data, to_context, codes_to_table
 from .models import Invoice
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def invoices(request, practitioner, from_date, to_date):
+    '''
+    '''
+    parsed_from = parser.parse(from_date)
+    parsed_to = parser.parse(to_date)
+    invoices = Invoice.objects.filter(
+        practitioner_id=practitioner,
+        invoice_period_from__gte=parsed_from,
+        invoice_period_to__lte=parsed_to)
+    context = {
+        'invoices': invoices,
+    }
+    return render(request, 'invoice/list.html', context=context)
 
 @csrf_exempt
 def invoice(request, pk):

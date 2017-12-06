@@ -1,0 +1,32 @@
+{% for invoice in invoices %}
+<div>
+    <h4>{{invoice.title}}</h4>
+    <strong>Customer:</strong> {{invoice.context.customer_info}}<br/>
+    <strong>Medical Aid:</strong> {{invoice.context.medicalaid_info}}
+
+    {% for appointment in invoice.context.appointments %}
+    <h5>{{appointment.day}}-{{appointment.month}}-{{appointment.year}}:
+        {% if appointment.title %}{{appointment.title}}
+        {% else %}
+            {{appointment.full_name}}
+        {% endif %}
+    </h5>
+    <table border="1">
+        {% for code in appointment.codes %}
+        <tr>
+            <td>{{code.icd10}}</td>
+            <td>{{code.procedure}}</td>
+            <td>{{code.currency}}{{code.price}}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td></td>
+            <td></td>
+            <td>ZAR {{appointment.price}}</td>
+        </tr>
+    </table>
+
+    {% endfor %}
+    <hr/>
+</div>
+{% endfor %}
