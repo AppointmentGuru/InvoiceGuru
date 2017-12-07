@@ -22,8 +22,13 @@ def invoices(request, practitioner, from_date, to_date):
         practitioner_id=practitioner,
         date__gte=parsed_from,
         date__lte=parsed_to)
+
+    total_value = sum([invoice.invoice_amount for invoice in invoices])
     context = {
         'invoices': invoices,
+        'parsed_from': parsed_from,
+        'parsed_to': parsed_to,
+        'total_value': total_value,
     }
     return render(request, 'invoice/list.html', context=context)
 

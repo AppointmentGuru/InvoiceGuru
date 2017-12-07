@@ -1,3 +1,4 @@
+{% load humanize %}
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,16 +10,41 @@
             transition: 0.3s;
             margin-top:40px;
             padding:20px;
+            border:solid 1px #f1f1f1;
+        }
+        .pure-table {
+            min-width:400px;
         }
         </style>
     </head>
     <body>
         <div class="pure-g" style='max-width:1200px;margin-left:auto;margin-right:auto;'>
+
+        <div class="pure-u-1-1 card" >
+                <div class="pure-menu custom-restricted-width">
+                    <span class="pure-menu-heading">
+                        <span style='float:right;' >Total for period: R{{total_value|intcomma:2}}</span>
+                        {{invoices|length}} invoices for period: {{parsed_from|date:"jS F Y"}} - {{parsed_to|date:"jS F Y"}}
+                    </span>
+                </div>
+        </div>
         {% for invoice in invoices %}
         <div class="pure-u-1-1 card" >
-            <h4>{{invoice.title}}</h4>
-            <strong>Customer:</strong> {{invoice.context.customer_info}}<br/>
-            <strong>Medical Aid:</strong> {{invoice.context.medicalaid_info}}
+            <div class="pure-menu custom-restricted-width">
+                <span class="pure-menu-heading">
+                        <span style='float:right;' >Total R{{invoice.invoice_amount|intcomma:2}}</span>
+                    #{{invoice.invoice_number}}: {{invoice.title}}.
+                </span>
+            </div>
+            <hr/>
+            <ul>
+                <li>
+                    <strong>Customer:</strong> {{invoice.context.customer_info}}
+                </li>
+                <li>
+                    <strong>Medical Aid:</strong> {{invoice.context.medicalaid_info}}
+                </li>
+            </ul>
 
             {% for appointment in invoice.context.appointments %}
             <h5>{{appointment.day}}-{{appointment.month}}-{{appointment.year}}:
@@ -26,25 +52,44 @@
                 {% else %}
                     {{appointment.full_name}}
                 {% endif %}
+                {% if appointment.invoice_description %}
+                <small>{{ appointment.invoice_description }}</small>
+                {% endif %}
             </h5>
-            <table border="1">
+            <table border="1" class='pure-table' >
                 {% for code in appointment.codes %}
                 <tr>
                     <td>{{code.icd10}}</td>
                     <td>{{code.process}}</td>
-                    <td>{{code.currency}}{{code.price}}</td>
+                    <td align='right' >{{code.currency}}{{code.price|intcomma:2}}</td>
                 </tr>
                 {% endfor %}
-                <tr>
+                <tr style='border-top:solid 1px #ccc;' >
                     <td></td>
-                    <td></td>
-                    <td>ZAR {{appointment.price}}</td>
+                    <td align='right' ><strong>Total</strong></td>
+                    <td align='right'>R{{appointment.price|intcomma:2}}</td>
                 </tr>
             </table>
 
             {% endfor %}
+            <hr/>
+            <ul>
+                <li>
+                    <strong>Edit Invoice:</strong>
+                    <a href='https://app.appointmentguru.co/#/invoices/{{invoice.id}}' >
+                        https://app.appointmentguru.co/#/invoices/{{invoice.id}}
+                    </a>
+                </li>
+                <li>
+                    <strong>View Invoice:</strong>
+                    <a href='https://invoiceguru.appointmentguru.co/invoice/{{invoice.id}}/?key={{invoice.password}}' >
+                        https://invoiceguru.appointmentguru.co/invoice/{{invoice.id}}/?key={{invoice.password}}
+                    </a>
+                </li>
+            </ul>
         </div>
         {% endfor %}
-        </div>
-    </body>
+
+    </div>
+</body>
 </html>
