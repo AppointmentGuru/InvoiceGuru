@@ -12,7 +12,7 @@ from .helpers import fetch_data, to_context, codes_to_table
 from .models import Invoice
 
 
-@user_passes_test(lambda u: u.is_superuser)
+# @user_passes_test(lambda u: u.is_superuser)
 def invoices(request, practitioner, from_date, to_date):
     '''
     '''
