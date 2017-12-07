@@ -60,7 +60,13 @@
                 {% for code in appointment.codes %}
                 <tr>
                     <td>{{code.icd10}}</td>
-                    <td>{{code.process}}</td>
+                    <td>
+                        {% if code.process %}
+                        {{code.process}}
+                        {% else %}
+                        {{code.procedure}}
+                        {% endif %}
+                    </td>
                     <td align='right' >{{code.currency}}{{code.price|intcomma:2}}</td>
                 </tr>
                 {% endfor %}
