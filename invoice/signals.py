@@ -16,6 +16,12 @@ def apply_context(sender, instance, **kwargs):
     object_ids = instance.object_ids
     appointments = context.get('appointments', [])
     for appt in appointments:
+
+        codes = appt.get('codes',[])
+        if len(codes) > 0:
+            li_total = sum([Decimal(code.get('price')) for code in codes])
+            if appt['price'] != li_total:
+                appt['price'] = str(li_total)
         invoice_total += Decimal(appt.get('price', 0))
 
         appt_key = 'appointment:{}'.format(appt.get('id'))
