@@ -105,6 +105,13 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         return response.Response(data)
 
     @decorators.detail_route(methods=['post', 'get'])
+    def refresh(self, request, pk):
+        '''
+        Update the information on an existing invoice
+        '''
+        pass
+
+    @decorators.detail_route(methods=['post', 'get'])
     def send(self, request, pk):
         invoice = Invoice.objects.get(id=pk)
 
@@ -144,7 +151,6 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         data = InvoiceSerializer(invoice).data
         publish(settings.PUBLISHKEYS.invoice_paid, data)
         return response.Response(data)
-
 
 router = routers.DefaultRouter()
 router.register(r'invoices', InvoiceViewSet)

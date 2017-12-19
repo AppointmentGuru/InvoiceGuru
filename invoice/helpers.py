@@ -57,6 +57,43 @@ def codes_to_table(codes):
         "data": data
     }
 
+def get_appointments_in_range(practitioner_id, start, end):
+    '''
+    GET /api/appointments/?after_utc={start}&before_utc={end}
+    '''
+    path = "/api/appointments/?after_utc={}&before_utc={}".format(start, end)
+    url = '{}{}'.format(settings.APPOINTMENTGURU_API, path)
+    result = requests.get(url, headers=get_headers(practitioner_id))
+    if result.status_code == 200:
+        return result.json()
+    raise Exception('Server Error: {}. {}'.format(result.status_code, result.content))
+
+def prepare_appointments_for_construction(appointments):
+    '''
+    Returns appointment ids grouped by client_id. e.g.:
+
+    ```
+    {
+     '678': [6725, 6750, 6792, 6724, 7006, 6726, 7123, 7216],
+     '734': [6701],
+     '505': [6737, 6738],
+     '17': [6881, 6862],
+     '125': [7035],
+     '824': [7041, 7040, 7027],
+     '175': [6863],
+     '363': [7320]
+    }
+    ```
+    '''
+    result = {}
+    for appt in appointments:
+        client_id = str(appt.get('client'))
+        appointment_id = appt.get('id')
+        if result.get(client_id, None) is None:
+            result[client_id] = []
+        result[client_id].append(appointment_id)
+    return result
+
 def practitioner_details(p):
     pro = p.get('profile', {})
     name = '{} {}'.format(p.get('first_name', ''), p.get('last_name', ''))
