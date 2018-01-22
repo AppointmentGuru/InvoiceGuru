@@ -73,7 +73,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             invoice.customer_id = client_id
             extra_fields = ['practitioner_id', 'customer_id',
                             'title', 'invoice_period_from', 'invoice_period_to',
-                            'sender_email', 'date', 'due_date']
+                            'sender_email', 'date', 'due_date', 'status']
             for field in extra_fields:
                 value = context.get(field, None)
                 if value is not None:
@@ -146,5 +146,23 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         return response.Response(data)
 
 
+class BulkInvoiceViewSet(viewsets.ModelViewSet):
+    '''
+    Perform bulk action against a list of invoices
+    '''
+    queryset = Invoice.objects.all()
+    serializer_class = InvoiceSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Invoice.objects.filter(practitioner_id=user.id)
+
+    @decorators.list_route(methods=['get', 'post'])
+    def generate(self, request):
+        pass
+
+
+
 router = routers.DefaultRouter()
 router.register(r'invoices', InvoiceViewSet)
+router.register(r'invoices/bulk', BulkInvoiceViewSet, base_name='bulk-invoices')

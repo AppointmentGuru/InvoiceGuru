@@ -42,3 +42,8 @@ class SendEndpointTestCase(TestCase):
     def test_sends_invoice_to_customer(self):
         pass
 
+
+class BulkActionsInvoiceTestCase(TestCase):
+
+    def setUp(self):
+        pass
