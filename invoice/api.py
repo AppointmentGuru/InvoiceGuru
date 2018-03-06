@@ -127,6 +127,12 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         # send email to customer
 
         data = InvoiceSerializer(invoice).data
+
+        summarized = [{"id": appt.get('id')} \
+                        for appt \
+                        in data.get('context',{}).get('appointments')]
+        data.update({"context": { "appointments": summarized } })
+
         publish(settings.PUBLISHKEYS.invoice_sent, data)
         return response.Response(data)
 
