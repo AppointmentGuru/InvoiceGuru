@@ -48,6 +48,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def construct(self, request):
         '''
         Given a practitioner_id, list of appointments, and customer_id, construct an invoice context
+        TODO: move this into POST /invoice
         '''
         practitioner_id = request.GET.get('practitioner_id')
         appointment_ids = request.GET.get('appointment_ids', '').split(',')
@@ -55,22 +56,15 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         default_context = request.data.get('context', {})
         practitioner, appointments, medical_record = fetch_data(practitioner_id, appointment_ids, client_id)
 
-        context = to_context(
-                    practitioner,
-                    appointments,
-                    medical_record,
-                    default_context=default_context,
-                    format_times = False,
-                    format_codes = False)
-        data = {
-            "context": context,
-        }
+        invoice = Invoice()
+        invoice.practitioner_id = practitioner_id
+        invoice.customer_id = client_id
+        invoice.appointment_ids = appointment_ids
+        context = invoice.get_context(default_context=default_context)
+
+        data = { "context": invoice.context }
         result_code = status.HTTP_200_OK
         if request.method == 'POST':
-            invoice = Invoice()
-            invoice.context = context
-            invoice.practitioner_id = practitioner_id
-            invoice.customer_id = client_id
             extra_fields = ['practitioner_id', 'customer_id',
                             'title', 'invoice_period_from', 'invoice_period_to',
                             'sender_email', 'date', 'due_date', 'status']

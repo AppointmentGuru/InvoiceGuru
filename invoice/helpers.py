@@ -70,7 +70,7 @@ def practitioner_details(p):
     return ('\n').join(lines)
 
 def medical_aid(data):
-    fields = ['name', 'scheme', 'number']
+    fields = ['patient_id_number', 'name', 'scheme', 'number']
     fullname = '{} {}'.format(
         data.get('first_name', ''),
         data.get('last_name', ''))
@@ -81,6 +81,19 @@ def medical_aid(data):
         if value is not None:
             line = '{}: {}'.format(field.title(), value)
             lines.append(line)
+
+    if data.get('is_dependent') is True:
+        main_member = 'Main member: {} {}'.format(
+            data.get('main_member_first_name', ''),
+            data.get('main_member_last_name', '')
+        )
+        lines.append(main_member)
+        main_member_id = data.get('main_member_id_number', None)
+        if main_member_id is not None:
+            line = "ID Number: {}".format(main_member_id)
+            lines.append(line)
+    else:
+        lines.append("Patient is main member")
 
     return ('\n').join(lines)
 
@@ -161,6 +174,11 @@ def to_context(practitioner={}, appointments=[], medical_record=None, default_co
     })
     return default_context
 
+def clean_context(context):
+    '''
+    TBD
+    '''
+    return context
 
 # {
 #     "notes": "",

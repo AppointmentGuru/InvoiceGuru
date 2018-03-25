@@ -4,6 +4,13 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.utils import timezone
 import uuid, requests
 
+from .helpers import (
+    fetch_data,
+    fetch_appointments,
+    to_context,
+    clean_context
+)
+
 INVOICE_STATUSES = [
     ('new', 'new'),
     ('sent', 'sent'),
@@ -29,6 +36,21 @@ class InvoiceSettings(models.Model):
     template = models.CharField(max_length=255, blank=True, null=True, help_text='The base template to use for invoices using these settings')
 """
 
+class InvoiceSettings(models.Model):
+    '''
+    Global settings that apply to all generated invoices
+    '''
+
+    practitioner_id = models.CharField(max_length=128, db_index=True)
+    quote_notes = models.TextField(blank=True, null=True)
+    invoice_notes = models.TextField(blank=True, null=True)
+    receipt_notes = models.TextField(blank=True, null=True)
+
+    invoice_address = models.TextField(blank=True, null=True, help_text='Your address as shown on invoices' )
+    customer_info = models.TextField(blank=True, null=True, help_text='Choose how you would like to display your customers info')
+    lineitem_template = models.TextField(blank=True, null=True, default='codetable.html')
+
+
 class Invoice(models.Model):
 
     def __str__(self):
@@ -37,7 +59,10 @@ class Invoice(models.Model):
     # relationships
     practitioner_id = models.CharField(max_length=128, db_index=True)
     customer_id = models.CharField(max_length=128, db_index=True)
+    appointments = ArrayField(models.CharField(max_length=100), default=[], db_index=True)
+
     object_ids = ArrayField(models.CharField(max_length=100), default=[], db_index=True)
+
     sender_email = models.EmailField(default='support@appointmentguru.co')
     # invoice_number = models.CharField(max_length=255,blank=True, null=True)
     title = models.CharField(max_length=255,blank=True, null=True)
@@ -88,6 +113,31 @@ class Invoice(models.Model):
         self.short_url = short_url
         self.save()
         return short_url
+
+    def get_context(self, default_context = {}):
+
+        practitioner, appointments, medical_record = fetch_data(
+            self.practitioner_id,
+            self.appointment_ids,
+            self.customer_id)
+
+        context = to_context(
+                    practitioner,
+                    appointments,
+                    medical_record,
+                    default_context=default_context,
+                    format_times = False,
+                    format_codes = False)
+        context = clean_context(context)
+        self.context = context
+        return context
+
+    def apply_settings(self):
+        '''
+        Apply invoice settings to invoice
+        '''
+        pass
+
 
     @property
     def invoice_number(self):
