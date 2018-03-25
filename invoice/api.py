@@ -65,15 +65,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         data = { "context": invoice.context }
         result_code = status.HTTP_200_OK
         if request.method == 'POST':
-            extra_fields = ['practitioner_id', 'customer_id',
-                            'title', 'invoice_period_from', 'invoice_period_to',
-                            'sender_email', 'date', 'due_date', 'status']
-            for field in extra_fields:
-                value = context.get(field, None)
-                if value is not None:
-                    setattr(invoice, field, value)
-
+            invoice.apply_context()
             invoice.save()
+
             data['id'] = invoice.id
             data['password'] = invoice.password
             result_code = status.HTTP_201_CREATED

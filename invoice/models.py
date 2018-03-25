@@ -18,6 +18,20 @@ INVOICE_STATUSES = [
     ('unpaid', 'unpaid'),
 ]
 
+# fields that will get mapped from
+# context to fields on an invoice
+EXTRA_FIELDS = [
+    'practitioner_id',
+    'customer_id',
+    'title',
+    'invoice_period_from',
+    'invoice_period_to',
+    'sender_email',
+    'date',
+    'due_date',
+    'status'
+]
+
 TEMPLATES = [(key, '{} - {}'.format(key, values.get('title'))) for key, values in settings.TEMPLATE_REGISTRY.items()]
 
 def get_uuid():
@@ -131,6 +145,16 @@ class Invoice(models.Model):
         context = clean_context(context)
         self.context = context
         return context
+
+    def apply_context(self):
+        '''
+        Copy items from context to invoice
+        '''
+        for field in EXTRA_FIELDS:
+            value = self.context.get(field, None)
+            if value is not None:
+                setattr(self, field, value)
+
 
     def apply_settings(self):
         '''
