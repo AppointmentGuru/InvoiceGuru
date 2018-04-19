@@ -13,8 +13,10 @@ def apply_context(sender, instance, **kwargs):
 
     context = instance.context
     invoice_total = 0
+    invoice_amount_paid = 0
     object_ids = instance.object_ids
     appointments = context.get('appointments', [])
+
     for appt in appointments:
 
         codes = appt.get('codes',[])
@@ -22,12 +24,24 @@ def apply_context(sender, instance, **kwargs):
             li_total = sum([Decimal(code.get('price')) for code in codes])
             if appt['price'] != li_total:
                 appt['price'] = str(li_total)
-        invoice_total += Decimal(appt.get('price', 0))
+
+        appt_price = Decimal(appt.get('price', 0))
+        amount_paid = Decimal(appt.get('amount_paid', 0))
+        appt_is_paid = appt.get('status') == 'P'
+        if appt_is_paid:
+            amount_paid = appt_price
+            # if status is paid, make sure this reflects in amount_paid
+            appt.update({"amount_paid": int(amount_paid)})
+        subtotal = appt_price - amount_paid
+
+        invoice_amount_paid += subtotal
+        invoice_total += appt_price
 
         appt_key = 'appointment:{}'.format(appt.get('id'))
         if appt_key not in object_ids:
             object_ids.append(appt_key)
 
+    instance.amount_paid =invoice_amount_paid
     instance.invoice_amount = invoice_total
     instance.due_date = context.get('due_date')
     instance.date = context.get('date')

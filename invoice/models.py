@@ -4,6 +4,8 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.utils import timezone
 import uuid, requests
 
+from .guru import publish
+
 from .helpers import (
     fetch_data,
     fetch_appointments,
@@ -64,6 +66,11 @@ class InvoiceSettings(models.Model):
     customer_info = models.TextField(blank=True, null=True, help_text='Choose how you would like to display your customers info')
     lineitem_template = models.TextField(blank=True, null=True, default='codetable.html')
 
+    include_booking_info = models.BooleanField(default=True)
+
+    snap_id = models.CharField(max_length=128, blank=True, null=True)
+    show_snapcode_on_invoice = models.BooleanField(default=False)
+
 
 class Invoice(models.Model):
 
@@ -73,7 +80,7 @@ class Invoice(models.Model):
     # relationships
     practitioner_id = models.CharField(max_length=128, db_index=True)
     customer_id = models.CharField(max_length=128, db_index=True)
-    appointments = ArrayField(models.CharField(max_length=100), default=[], db_index=True)
+    appointments = ArrayField(models.CharField(max_length=100, blank=True, null=True), default=[], db_index=True, blank=True, null=True)
 
     object_ids = ArrayField(models.CharField(max_length=100), default=[], db_index=True)
 
@@ -155,13 +162,28 @@ class Invoice(models.Model):
             if value is not None:
                 setattr(self, field, value)
 
-
-    def apply_settings(self):
+    def apply_settings(self, invoice_settings):
         '''
         Apply invoice settings to invoice
         '''
         pass
 
+    def _get_payload(self):
+        from .serializers import InvoiceSerializer
+        data = InvoiceSerializer(self).data
+        summarized = [{"id": appt.get('id')} \
+                    for appt \
+                    in data.get('context',{}).get('appointments')]
+        data.update({"context": { "appointments": summarized } })
+        return data
+
+    def publish_paid(self):
+        data = self._get_payload()
+        publish(settings.PUBLISHKEYS.invoice_paid, data)
+
+    def publish_sent(self):
+        data = self._get_payload()
+        publish(settings.PUBLISHKEYS.invoice_sent, data)
 
     @property
     def invoice_number(self):

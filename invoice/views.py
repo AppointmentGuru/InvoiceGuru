@@ -43,15 +43,24 @@ def invoice(request, pk):
 
     context = invoice.context
     invoice_total = 0
+    amount_paid = 0
     for appt in context.get('appointments', []):
         appt['start_time_formatted'] = parse(appt.get('start_time'))
         codes = appt.get('codes', None)
         if codes is not None and len(codes) > 0:
             appt['codes_formatted'] = codes_to_table(codes)
+        if appt.get('status') == 'P':
+            amount_paid += Decimal(appt.get('price', 0))
         invoice_total += Decimal(appt.get('price', 0))
 
+    amount_due = Decimal(invoice.invoice_amount) - amount_paid
     context['invoice'] = invoice
-    context['amount_due'] = Decimal(invoice.invoice_amount) - Decimal(invoice.amount_paid)
+    context['amount_paid'] = amount_paid
+    context['amount_due'] = amount_due
+    context['snap_params'] = "?id={}&amount={}".format(
+        invoice.id,
+        format(amount_due, '.2f').replace('.', ''))
+
     return render(request, template_path, context=context)
 
 @csrf_exempt

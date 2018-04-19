@@ -111,3 +111,7 @@ invoice.pdb
 notes.txt
 Christo
 env.dev
+invoiceguru.sql
+medicalaidguru.sql
+appointmentguru_invoiceguru.data.*
+appointmentguru.sql

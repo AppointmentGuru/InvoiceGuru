@@ -174,10 +174,41 @@ def to_context(practitioner={}, appointments=[], medical_record=None, default_co
     })
     return default_context
 
+def clean_object(data, fields):
+    '''
+    Delete fields from data
+    '''
+    if data is None: return data
+    for field in fields:
+        if data.get(field, 'not_set') != 'not_set':
+            del data[field]
+
 def clean_context(context):
     '''
-    TBD
+    Take the complete context and clean it
     '''
+    client_fields_to_remove = ['is_admin', 'is_active', 'last_login', 'date_joined', 'is_practitioner']
+    practitioner_profile_fields_to_remove = [
+        'data', 'tags', 'twitter', 'busienss', 'facebook', 'linkedin', 'hours', 'description', 'last_login', 'date_joined',
+        'instagram', 'published', 'is_test_account', 'is_visible_in_app', 'is_practitioner',
+        'is_website_published', 'free_trial_expiry_date', 'services',
+    ]
+    appointment_fields_to_remove = ['data', 'done', 'tags', 'source', 'location', 'process',]
+
+    client = context.get('client')
+    clean_object(client, client_fields_to_remove)
+    appointments = context.get('appointments', [])
+    for appointment in appointments:
+        clean_object(appointment, appointment_fields_to_remove)
+
+        practitioner = appointment.get('practitioner', {})
+        if not isinstance(practitioner, int):
+            profile = practitioner.get('profile')
+            client = appointment.get('client', {})
+
+            clean_object(profile, practitioner_profile_fields_to_remove)
+            clean_object(client, client_fields_to_remove)
+
     return context
 
 # {
