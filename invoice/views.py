@@ -18,7 +18,7 @@ def snap_webhook(request):
 
     keen.project_id = settings.KEEN_PROJECT_ID
     keen.write_key = settings.KEEN_WRITE_KEY
-
+    print(request.body)
     data = dict(request.POST)
     keen.add_event("snapscan_webhook", data)
     return HttpResponse('ok')
