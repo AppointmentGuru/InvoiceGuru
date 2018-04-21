@@ -366,7 +366,7 @@
 {{banking_details|markdown|linebreaks}}
 				</td>
 				<td>
-					{% if settings.show_snapcode_on_invoice %}
+					{% if settings.show_snapcode_on_invoice and invoice.amount_due > 0 %}
 					<!-- need to replace .00 with 00 -->
 					<a href="https://pos.snapscan.io/qr/{{settings.snap_id}}{{snap_params}}">
 						<img src="https://pos.snapscan.io/qr/{{settings.snap_id}}.svg{{snap_params}}&snap_code_size=70">
