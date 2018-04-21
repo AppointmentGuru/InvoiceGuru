@@ -13,7 +13,7 @@ class Command(BaseCommand):
         for invoice in invoices:
             print(invoice.id)
             context = invoice.context
-            appts = context.get("appointments", [])
+            # appts = context.get("appointments", [])
             clean_context(context)
             invoice.context = context
             invoice.save()

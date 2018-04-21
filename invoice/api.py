@@ -63,7 +63,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         invoice.practitioner_id = practitioner_id
         invoice.customer_id = client_id
         invoice.appointment_ids = appointment_ids
-        context = invoice.get_context(default_context=default_context)
+        invoice.get_context(default_context=default_context)
 
         data = { "context": invoice.context }
         result_code = status.HTTP_200_OK

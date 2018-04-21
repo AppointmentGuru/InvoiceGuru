@@ -368,11 +368,11 @@
 				<td>
 					{% if settings.show_snapcode_on_invoice %}
 					<!-- need to replace .00 with 00 -->
-					<a href="https://pos.snapscan.io/qr/EJrKB_SJ{{snap_params}}">
-						<img src="https://pos.snapscan.io/qr/EJrKB_SJ.svg{{snap_params}}&snap_code_size=70">
+					<a href="https://pos.snapscan.io/qr/{{settings.snap_id}}{{snap_params}}">
+						<img src="https://pos.snapscan.io/qr/{{settings.snap_id}}.svg{{snap_params}}&snap_code_size=70">
 					</a>
 					<div>
-						Scan this code to pay with SnapScan
+						Scan or click this code to pay with SnapScan
 					</div>
 					{% endif %}
 				</td>

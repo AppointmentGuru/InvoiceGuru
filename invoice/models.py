@@ -8,7 +8,6 @@ from .guru import publish
 
 from .helpers import (
     fetch_data,
-    fetch_appointments,
     to_context,
     clean_context
 )

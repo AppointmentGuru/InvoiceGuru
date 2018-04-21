@@ -5,8 +5,6 @@ from invoice.models import Invoice
 from invoice.serializers import InvoiceSerializer
 from invoice.guru import publish
 
-import json
-
 class Command(BaseCommand):
     help = 'Supplement existing icd10 codes from a json file'
 
