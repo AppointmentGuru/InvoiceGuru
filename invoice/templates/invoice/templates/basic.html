@@ -19,6 +19,8 @@
 		text-align:center;
 		color:#777;
 		font-size: 14px;
+		margin-bottom:0px;
+		padding-bottom:0px;
 	}
 
 	body h1{
@@ -233,9 +235,9 @@
 					<table>
 						<tr>
 							<td>
-								{% if practice_name %}<strong>Practice name:</strong> {{practice_name}}{% endif %}<br/>
-								{% if practice_number %}<strong>Practice number:</strong> {{practice_number}}{% endif %}
-								<br/><strong>Invoiced by:</strong><br/>
+								{% if practice_name %}<strong>Practice name:</strong> {{practice_name}}<br/>{% endif %}
+								{% if practice_number %}<strong>Practice number:</strong> {{practice_number}}<br/>{% endif %}
+								<strong>Invoiced by:</strong><br/>
 								<!--email_off-->{{from_string|linebreaks}}<!--/email_off-->
 
 								<div class='amount-due {{invoice.status}}' >
@@ -281,7 +283,7 @@
 					</td>
 					{% endif %}
 					<td>
-						Practitioner: {{appointment.practitioner.first_name}} {{appointment.practitioner.last_name}}
+						<!-- Practitioner: {{appointment.practitioner.first_name}} {{appointment.practitioner.last_name}} -->
 					</td>
 				</tr>
 				<!-- <tr class="sub-heading">
@@ -364,6 +366,7 @@
 {{banking_details|markdown|linebreaks}}
 				</td>
 				<td>
+					{% if settings.show_snapcode_on_invoice %}
 					<!-- need to replace .00 with 00 -->
 					<a href="https://pos.snapscan.io/qr/EJrKB_SJ{{snap_params}}">
 						<img src="https://pos.snapscan.io/qr/EJrKB_SJ.svg{{snap_params}}&snap_code_size=70">
@@ -371,6 +374,7 @@
 					<div>
 						Scan this code to pay with SnapScan
 					</div>
+					{% endif %}
 				</td>
 			</tr>
 			{% endif %}
@@ -385,15 +389,15 @@
 				</td>
 			</tr>
 			{% endif %}
-			<tr style='border-top:solid 1px #cc11cc;' >
-				<td>
-					Book your next appointmet online at: https://bookme.guru/{{invoice.context.practitioner.slug}}/.<br/>Or scan the code to the right
-				</td>
-				<!-- <td>
-					<img src="https://api.qrserver.com/v1/create-qr-code/?size=50x50&data=https://bookme.guru/{{invoice.context.practitioner.slug}}" width='50px' height='50px' />
-				</td> -->
-			</tr>
 		</table>
 	</div>
+	{% if settings.include_booking_info %}
+	<div style='background-color:#607D8B;padding:15px;color:#fff;' >
+		Book your next appointmet online at:
+		<a style='color:white;' href="https://bookme.guru/{{appointments.0.practitioner.profile.sub_domain}}/" >
+			https://bookme.guru/{{appointments.0.practitioner.profile.sub_domain}}/
+		</a>
+	</div>
+	{% endif %}
 </body>
 </html>

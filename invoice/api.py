@@ -8,8 +8,8 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
-from .models import Invoice
-from .serializers import InvoiceSerializer
+from .models import Invoice, InvoiceSettings
+from .serializers import InvoiceSerializer, InvoiceSettingsSerializer
 from .guru import send_invoice, publish
 from .helpers import to_context, fetch_data, fetch_appointments
 from .filters import InvoiceFilter
@@ -27,6 +27,9 @@ class Guru:
             'X_AUTHENTICATED_USERID': str(authenticated_user_id),
         }
 
+class InvoiceSettingsViewSet(viewsets.ModelViewSet):
+    queryset = InvoiceSettings.objects.all()
+    serializer_class = InvoiceSettingsSerializer
 
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
@@ -165,5 +168,6 @@ class BulkInvoiceViewSet(viewsets.ModelViewSet):
 
 
 router = routers.DefaultRouter()
+router.register(r'invoices/settings', InvoiceSettingsViewSet)
 router.register(r'invoices', InvoiceViewSet)
 router.register(r'invoices/bulk', BulkInvoiceViewSet, base_name='bulk-invoices')

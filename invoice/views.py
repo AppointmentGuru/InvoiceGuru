@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import user_passes_test
 from decimal import Decimal
 from dateutil import parser
 from .helpers import fetch_data, to_context, codes_to_table
-from .models import Invoice
+from .models import Invoice, InvoiceSettings
 
 
 def snap_webhook(request):
@@ -64,10 +64,17 @@ def invoice(request, pk):
             amount_paid += Decimal(appt.get('price', 0))
         invoice_total += Decimal(appt.get('price', 0))
 
+    try:
+        invoice_settings = InvoiceSettings.objects.get(practitioner_id = invoice.practitioner_id)
+    except InvoiceSettings.DoesNotExist:
+        invoice_settings = None
+
+
     amount_due = Decimal(invoice.invoice_amount) - amount_paid
     context['invoice'] = invoice
     context['amount_paid'] = amount_paid
     context['amount_due'] = amount_due
+    context['settings'] = invoice_settings
     context['snap_params'] = "?id={}&amount={}".format(
         invoice.id,
         format(amount_due, '.2f').replace('.', ''))
