@@ -20,6 +20,7 @@ from invoice import views
 
 urlpatterns = [
     url(r'^bulk/preview/(?P<practitioner>[0-9]+)/(?P<from_date>[0-9]{4}-?[0-9]{2}-?[0-9]{2})/(?P<to_date>[0-9]{4}-?[0-9]{2}-?[0-9]{2})/', views.invoices, name='invoices_preview'),
+    url(r'^incoming/snapscan/739B7B5E-B896-4C99-9AF5-AD424DB437A5/', views.snap_webhook, name='incoming_snapscan'),
     url(r'^invoice/preview/', views.preview, name='invoice_preview'),
     url(r'^invoice/(?P<pk>[0-9]+)/', views.invoice, name='invoice_view'),
     url(r'^admin/', admin.site.urls),

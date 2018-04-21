@@ -8,8 +8,8 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
-from .models import Invoice
-from .serializers import InvoiceSerializer
+from .models import Invoice, InvoiceSettings
+from .serializers import InvoiceSerializer, InvoiceSettingsSerializer
 from .guru import send_invoice, publish
 from .helpers import to_context, fetch_data, fetch_appointments
 from .filters import InvoiceFilter
@@ -27,6 +27,9 @@ class Guru:
             'X_AUTHENTICATED_USERID': str(authenticated_user_id),
         }
 
+class InvoiceSettingsViewSet(viewsets.ModelViewSet):
+    queryset = InvoiceSettings.objects.all()
+    serializer_class = InvoiceSettingsSerializer
 
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
@@ -48,6 +51,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     def construct(self, request):
         '''
         Given a practitioner_id, list of appointments, and customer_id, construct an invoice context
+        TODO: move this into POST /invoice
         '''
         practitioner_id = request.GET.get('practitioner_id')
         appointment_ids = request.GET.get('appointment_ids', '').split(',')
@@ -55,31 +59,18 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         default_context = request.data.get('context', {})
         practitioner, appointments, medical_record = fetch_data(practitioner_id, appointment_ids, client_id)
 
-        context = to_context(
-                    practitioner,
-                    appointments,
-                    medical_record,
-                    default_context=default_context,
-                    format_times = False,
-                    format_codes = False)
-        data = {
-            "context": context,
-        }
+        invoice = Invoice()
+        invoice.practitioner_id = practitioner_id
+        invoice.customer_id = client_id
+        invoice.appointment_ids = appointment_ids
+        invoice.get_context(default_context=default_context)
+
+        data = { "context": invoice.context }
         result_code = status.HTTP_200_OK
         if request.method == 'POST':
-            invoice = Invoice()
-            invoice.context = context
-            invoice.practitioner_id = practitioner_id
-            invoice.customer_id = client_id
-            extra_fields = ['practitioner_id', 'customer_id',
-                            'title', 'invoice_period_from', 'invoice_period_to',
-                            'sender_email', 'date', 'due_date', 'status']
-            for field in extra_fields:
-                value = context.get(field, None)
-                if value is not None:
-                    setattr(invoice, field, value)
-
+            invoice.apply_context()
             invoice.save()
+
             data['id'] = invoice.id
             data['password'] = invoice.password
             result_code = status.HTTP_201_CREATED
@@ -177,5 +168,6 @@ class BulkInvoiceViewSet(viewsets.ModelViewSet):
 
 
 router = routers.DefaultRouter()
+router.register(r'invoices/settings', InvoiceSettingsViewSet)
 router.register(r'invoices', InvoiceViewSet)
 router.register(r'invoices/bulk', BulkInvoiceViewSet, base_name='bulk-invoices')

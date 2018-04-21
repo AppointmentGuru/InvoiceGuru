@@ -15,8 +15,6 @@ services:
     command: sh /code/run.sh
     env_file:
       - env.dev
-    environment:
-      - DATABASE_NAME=appointmentguru_appointmentguru
 
   medicalaidguru:
     image: appointmentguru/medicalaidguru:latest

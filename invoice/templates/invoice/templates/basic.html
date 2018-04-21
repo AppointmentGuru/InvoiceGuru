@@ -8,7 +8,6 @@
 
 	<title>Invoice {{invoice.invoice_number}}</title>
 
-
 	<!-- Favicon -->
 	<link rel="icon" href="/images/favicon.png" type="image/x-icon">
 
@@ -20,6 +19,8 @@
 		text-align:center;
 		color:#777;
 		font-size: 14px;
+		margin-bottom:0px;
+		padding-bottom:0px;
 	}
 
 	body h1{
@@ -234,9 +235,9 @@
 					<table>
 						<tr>
 							<td>
-								{% if practice_name %}<strong>Practice name:</strong> {{practice_name}}{% endif %}<br/>
-								{% if practice_number %}<strong>Practice number:</strong> {{practice_number}}{% endif %}
-								<br/><strong>Invoiced by:</strong><br/>
+								{% if practice_name %}<strong>Practice name:</strong> {{practice_name}}<br/>{% endif %}
+								{% if practice_number %}<strong>Practice number:</strong> {{practice_number}}<br/>{% endif %}
+								<strong>Invoiced by:</strong><br/>
 								<!--email_off-->{{from_string|linebreaks}}<!--/email_off-->
 
 								<div class='amount-due {{invoice.status}}' >
@@ -259,7 +260,7 @@
 {{customer_info|linebreaks}}
 {% endif %}
 {% if medicalaid_info %}
-<strong>Medical Aid:</strong><br/>
+<div><strong>Medical Aid:</strong></div>
 {{medicalaid_info|linebreaks}}
 {% endif %}
 <!--/email_off-->
@@ -281,8 +282,15 @@
 						{% endif %}
 					</td>
 					{% endif %}
-					<td></td>
+					<td>
+						<!-- Practitioner: {{appointment.practitioner.first_name}} {{appointment.practitioner.last_name}} -->
+					</td>
 				</tr>
+				<!-- <tr class="sub-heading">
+					<td colspan='2'>
+						Treated by: {{appointment.practitioner.first_name}} {{appointment.practitioner.last_name}}
+					</td>
+				</tr> -->
 				{% if appointment.invoice_description %}
 				<tr class="sub-heading">
 					<td colspan='2'>{{appointment.invoice_description}}</td>
@@ -309,14 +317,30 @@
 				</tr>
 				{% endif %}
 				<tr class='item' >
+						<td style='text-align:right;'>Price</td>
+						<td style='padding-right:10px;' >
+							{{invoice.currency}} {{appointment.price}}
+						</td>
+					</tr>
+				<!-- <tr class='item' >
+					<td style='text-align:right;'>Amount paid</td>
+					<td style='padding-right:10px;' >
+						{% if appointment.status == 'P' %}
+							{{invoice.currency}} {{appointment.price|intcomma}}
+						{% else %}
+							{{invoice.currency}} {{appointment.amount_paid|intcomma|default:"0.00"}}
+						{% endif %}
+					</td>
+				</tr> -->
+				<tr class='item total' >
 					<td style='text-align:right;'>Sub-total</td>
 					<td style='padding-right:10px;' >
 						{{invoice.currency}} {{appointment.price|intcomma}}
 					</td>
 				</tr>
-				<tr class='spacer' ><td colspan="2" ></td></tr>
+				<!-- <tr class='spacer' ><td colspan="2" ></td></tr> -->
 			{% endfor %}
-
+			<tr class='spacer' ><td colspan="2" ></td></tr>
 			<tr class="total">
 				<td style='text-align:right;'>Invoice total: </td>
 				<td>
@@ -326,7 +350,7 @@
 			<tr class="total">
 				<td style='text-align:right;'>Amount paid: </td>
 				<td>
-					{{invoice.currency}} {{invoice.amount_paid|intcomma}}
+					{{invoice.currency}} {{amount_paid|intcomma}}
 				</td>
 			</tr>
 			<tr class="total">
@@ -342,7 +366,15 @@
 {{banking_details|markdown|linebreaks}}
 				</td>
 				<td>
-
+					{% if settings.show_snapcode_on_invoice %}
+					<!-- need to replace .00 with 00 -->
+					<a href="https://pos.snapscan.io/qr/{{settings.snap_id}}{{snap_params}}">
+						<img src="https://pos.snapscan.io/qr/{{settings.snap_id}}.svg{{snap_params}}&snap_code_size=70">
+					</a>
+					<div>
+						Scan or click this code to pay with SnapScan
+					</div>
+					{% endif %}
 				</td>
 			</tr>
 			{% endif %}
@@ -359,5 +391,13 @@
 			{% endif %}
 		</table>
 	</div>
+	{% if settings.include_booking_info %}
+	<div style='background-color:#607D8B;padding:15px;color:#fff;' >
+		Book your next appointmet online at:
+		<a style='color:white;' href="https://bookme.guru/{{appointments.0.practitioner.profile.sub_domain}}/" >
+			https://bookme.guru/{{appointments.0.practitioner.profile.sub_domain}}/
+		</a>
+	</div>
+	{% endif %}
 </body>
 </html>
