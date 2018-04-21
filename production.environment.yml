@@ -25,3 +25,7 @@ docker_environment:
     value: "{{pubsub_channel}}"
   - key: GOOGLE_API_SHORTENER_TOKEN
     value: "{{google_api_shortener_token}}"
+  - key: KEEN_PROJECT_ID
+    value: "{{keen_project_id}}"
+  - key: KEEN_WRITE_KEY
+    value: "{{keen_write_key}}"

@@ -13,6 +13,7 @@ python-dateutil
 
 kong_oauth==0.1
 school_pubsub==0.3
+keen
 
 django-filter
 django-anymail

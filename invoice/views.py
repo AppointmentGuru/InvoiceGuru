@@ -3,6 +3,7 @@ Views for displaying invoices
 '''
 from dateutil.parser import parse
 from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import user_passes_test
@@ -11,6 +12,16 @@ from dateutil import parser
 from .helpers import fetch_data, to_context, codes_to_table
 from .models import Invoice
 
+
+def snap_webhook(request):
+    import keen
+
+    keen.project_id = settings.KEEN_PROJECT_ID
+    keen.write_key = settings.KEEN_WRITE_KEY
+
+    data = dict(request.POST)
+    keen.add_event("snapscan_webhook", data)
+    return HttpResponse('ok')
 
 @user_passes_test(lambda u: u.is_superuser)
 def invoices(request, practitioner, from_date, to_date):

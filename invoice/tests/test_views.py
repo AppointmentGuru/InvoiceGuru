@@ -6,6 +6,7 @@ from django.test import TestCase
 
 from api.testutils import create_mock_invoice
 
+
 class InvoiceViewTestCase(TestCase):
 
     def setUp(self):
@@ -25,5 +26,19 @@ class InvoiceViewTestCase(TestCase):
     def test_get_with_customer_password(self):
         '''When getting the page with the customer password, set views = True'''
         print ('TBD')
+
+class SnapScanWebHookTestCase(TestCase):
+
+    def setUp(self):
+        self.url = reverse('incoming_snapscan')
+
+    def test_post_to_webhook(self):
+
+        data = {
+            "foo": "bar",
+            "baz": "bus"
+        }
+        result = self.client.post(self.url, data)
+        assert result.status_code == 200
 
 
