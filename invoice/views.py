@@ -69,10 +69,12 @@ def invoice(request, pk):
     except InvoiceSettings.DoesNotExist:
         invoice_settings = None
 
+    print(invoice.status)
     if invoice.status == 'paid':
-        amount_paid == invoice.invoice_amount
+        amount_paid = invoice.invoice_amount
 
     amount_due = Decimal(invoice.invoice_amount) - amount_paid
+
     context['invoice'] = invoice
     context['amount_paid'] = amount_paid
     context['amount_due'] = amount_due
