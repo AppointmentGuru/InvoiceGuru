@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'django_markdown2',
 
     'invoice', 'api',
+
+    'raven.contrib.django.raven_compat',
 ]
 
 MIDDLEWARE = [

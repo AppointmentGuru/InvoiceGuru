@@ -1,3 +1,5 @@
+import os, raven
+
 def get_secret(f):
     '''Returns a docker secret'''
     try:
@@ -6,7 +8,7 @@ def get_secret(f):
         return os.environ.get(f)
 
 
-import os
+
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get("ALLOWED_HOSTS", '').split(',')]
 # aws storage
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
@@ -77,3 +79,15 @@ class PUBLISHKEYS:
     '''A config of the events published by this service'''
     invoice_sent='invoice_sent'
     invoice_paid='invoice_paid'
+
+sentry_url = 'https://{}:{}@sentry.io/{}'.format(
+    os.environ.get('SENTRY_PUBLIC_KEY'),
+    os.environ.get('SENTRY_SECRET_KEY'),
+    os.environ.get('SENTRY_PROJECT_ID')
+)
+RAVEN_CONFIG = {
+    'dsn': sentry_url,
+    # If you are using git, you can also automatically configure the
+    # release based on the git info.
+    # 'release': raven.fetch_git_sha(os.path.abspath(os.pardir)),
+}

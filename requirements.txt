@@ -10,6 +10,7 @@ pubnub
 markdown2
 docker
 python-dateutil
+raven
 
 kong_oauth==0.1
 school_pubsub==0.3

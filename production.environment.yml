@@ -29,3 +29,9 @@ docker_environment:
     value: "{{keen_project_id}}"
   - key: KEEN_WRITE_KEY
     value: "{{keen_write_key}}"
+  - key: SENTRY_PROJECT_ID
+    value: "{{sentry[service].project_id}}"
+  - key: SENTRY_PUBLIC_KEY
+    value: "{{sentry[service].public_key}}"
+  - key: SENTRY_SECRET_KEY
+    value: "{{sentry[service].secret_key}}"
