@@ -56,6 +56,9 @@ class InvoiceSettings(models.Model):
     Global settings that apply to all generated invoices
     '''
 
+    def __str__(self):
+        return 'Settings for Practitioner #{}'.format(self.practitioner_id)
+
     practitioner_id = models.CharField(max_length=128, db_index=True)
     quote_notes = models.TextField(blank=True, null=True)
     invoice_notes = models.TextField(blank=True, null=True)

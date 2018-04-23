@@ -70,6 +70,9 @@ GOOGLE_API_SHORTENER_TOKEN = os.environ.get('GOOGLE_API_SHORTENER_TOKEN')
 KEEN_PROJECT_ID = os.environ.get('project_key')
 KEEN_WRITE_KEY = os.environ.get('keen_write_key')
 
+if os.environ.get('DEBUG', 'false') != 'true':
+    DEBUG = False
+
 class PUBLISHKEYS:
     '''A config of the events published by this service'''
     invoice_sent='invoice_sent'
