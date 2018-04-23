@@ -34,7 +34,8 @@ class SnapScanWebHookTestCase(TestCase):
     @override_settings(KEEN_PROJECT_ID='1234')
     def setUp(self):
         '''
-        curl -i -X POST -d '{\"id\":7,\"status\":\"completed\",\"totalAmount\":1000,\"tipAmount\":0,\"feeAmount\":35,\"settleAmount\":965,\"requiredAmount\":1000,\"date\":\"2018-04-23T13:51:59Z\",\"snapCode\":\"EJrKB_SJ\",\"snapCodeReference\":\"587e9743-3c7c-4e86-b54c-985ca29fe895\",\"userReference\":\"\",\"merchantReference\":\"1765\",\"statementReference\":null,\"authCode\":\"455303\",\"deliveryAddress\":null,\"extra\":{\"amount\":\"1000\",\"id\":\"1765\"}}' http://invoiceguru.appointmentguru.co/incoming/snapscan/739B7B5E-B896-4C99-9AF5-AD424DB437A5/
+        curl -i -X POST -d 'payload="{\"id\":7,\"status\":\"completed\",\"totalAmount\":1000,\"tipAmount\":0,\"feeAmount\":35,\"settleAmount\":965,\"requiredAmount\":1000,\"date\":\"2018-04-23T13:51:59Z\",\"snapCode\":\"EJrKB_SJ\",\"snapCodeReference\":\"587e9743-3c7c-4e86-b54c-985ca29fe895\",\"userReference\":\"\",\"merchantReference\":\"1765\",\"statementReference\":null,\"authCode\":\"455303\",\"deliveryAddress\":null,\"extra\":{\"amount\":\"1000\",\"invoice_id\":\"1790\"}}"' https://invoiceguru.appointmentguru.co/incoming/snapscan/739B7B5E-B896-4C99-9AF5-AD424DB437A5/
+        curl -i -X POST -d 'payload={\"id\":7,\"status\":\"completed\",\"totalAmount\":1000,\"tipAmount\":0,\"feeAmount\":35,\"settleAmount\":965,\"requiredAmount\":1000,\"date\":\"2018-04-23T13:51:59Z\",\"snapCode\":\"EJrKB_SJ\",\"snapCodeReference\":\"587e9743-3c7c-4e86-b54c-985ca29fe895\",\"userReference\":\"\",\"merchantReference\":\"1765\",\"statementReference\":null,\"authCode\":\"455303\",\"deliveryAddress\":null,\"extra\":{\"amount\":\"1000\",\"invoice_id\":\"1790\"}}' http://localhost:8000/incoming/snapscan/739B7B5E-B896-4C99-9AF5-AD424DB437A5/
         '''
         keen_url = 'https://api.keen.io/3.0/projects/{}/events/snapscan_webhook'.format(settings.KEEN_PROJECT_ID)
         print(keen_url)
