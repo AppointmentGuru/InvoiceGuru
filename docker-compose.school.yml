@@ -5,7 +5,7 @@ services:
     volumes:
       - ~/.ssh:/root/.ssh # map ssh keys
       - ./production.environment.yml:/code/ansible/group_vars/server_swarm.yml
-    command: ansible-playbook /code/ansible/deploy.drf.yml  -i /etc/ansible/inventory/digital_ocean.py -e "organization=appointmentguru service=invoiceguru entity_name=invoice" --tags=deploy
+    command: ansible-playbook /code/ansible/deploy.drf.yml  -i /etc/ansible/inventory/digital_ocean.py -e "organization=appointmentguru service=invoiceguru entity_name=invoice" --tags=deploy --limit=server_swarm
     environment:
       - ANSIBLE_HOST_KEY_CHECKING=False
       - ANSIBLE_LIBRARY=/etc/ansible/library

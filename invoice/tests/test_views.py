@@ -35,8 +35,20 @@ class SnapScanWebHookTestCase(TestCase):
     def test_post_to_webhook(self):
 
         data = {
-            "foo": "bar",
-            "baz": "bus"
+            "id": 1,
+            "status": "completed",
+            "date": "1999-12-31T23:00:00Z",
+            "totalAmount": 1000,
+            "tipAmount": 0,
+            "requiredAmount": 1000,
+            "snapCode": "STB115",
+            "snapCodeReference": "Till Point #1",
+            "userReference": "John Doe",
+            "merchantReference": "INV001",
+            "statementReference": "SNAPSCAN 20150109",
+            "authCode": "123456",
+            "extra": None,
+            "deliveryAddress": None
         }
         result = self.client.post(self.url, data)
         assert result.status_code == 200

@@ -11,10 +11,10 @@ from decimal import Decimal
 from dateutil import parser
 from .helpers import fetch_data, to_context, codes_to_table
 from .models import Invoice, InvoiceSettings
+import keen
 
-
+@csrf_exempt
 def snap_webhook(request):
-    import keen
 
     keen.project_id = settings.KEEN_PROJECT_ID
     keen.write_key = settings.KEEN_WRITE_KEY
