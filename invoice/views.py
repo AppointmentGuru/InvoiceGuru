@@ -15,7 +15,7 @@ import json
 
 @csrf_exempt
 def snap_webhook(request):
-
+    print(request.POST)
     data = json.loads(request.POST.get('payload'))
     invoice_id = data.get('extra').get('invoice_id')
 
