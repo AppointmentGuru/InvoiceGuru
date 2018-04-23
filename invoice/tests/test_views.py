@@ -2,10 +2,11 @@
 from __future__ import unicode_literals
 
 from django.urls import reverse
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from django.conf import settings
 
 from api.testutils import create_mock_invoice
-
+import responses
 
 class InvoiceViewTestCase(TestCase):
 
@@ -29,28 +30,37 @@ class InvoiceViewTestCase(TestCase):
 
 class SnapScanWebHookTestCase(TestCase):
 
+    @responses.activate
+    @override_settings(KEEN_PROJECT_ID='1234')
     def setUp(self):
+        '''
+        curl -i -X POST -d '{\"id\":7,\"status\":\"completed\",\"totalAmount\":1000,\"tipAmount\":0,\"feeAmount\":35,\"settleAmount\":965,\"requiredAmount\":1000,\"date\":\"2018-04-23T13:51:59Z\",\"snapCode\":\"EJrKB_SJ\",\"snapCodeReference\":\"587e9743-3c7c-4e86-b54c-985ca29fe895\",\"userReference\":\"\",\"merchantReference\":\"1765\",\"statementReference\":null,\"authCode\":\"455303\",\"deliveryAddress\":null,\"extra\":{\"amount\":\"1000\",\"id\":\"1765\"}}' http://invoiceguru.appointmentguru.co/incoming/snapscan/739B7B5E-B896-4C99-9AF5-AD424DB437A5/
+        '''
+        keen_url = 'https://api.keen.io/3.0/projects/{}/events/snapscan_webhook'.format(settings.KEEN_PROJECT_ID)
+        print(keen_url)
+        responses.add(
+            responses.POST,
+            url=keen_url,
+            json={'ok': 'true'}
+        )
+
         self.url = reverse('incoming_snapscan')
-
-    def test_post_to_webhook(self):
-
+        self.invoice = create_mock_invoice()
         data = {
-            "id": 1,
-            "status": "completed",
-            "date": "1999-12-31T23:00:00Z",
-            "totalAmount": 1000,
-            "tipAmount": 0,
-            "requiredAmount": 1000,
-            "snapCode": "STB115",
-            "snapCodeReference": "Till Point #1",
-            "userReference": "John Doe",
-            "merchantReference": "INV001",
-            "statementReference": "SNAPSCAN 20150109",
-            "authCode": "123456",
-            "extra": None,
-            "deliveryAddress": None
+            "payload": "{\"id\":7,\"status\":\"completed\",\"totalAmount\":1000,\"tipAmount\":0,\"feeAmount\":35,\"settleAmount\":965,\"requiredAmount\":1000,\"date\":\"2018-04-23T13:51:59Z\",\"snapCode\":\"EJrKB_SJ\",\"snapCodeReference\":\"587e9743-3c7c-4e86-b54c-985ca29fe895\",\"userReference\":\"\",\"merchantReference\":\"1765\",\"statementReference\":null,\"authCode\":\"455303\",\"deliveryAddress\":null,\"extra\":{\"amount\":\"1000\",\"invoice_id\":\""+str(self.invoice.id)+"\"}}"
         }
-        result = self.client.post(self.url, data)
-        assert result.status_code == 200
+        self.result = self.client.post(self.url, data)
+
+    def test_returns_ok(self):
+        assert self.result.status_code == 200
+
+    def test_it_publishes_the_result(self):
+        # not sure how to test this
+        pass
+
+    def test_updates_invoice_status(self):
+        self.invoice.refresh_from_db()
+        assert self.invoice.status == 'paid'
+
 
 

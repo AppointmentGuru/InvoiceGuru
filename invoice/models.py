@@ -176,6 +176,12 @@ class Invoice(models.Model):
         data.update({"context": { "appointments": summarized } })
         return data
 
+    def publish(self):
+        if self.status == 'paid':
+            self.publish_paid()
+        if self.status == 'sent':
+            self.publish_sent()
+
     def publish_paid(self):
         data = self._get_payload()
         publish(settings.PUBLISHKEYS.invoice_paid, data)

@@ -11,16 +11,25 @@ from decimal import Decimal
 from dateutil import parser
 from .helpers import fetch_data, to_context, codes_to_table
 from .models import Invoice, InvoiceSettings
-import keen
+import json
 
 @csrf_exempt
 def snap_webhook(request):
 
-    keen.project_id = settings.KEEN_PROJECT_ID
-    keen.write_key = settings.KEEN_WRITE_KEY
-    print(request.body)
-    data = dict(request.POST)
-    keen.add_event("snapscan_webhook", data)
+    data = json.loads(request.POST.get('payload'))
+    invoice_id = data.get('extra').get('invoice_id')
+
+    try:
+        invoice = Invoice.objects.get(id=invoice_id)
+        invoice.status = 'paid'
+        invoice.save()
+        invoice.publish()
+    except Invoice.DoesNotExist:
+        data.update({
+            "error": "No matching invoice found"
+        })
+
+    # keen.add_event("snapscan_webhook", data)
     return HttpResponse('ok')
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -79,7 +88,7 @@ def invoice(request, pk):
     context['amount_paid'] = amount_paid
     context['amount_due'] = amount_due
     context['settings'] = invoice_settings
-    context['snap_params'] = "?id={}&amount={}".format(
+    context['snap_params'] = "?invoice_id={}&amount={}".format(
         invoice.id,
         format(amount_due, '.2f').replace('.', ''))
 
