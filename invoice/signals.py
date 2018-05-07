@@ -34,14 +34,18 @@ def apply_context(sender, instance, **kwargs):
             appt.update({"amount_paid": int(amount_paid)})
         subtotal = appt_price - amount_paid
 
-        invoice_amount_paid += subtotal
+        invoice_amount_paid += amount_paid
         invoice_total += appt_price
 
         appt_key = 'appointment:{}'.format(appt.get('id'))
         if appt_key not in object_ids:
             object_ids.append(appt_key)
 
-    instance.amount_paid =invoice_amount_paid
+    # only automatically set amount paid if it's greater than zero so as not to override
+    # explicitly set amount paid
+    if invoice_amount_paid > 0:
+        instance.amount_paid = invoice_amount_paid
+
     instance.invoice_amount = invoice_total
     instance.due_date = context.get('due_date')
     instance.date = context.get('date')

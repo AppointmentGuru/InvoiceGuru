@@ -17,7 +17,7 @@ import json
 def snap_webhook(request):
     print(request.POST.get('payload'))
     data = json.loads(request.POST.get('payload'))
-    invoice_id = data.get('extra').get('invoice_id')
+    invoice_id = data.get('extra').get('invoiceId')
 
     try:
         invoice = Invoice.objects.get(id=invoice_id)

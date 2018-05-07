@@ -34,3 +34,12 @@ class CreateInvoiceTestCase(TestCase):
     def test_get_short_url(self):
         url = self.invoice.get_short_url()
         assert self.invoice.short_url == url
+
+    def test_can_manually_update_amount_paid(self):
+        self.invoice.amount_paid = 10
+        self.invoice.save()
+
+        self.invoice.refresh_from_db()
+        import ipdb;ipdb.set_trace()
+        assert self.invoice.amount_paid == 10,\
+            'Expected amount_paid to be 10. Got: {}'.format(self.invoice.amount_paid)
