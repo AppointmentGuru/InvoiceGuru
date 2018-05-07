@@ -40,6 +40,5 @@ class CreateInvoiceTestCase(TestCase):
         self.invoice.save()
 
         self.invoice.refresh_from_db()
-        import ipdb;ipdb.set_trace()
         assert self.invoice.amount_paid == 10,\
             'Expected amount_paid to be 10. Got: {}'.format(self.invoice.amount_paid)

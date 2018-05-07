@@ -81,6 +81,8 @@ def invoice(request, pk):
     print(invoice.status)
     if invoice.status == 'paid':
         amount_paid = invoice.invoice_amount
+    else:
+        amount_paid = Decimal(invoice.amount_paid)
 
     amount_due = Decimal(invoice.invoice_amount) - amount_paid
 
