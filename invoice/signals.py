@@ -38,8 +38,8 @@ def apply_context(sender, instance, **kwargs):
         invoice_total += appt_price
 
         appt_key = 'appointment:{}'.format(appt.get('id'))
-        if appt_key not in object_ids:
-            object_ids.append(appt_key)
+        # if appt_key not in object_ids:
+        #     object_ids.append(appt_key)
 
     # only automatically set amount paid if it's greater than zero so as not to override
     # explicitly set amount paid
@@ -52,7 +52,7 @@ def apply_context(sender, instance, **kwargs):
 
     if instance.customer_id is None:
         instance.customer_id = context.get('customer_id')
-    instance.object_ids = object_ids
+    # instance.object_ids = object_ids
 
     appointments_exist = (len(appointments) > 0)
     if instance.invoice_period_from is None and appointments_exist:
