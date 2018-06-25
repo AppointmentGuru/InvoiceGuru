@@ -1,0 +1,63 @@
+{% extends 'invoice/base/index.html' %}
+
+{% block main_content %}
+<form action="#"></form>
+
+    <h6>Please provide your medical aid details</h6>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" type="text" id="medicalaid">
+        <label class="mdl-textfield__label" for="medicalaid">Choose a medical aid</label>
+    </div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" type="text" id="medicalaid_scheme">
+        <label class="mdl-textfield__label" for="medicalaid_scheme">Scheme</label>
+    </div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" type="text" id="medicalaid_number">
+        <label class="mdl-textfield__label" for="medicalaid_number">Medical Aid number.</label>
+    </div>
+    <hr/>
+    <h6>Your contact details</h6>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" type="text" id="patient_first_name">
+        <label class="mdl-textfield__label" for="patient_first_name">First name</label>
+    </div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" type="text" id="patient_last_name">
+        <label class="mdl-textfield__label" for="patient_last_name">Last name</label>
+    </div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" type="text" id="patient_id_number">
+        <label class="mdl-textfield__label" for="patient_id_number">ID number</label>
+    </div>
+    <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="is_main_member">
+        <input type="checkbox" id="is_main_member" class="mdl-checkbox__input" checked>
+        <span class="mdl-checkbox__label">I am the main member</span>
+    </label>
+
+    <div>
+        <h6>Main member's details</h6>
+
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="text" id="main_member_first_name">
+            <label class="mdl-textfield__label" for="main_member_first_name">Main Member first name</label>
+        </div>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="text" id="main_member_last_name">
+            <label class="mdl-textfield__label" for="main_member_last_name">Main Member last name</label>
+        </div>
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input class="mdl-textfield__input" type="text" id="main_member_id_number">
+            <label class="mdl-textfield__label" for="main_member_id_number">Main member ID number</label>
+        </div>
+    </div>
+
+    <div>
+            <div class="mdl-layout-spacer"></div>
+        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+            Show my invoice
+        </button>
+    </div>
+
+</form>
+{% endblock %}

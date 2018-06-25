@@ -53,6 +53,14 @@ def invoices(request, practitioner, from_date, to_date):
     return render(request, 'invoice/list.html', context=context)
 
 @csrf_exempt
+def diy_invoice(request, pk):
+    context = {
+        "page_title": "Invoice #:"
+    }
+    return render(request, 'invoice/diy.html', context=context)
+
+
+@csrf_exempt
 def invoice(request, pk):
     password = request.GET.get('key')
     invoice = get_object_or_404(Invoice, pk=pk, password=password)

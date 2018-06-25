@@ -29,3 +29,12 @@ class Command(BaseCommand):
             data.update({"context": { "appointments": summarized } })
 
             publish(settings.PUBLISHKEYS.invoice_paid, data)
+
+"""
+from datetime import date, timedelta
+from invoice.models import Invoice
+days_back = 30
+dt = date.today() - timedelta(days=days_back)
+invoices = Invoice.objects.filter(created_date__gte=dt)
+for invoice in invoices: invoice.publish()
+"""
