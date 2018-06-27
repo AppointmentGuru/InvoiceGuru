@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.utils import timezone
-import uuid, requests
+import uuid, requests, os
 
 from .guru import publish
 
@@ -278,5 +278,19 @@ class Payment(models.Model):
         if with_save:
             payment.save()
         return payment
+
+def proof_upload_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+    filename_base, filename_ext = os.path.splitext(filename)
+    # return 'practitioner/images/{}/profile{}'.format(instance.user_id, filename_ext)
+    invoice = instance.invoice
+    return 'proofs/{}/{}/filename_base{}'.format(invoice.practitioner_id, invoice.id, filename_ext)
+
+class ProofOfPayment(models.Model):
+    invoice = models.ForeignKey(Invoice)
+    payment = models.ForeignKey(Payment, blank=True, null=True)
+    document = models.FileField(upload_to=proof_upload_path)
+
+    approved = models.BooleanField(default = False)
 
 from .signals import *

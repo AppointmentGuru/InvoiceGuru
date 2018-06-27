@@ -19,9 +19,9 @@ from .helpers import (
     codes_to_table,
     get_invoice_template
 )
-from .models import Invoice, InvoiceSettings, Payment
+from .models import Invoice, InvoiceSettings, Payment, ProofOfPayment
 from .medialaids import MEDIAL_AIDS
-from .forms import UpdateInvoiceDetailsForm
+from .forms import UpdateInvoiceDetailsForm, ProofOfPaymentForm
 
 @csrf_exempt
 def snap_webhook(request):
@@ -115,11 +115,29 @@ def pay_invoice(request, pk):
     except InvoiceSettings.DoesNotExist:
         invoice_settings = None
 
+    pop = ProofOfPayment()
+    pop.invoice = invoice
+    if request.method == 'POST':
+        form = ProofOfPaymentForm(request.POST, request.FILES, instance=pop)
+        if form.is_valid():
+            form.save()
+    else:
+        form = ProofOfPaymentForm(instance=pop)
+
+    if invoice.status == 'paid':
+        amount_paid = invoice.invoice_amount
+    else:
+        amount_paid = Decimal(invoice.amount_paid)
+
+    amount_due = Decimal(invoice.invoice_amount) - amount_paid
+
     snap_params = "?invoice_id={}&amount={}".format(invoice.id, format(amount_due, '.2f').replace('.', ''))
     context = {
         "invoice": invoice,
         "settings": invoice_settings,
-        "snap_params": snap_params
+        "snap_params": snap_params,
+        "amount_due": amount_due,
+        "form": form
     }
 
     return render(request, 'invoice/pay.html', context=context)

@@ -18,7 +18,10 @@ AWS_SECRET_ACCESS_KEY = get_secret('AWS_SECRET_ACCESS_KEY')
 AWS_S3_REGION_NAME = 'eu-central-1'
 # AWS_S3_CUSTOM_DOMAIN = '{}.s3.amazonaws.com'.format(AWS_STORAGE_BUCKET_NAME)
 STATIC_URL = "https://s3.amazonaws.com/{}/".format(AWS_STORAGE_BUCKET_NAME)
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+
+MEDIA_URL = "https://s3.amazonaws.com/{}/media/".format(AWS_STORAGE_BUCKET_NAME)
 
 TEMPLATE_REGISTRY = {
     'basic': {

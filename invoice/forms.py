@@ -1,5 +1,11 @@
 from django import forms
 from django.template import Template, Context
+from .models import  ProofOfPayment
+
+class ProofOfPaymentForm(forms.ModelForm):
+    class Meta:
+        model = ProofOfPayment
+        fields = ['document']
 
 class UpdateInvoiceDetailsForm(forms.Form):
 

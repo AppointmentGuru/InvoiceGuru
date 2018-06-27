@@ -2,8 +2,13 @@
 
 {% block main_content %}
 <section class='ag-ma' >
-    <h3>Payment options</h3>
+    <h3>
+        Payment options
+        <div style='float:right;'>Amount Due: {{invoice.currency}} {{amount_due}}</div>
+    </h3>
+
     {% if settings.show_snapcode_on_invoice %}
+        <h6>Pay with SnapScan:</h6>
         <!-- need to replace .00 with 00 -->
         <a href="https://pos.snapscan.io/qr/{{settings.snap_id}}{{snap_params}}&strict=true">
             <img src="https://pos.snapscan.io/qr/{{settings.snap_id}}.svg{{snap_params}}&snap_code_size=70&strict=true">
@@ -14,11 +19,15 @@
     {% endif %}
 
 
-    {% if invoice.context.medicalaid_info %}
+    {% if invoice.context.banking_details %}
         <h6>Pay by EFT:</h6>
-        {{invoice.context.medicalaid_info}}
-        {{banking_details|linebreaks}}
+        <strong>Banking details: </strong>{{invoice.context.banking_details|linebreaks}}
     {% endif %}
     <h6>Upload proof of payment</h6>
+    <form method="post" enctype="multipart/form-data" >
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Submit" />
+    </form>
 </section>
 {% endblock %}
