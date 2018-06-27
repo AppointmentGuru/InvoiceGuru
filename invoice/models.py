@@ -133,6 +133,7 @@ class Invoice(models.Model):
 
     # settings:
     request_medical_aid_details = models.BooleanField(default=False)
+    # automatically_submit_to_medical_aid = models.BooleanField(default=False)
 
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     modified_date = models.DateTimeField(auto_now=True, db_index=True)
@@ -217,6 +218,11 @@ class Invoice(models.Model):
     def publish_sent(self):
         data = self._get_payload()
         publish(settings.PUBLISHKEYS.invoice_sent, data)
+
+    @property
+    def is_receipt(self):
+        if self.status == 'paid': return True
+        return (self.invoice_amount - self.amount_paid) == 0
 
     @property
     def invoice_number(self):

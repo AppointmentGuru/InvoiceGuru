@@ -1,0 +1,24 @@
+{% extends 'invoice/base/index.html' %}
+
+{% block main_content %}
+<section class='ag-ma' >
+    <h3>Payment options</h3>
+    {% if settings.show_snapcode_on_invoice %}
+        <!-- need to replace .00 with 00 -->
+        <a href="https://pos.snapscan.io/qr/{{settings.snap_id}}{{snap_params}}&strict=true">
+            <img src="https://pos.snapscan.io/qr/{{settings.snap_id}}.svg{{snap_params}}&snap_code_size=70&strict=true">
+        </a>
+        <div>
+            Scan or click this code to pay with SnapScan
+        </div>
+    {% endif %}
+
+
+    {% if invoice.context.medicalaid_info %}
+        <h6>Pay by EFT:</h6>
+        {{invoice.context.medicalaid_info}}
+        {{banking_details|linebreaks}}
+    {% endif %}
+    <h6>Upload proof of payment</h6>
+</section>
+{% endblock %}

@@ -28,6 +28,7 @@ urlpatterns = [
 
     url(r'^invoice/preview/', views.preview, name='invoice_preview'),
     url(r'^invoice/view/(?P<pk>[0-9]+)/', views.diy_invoice, name='diy_invoice_view'),
+    url(r'^invoice/pay/(?P<pk>[0-9]+)/', views.pay_invoice, name='pay_invoice_view'),
     url(r'^invoice/(?P<pk>[0-9]+)/', views.invoice, name='invoice_view'),
     url(r'^admin/', admin.site.urls),
     url(r'^', include(router.urls)),

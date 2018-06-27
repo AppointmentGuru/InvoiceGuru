@@ -106,6 +106,24 @@ def statement(request, practitioner, client):
 
     return render(request, 'invoice/statement.html', context=context)
 
+def pay_invoice(request, pk):
+
+    password = request.GET.get('key')
+    invoice = get_object_or_404(Invoice, pk=pk, password=password)
+    try:
+        invoice_settings = InvoiceSettings.objects.get(practitioner_id = invoice.practitioner_id)
+    except InvoiceSettings.DoesNotExist:
+        invoice_settings = None
+
+    snap_params = "?invoice_id={}&amount={}".format(invoice.id, format(amount_due, '.2f').replace('.', ''))
+    context = {
+        "invoice": invoice,
+        "settings": invoice_settings,
+        "snap_params": snap_params
+    }
+
+    return render(request, 'invoice/pay.html', context=context)
+
 def diy_invoice(request, pk):
     password = request.GET.get('key')
     invoice = get_object_or_404(Invoice, pk=pk, password=password)
@@ -159,7 +177,6 @@ def invoice(request, pk):
     template_key = request.GET.get('template', invoice.template)
     template_data = settings.TEMPLATE_REGISTRY.get(template_key)
     template_path = 'invoice/templates/{}'.format(template_data.get('filename', 'basic.html'))
-    template_path = 'invoice/templates/material.html'
 
     context = invoice.context
     invoice_total = 0
