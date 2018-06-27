@@ -72,7 +72,7 @@
     </div>
     <div class="mdl-cell mdl-cell--6-col" style='text-align: right;' >
         <h5>
-            {% if invoice.status == 'paid' %}
+            {% if is_receipt %}
                 Receipt
             {% else %}
                 Invoice

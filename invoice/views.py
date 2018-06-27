@@ -13,7 +13,12 @@ from dateutil import parser
 from datetime import datetime
 import json
 
-from .helpers import fetch_data, to_context, codes_to_table
+from .helpers import (
+    fetch_data,
+    to_context,
+    codes_to_table,
+    get_invoice_template
+)
 from .models import Invoice, InvoiceSettings, Payment
 from .medialaids import MEDIAL_AIDS
 from .forms import UpdateInvoiceDetailsForm
@@ -104,10 +109,7 @@ def statement(request, practitioner, client):
 def diy_invoice(request, pk):
     password = request.GET.get('key')
     invoice = get_object_or_404(Invoice, pk=pk, password=password)
-    template = 'invoice/view.html'
-    #  if invoice.request_medical_aid_info:
-    if True:
-        template = 'invoice/edit.html'
+    template = get_invoice_template(invoice)
 
     if request.method == 'POST':
         form = UpdateInvoiceDetailsForm(request.POST)
@@ -178,12 +180,14 @@ def invoice(request, pk):
 
     is_receipt = False
     if invoice.status == 'paid':
-        is_receipt = True
         amount_paid = invoice.invoice_amount
     else:
         amount_paid = Decimal(invoice.amount_paid)
 
     amount_due = Decimal(invoice.invoice_amount) - amount_paid
+
+    if amount_due == 0:
+        is_receipt = True
 
     context['invoice'] = invoice
     context['is_receipt'] = is_receipt

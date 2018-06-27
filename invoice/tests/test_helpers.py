@@ -21,7 +21,7 @@ class GetInvoiceTemplateTestCase(TestCase):
 
     def test_no_details_requested(self):
         result = get_invoice_template(self.invoice)
-        assert result == 'view'
+        assert result == 'invoice/view.html'
 
     def test_medical_aid_details_required(self):
         self.invoice.request_medical_aid_details = True
@@ -31,7 +31,7 @@ class GetInvoiceTemplateTestCase(TestCase):
                 "medicalaid_info": val
             })
             result = get_invoice_template(self.invoice)
-            assert result == 'edit'
+            assert result == 'invoice/edit.html'
 
     def test_medical_aid_details_already_exist(self):
         self.invoice.request_medical_aid_details = True
@@ -39,7 +39,7 @@ class GetInvoiceTemplateTestCase(TestCase):
             "medicalaid_info": "Joe Soap. Disovery"
         })
         result = get_invoice_template(self.invoice)
-        assert result == 'view'
+        assert result == 'invoice/view.html'
 
 
 class CleanContextTestCase(TestCase):

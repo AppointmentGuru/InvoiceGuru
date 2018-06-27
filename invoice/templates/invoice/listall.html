@@ -3,7 +3,9 @@
 {% block main_content %}
 {% for invoice in invoices %}
 <li>
-    <a href='/invoice/{{invoice.pk}}/?key={{invoice.password}}' >{{invoice}}</a>
-</li>>
+    {{invoice}}
+    <a href='/invoice/{{invoice.pk}}/?key={{invoice.password}}' >[print]</a>
+    <a href='/invoice/view/{{invoice.pk}}/?key={{invoice.password}}' >[view]]</a>
+</li>
 {% endfor %}
 {% endblock %}

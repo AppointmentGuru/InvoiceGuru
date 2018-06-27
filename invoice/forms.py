@@ -21,6 +21,7 @@ class UpdateInvoiceDetailsForm(forms.Form):
 
     def save(self, invoice, commit = True):
         data = self.cleaned_data
+        print(data)
 
         formatted_medical_aid = """Medical Aid: {{medical_aid}}
 Scheme: {{medical_aid_scheme}}
@@ -28,7 +29,7 @@ Medical Aid #: {{medical_aid_number}}
 Patient details:
 {{patient_first_name}} {{patient_last_name}}
 ID Number: {{medical_aid_number}}
-{% if patient.is_main_member %}Patient is main member
+{% if is_main_member %}Patient is main member
 {% else %}
 Main member details:
 {{main_member_first_name}} {{main_member_last_name}}

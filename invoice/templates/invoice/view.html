@@ -2,12 +2,15 @@
 
 {% block header_links %}
 <nav class="mdl-navigation">
-    <a class="mdl-navigation__link" href="">Pay Invoice</a>
-    <a class="mdl-navigation__link" href="">Submit to medical aid</a>
+    <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect mdl-button--accent" >
+    Pay
+    </button>
 </nav>
 {% endblock %}
 
 {% block main_content %}
-<iframe src='/invoice/1692?key=8ce5bbf7' width='100%' height='800px' >
+<iframe
+    src='/invoice/{{invoice.id}}?key={{invoice.password}}'
+    width='100%' height='800px' >
 </iframe>
 {% endblock %}
