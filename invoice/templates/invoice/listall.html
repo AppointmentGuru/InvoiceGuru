@@ -1,0 +1,9 @@
+{% extends 'invoice/base/index.html' %}
+
+{% block main_content %}
+{% for invoice in invoices %}
+<li>
+    <a href='/invoice/{{invoice.pk}}/?key={{invoice.password}}' >{{invoice}}</a>
+</li>>
+{% endfor %}
+{% endblock %}

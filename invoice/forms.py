@@ -1,4 +1,45 @@
 from django import forms
+from django.template import Template, Context
+
+class UpdateInvoiceDetailsForm(forms.Form):
+
+    # medical aid info:
+    medical_aid = forms.CharField(required=True)
+    medical_aid_scheme = forms.CharField(required=False)
+    medical_aid_number = forms.CharField(required=True)
+
+    # patient details
+    patient_first_name = forms.CharField(required=True)
+    patient_last_name = forms.CharField(required=True)
+    patient_id_number = forms.CharField(required=True)
+
+    is_main_member = forms.BooleanField(required=False, label='I am the main member', initial=True)
+
+    main_member_first_name = forms.CharField(required=False)
+    main_member_last_name = forms.CharField(required=False)
+    main_member_id_number = forms.CharField(required=False)
+
+    def save(self, invoice, commit = True):
+        data = self.cleaned_data
+
+        formatted_medical_aid = """Medical Aid: {{medical_aid}}
+Scheme: {{medical_aid_scheme}}
+Medical Aid #: {{medical_aid_number}}
+Patient details:
+{{patient_first_name}} {{patient_last_name}}
+ID Number: {{medical_aid_number}}
+{% if patient.is_main_member %}Patient is main member
+{% else %}
+Main member details:
+{{main_member_first_name}} {{main_member_last_name}}
+ID Number: {{main_member_id_number}}{% endif %}"""
+        context = Context(data)
+        template = Template(formatted_medical_aid)
+        invoice.context.update({
+            "medicalaid_info": template.render(context)
+        })
+        invoice.save()
+        return invoice
 
 class InvoiceConstructionForm(forms.Form):
 

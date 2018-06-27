@@ -1,19 +1,19 @@
-<table class='data-table' >
+<table class='data-table mdl-data-table dense' style='width:100%' >
     <thead>
         <tr class='head' >
-            <td>Patient name</td>
-            <td>Date</td>
+            <td class='mdl-data-table__cell--non-numeric'>Patient name</td>
+            <td class='mdl-data-table__cell--non-numeric'>Date</td>
             {% for header in codes.headers %}
-            <td>{{header}}</td>
+            <td class='mdl-data-table__cell--non-numeric'>{{header}}</td>
             {% endfor %}
         </tr>
     </thead>
     <tbody>
         {% for row in codes.data %}
         <tr class='item' >
-            <td>{{patient_name}}</td>
-            <td>{{appointment_date|date:'d-m-Y'}}</td>
-            {% for v in row %}<td>{{v}}</td>{% endfor %}
+            <td class='mdl-data-table__cell--non-numeric' >{{patient_name}}</td>
+            <td class='mdl-data-table__cell--non-numeric' >{{appointment_date|date:'d-m-Y'}}</td>
+            {% for v in row %}<td {% if not forloop.last %}class='mdl-data-table__cell--non-numeric'{% endif %} >{{v}}</td>{% endfor %}
         </tr>
         {% endfor %}
     </tbody>
