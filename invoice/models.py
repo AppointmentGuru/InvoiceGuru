@@ -19,6 +19,18 @@ INVOICE_STATUSES = [
     ('unpaid', 'unpaid'),
 ]
 
+PAYMENT_METHODS = [
+    ('eft', 'eft'),
+    ('cash', 'cash'),
+    ('snapscan', 'snapscan'),
+    ('credit_card', 'credit_card'),
+    ('write_off', 'write_off'),
+    ('unknown', 'unknown'),
+    ('medicalaid', 'medicalaid'),
+    ('gift', 'gift'),
+    ('voucher', 'voucher'),
+]
+
 # fields that will get mapped from
 # context to fields on an invoice
 EXTRA_FIELDS = [
@@ -51,6 +63,7 @@ class InvoiceSettings(models.Model):
     template = models.CharField(max_length=255, blank=True, null=True, help_text='The base template to use for invoices using these settings')
 """
 
+
 class InvoiceSettings(models.Model):
     '''
     Global settings that apply to all generated invoices
@@ -64,14 +77,23 @@ class InvoiceSettings(models.Model):
     invoice_notes = models.TextField(blank=True, null=True)
     receipt_notes = models.TextField(blank=True, null=True)
 
+    billing_address = models.TextField(blank=True, null=True, help_text='The address of the billing party')
+
     invoice_address = models.TextField(blank=True, null=True, help_text='Your address as shown on invoices' )
     customer_info = models.TextField(blank=True, null=True, help_text='Choose how you would like to display your customers info')
     lineitem_template = models.TextField(blank=True, null=True, default='codetable.html')
 
     include_booking_info = models.BooleanField(default=True)
 
+    request_contact_details = models.BooleanField(default=False) # <- not yet implemented
+    request_medical_aid_details = models.BooleanField(default=False)
+
     snap_id = models.CharField(max_length=128, blank=True, null=True)
     show_snapcode_on_invoice = models.BooleanField(default=False)
+    allow_pre_payments = models.BooleanField(default=False)
+
+    include_vat = models.BooleanField(default=False)
+    vat_percent = models.PositiveIntegerField(default=0, blank=True, null=True)
 
 
 class Invoice(models.Model):
@@ -108,6 +130,9 @@ class Invoice(models.Model):
     invoice_period_to = models.DateField(db_index=True, blank=True, null=True)
 
     short_url = models.URLField(blank=True, null=True)
+
+    # settings:
+    request_medical_aid_details = models.BooleanField(default=False)
 
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     modified_date = models.DateTimeField(auto_now=True, db_index=True)
@@ -208,5 +233,44 @@ class Invoice(models.Model):
     def customer_invoice_url(self):
         base = settings.INVOICEGURU_BASE_URL
         return '{}/invoice/{}?key={}'.format(base, self.pk, self.customer_password)
+
+class Payment(models.Model):
+
+    practitioner_id = models.CharField(max_length=128, db_index=True)
+    customer_id = models.CharField(max_length=128, db_index=True)
+
+    invoice = models.ForeignKey(Invoice, blank=True, null=True)
+    appointments = ArrayField(models.CharField(max_length=100, blank=True, null=True), default=[], db_index=True, blank=True, null=True)
+
+    currency = models.CharField(max_length=4,blank=True, null=True, default='ZAR')
+    amount = models.DecimalField(decimal_places=2, max_digits=10, default=0, db_index=True)
+    payment_method = models.CharField(max_length=128, choices=PAYMENT_METHODS, db_index=True)
+    payment_date = models.DateTimeField(db_index=True)
+
+    created_date = models.DateTimeField(auto_now_add=True, db_index=True)
+    modified_date = models.DateTimeField(auto_now=True, db_index=True)
+
+    @classmethod
+    def from_invoice(cls, invoice, payment_method='unknown', with_save=True):
+
+        # check for dupes:
+        existing_payments = Payment.objects.filter(invoice=invoice)
+        if existing_payments.count() > 0:
+            print("Payment already exists")
+            return existing_payments.first()
+
+        payment = cls()
+        copy_fields = ['practitioner_id', 'customer_id', 'appointments']
+        for field in copy_fields:
+            value = getattr(invoice, field)
+            setattr(payment, field, value)
+
+        payment.invoice_id = invoice.id
+        payment.amount = invoice.amount_paid
+        payment.payment_date = invoice.modified_date
+        payment.method = payment_method
+        if with_save:
+            payment.save()
+        return payment
 
 from .signals import *

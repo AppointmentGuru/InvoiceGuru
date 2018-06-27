@@ -1,0 +1,244 @@
+{% extends 'invoice/base/index.html' %}
+{% load humanize %}
+{% block header %}{% endblock %}
+{% block css %}
+.page-content {
+    width:100%;
+}
+.page-main {
+    margin-top: -31vh;
+}
+.highlight-grey {
+    background:#eee;
+    color:#333;
+    padding:5px;
+}
+.highlight-paid {
+    color: #fff;
+    background-color: #1b9e1b;
+}
+
+.amount-due {
+    border: solid 1px #ccc;
+    text-align:center;
+    width: 200px;
+    padding: 0px;
+}
+.amount-due.paid {
+    border: solid 1px #1b9e1b;
+}
+.amount-due .metric {
+    font-size: 150%;
+    font-weight: bold;
+    padding:5px;
+}
+
+.status.status-paid {
+    color: #fff;
+    background-color: #1b9e1b;
+    text-transform: uppercase;
+}
+{% endblock %}
+{% block main_content %}
+<section class='ag-ma mdl-grid' style='margin-top:0px;padding-top:0px;' >
+
+    <!-- headline-->
+    <div class="mdl-cell mdl-cell--6-col">
+        {% if logo %}
+        <img src="{{logo}}" style="max-width:300px; max-height:150px;">
+        {% endif %}
+        <h6>Payable to:</h6>
+        <p>
+            {% if practice_name %}<strong>Practice name:</strong> {{practice_name}}<br/>{% endif %}
+            {% if practice_number %}<strong>Practice number:</strong> {{practice_number}}{% endif %}
+        </p>
+        {{from_string|linebreaks}}
+        <!-- <img src="https://media-appointmentguru.s3.amazonaws.com:443/practitioner/images/1/logo.png" style="max-width:300px; max-height:150px;"> -->
+        {% if customer_info %}
+        <h6>Bill to:</h6>
+        {{customer_info|linebreaks}}
+        {% endif %}
+        <div class='amount-due {{invoice.status}}' >
+            <strong>Amount due: </strong>
+            <div class='metric'>
+                {{invoice.currency}} {{amount_due|intcomma}}
+            </div>
+            {% if invoice.status == 'paid' %}
+            <div class='status status-{{invoice.status}}' >
+                {{invoice.status}}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="mdl-cell mdl-cell--6-col" style='text-align: right;' >
+        <h5>
+            {% if is_receipt %}
+                Receipt
+            {% else %}
+                Invoice
+            {% endif %}
+            {{invoice.invoice_number}}</h5>
+        <strong>Date:</strong> {{invoice.date}}<br/>
+        <strong>Due date:</strong> {{invoice.due_date}}
+        {% if medicalaid_info %}
+        <div><h6>Medical Aid:</h6></div>
+        {{medicalaid_info|linebreaks}}
+        {% endif %}
+    </div>
+    <!-- lineitems-->
+    <div class="mdl-cell mdl-cell--12-col">
+        <table class="mdl-data-table mdl-block dense" style='width:100%;' >
+        <thead>
+            <tr class='mdl-color--grey-100 mdl-color-text--grey-800' >
+                <th colspan="2" class="mdl-data-table__cell--non-numeric">Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appointment in appointments %}
+            <tr class="heading">
+                <td class="mdl-data-table__cell--non-numeric" >
+					{% if appointment.invoice_title %}
+					{{appointment.invoice_title}}
+					{% else %}
+
+						{% if not appointment.codes_formatted %}
+							{{appointment.full_name}}. {{appointment.start_time_formatted|date:'D d M Y'}}
+						{% else %}
+						Appointment date: {{appointment.start_time_formatted|date:'D d M Y'}}
+						{% endif %}
+
+                    {% endif %}
+                    {% if appointment.invoice_description %}
+                    {{appointment.invoice_description}}
+                    {% endif %}
+                </td>
+                <td>
+                    <!-- Practitioner: {{appointment.practitioner.first_name}} {{appointment.practitioner.last_name}} -->
+                </td>
+			</tr>
+				<!-- <tr class="sub-heading">
+					<td colspan='2'>
+						Treated by: {{appointment.practitioner.first_name}} {{appointment.practitioner.last_name}}
+					</td>
+				</tr> -->
+				{% if appointment.codes_formatted %}
+				<tr class="item">
+					<td colspan='2' style='padding:0px;'>
+						{% include "invoice/templates/includes/codetable.html" with codes=appointment.codes_formatted patient_name=appointment.full_name appointment_date=appointment.start_time_formatted %}
+					</td>
+				</tr>
+				{% endif %}
+
+				{% if appointment.lineitems %}
+				<tr class="item">
+					<td colspan='2'>
+						{% if appointment.lineitems %}
+							{% include 'invoice/templates/includes/lineitemtable.html'
+								with lineitems=appointment.lineitems
+								patient_name=appointment.full_name
+								appointment_date=start_time_formatted %}
+						{% endif %}
+					</td>
+				</tr>
+				{% endif %}
+				<tr class='item' >
+						<td >Price</td>
+						<td >
+							{{invoice.currency}} {{appointment.price|intcomma}}
+						</td>
+					</tr>
+				<!-- <tr class='item' >
+					<td style='text-align:right;'>Amount paid</td>
+					<td style='padding-right:10px;' >
+						{% if appointment.status == 'P' %}
+							{{invoice.currency}} {{appointment.price|intcomma}}
+						{% else %}
+							{{invoice.currency}} {{appointment.amount_paid|intcomma|default:"0.00"}}
+						{% endif %}
+					</td>
+				</tr> -->
+				<tr class='item total' >
+					<td >Sub-total</td>
+					<td >
+						{{invoice.currency}} {{appointment.price|intcomma}}
+					</td>
+				</tr>
+            {% endfor %}
+            <tr class="total callout mdl-color--grey-100 mdl-color-text--grey-800">
+                <td class='mdl-data-table__cell mdl-data-table__cell--non-numeric callout' colspan="2" >Totals: </td>
+            </tr>
+            <tr class="total">
+                <td >Invoice total: </td>
+                <td>
+                    {{invoice.currency}} {{invoice.invoice_amount|intcomma}}
+                </td>
+            </tr>
+            <tr class="total">
+                <td >Amount paid: </td>
+                <td>
+                    {{invoice.currency}} {{amount_paid|intcomma}}
+                </td>
+            </tr>
+            <tr class="total" style='border-top: solid 2px rgba(0,0,0,.87)' >
+                <td class='callout' >Amount due: </td>
+                <td>
+                    {{invoice.currency}} {{amount_due|intcomma}}
+                </td>
+            </tr>
+        </tbody>
+        </table>
+    </div>
+
+
+    <div class="mdl-cell mdl-cell--6-col" >
+        {% if banking_details %}
+        <h6>Banking details:</h6>
+        {{banking_details|linebreaks}}
+        {% endif %}
+        {% if settings.show_snapcode_on_invoice %}
+        <!-- need to replace .00 with 00 -->
+        <a href="https://pos.snapscan.io/qr/{{settings.snap_id}}{{snap_params}}&strict=true">
+            <img src="https://pos.snapscan.io/qr/{{settings.snap_id}}.svg{{snap_params}}&snap_code_size=70&strict=true">
+        </a>
+        <div>
+            Scan or click this code to pay with SnapScan
+        </div>
+        {% endif %}
+    </div>
+    <div class="mdl-cell mdl-cell--6-col" >
+            <h6>Notes:</h6>
+        {% if invoice.notes %}{{invoice.notes}}{% endif %}
+        {% if is_receipt and settings.receipt_notes %}{{settings.receipt_notes}}{% endif %}
+        {% if not is_receipt and settings.invoice_notes %}{{settings.invoice_notes}}{% endif %}
+    </div>
+
+{% comment %}
+    Balance bought forward: {{balance}}
+
+    <h3>Invoices:</h3>
+    {% for invoice in invoices %}
+    {{invoice.invoice_amount}}<br/>
+    {% endfor %}
+
+    <h3>Payments:</h3>
+    {% for payment in payments %}
+    {{payment.amount}}<br/>
+    {% endfor %}
+{% endcomment %}
+</section>
+{% endblock %}
+
+{% block footer %}
+<footer class="mdl-mini-footer">
+<div class="mdl-mini-footer__left-section">
+    <div class="mdl-logo">Manage your account online</div>
+    <ul class="mdl-mini-footer__link-list">
+    <li><a href="http://invoiceguru.appointmentguru.co/invoice/view/{{invoice.pk}}/?key={{invoice.password}}">
+        http://invoiceguru.appointmentguru.co/invoice/view/{{invoice.pk}}?key={{invoice.password}}
+    </a></li>
+    </ul>
+</div>
+</footer>
+{% endblock %}
+
+

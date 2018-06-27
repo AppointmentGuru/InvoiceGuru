@@ -21,7 +21,13 @@ from invoice import views
 urlpatterns = [
     url(r'^bulk/preview/(?P<practitioner>[0-9]+)/(?P<from_date>[0-9]{4}-?[0-9]{2}-?[0-9]{2})/(?P<to_date>[0-9]{4}-?[0-9]{2}-?[0-9]{2})/', views.invoices, name='invoices_preview'),
     url(r'^incoming/snapscan/739B7B5E-B896-4C99-9AF5-AD424DB437A5/', views.snap_webhook, name='incoming_snapscan'),
+    url(r'^reports/(?P<practitioner>[0-9]+)/transactions/', views.transactions, name='report_transactions'),
+    url(r'^statement/view/(?P<practitioner>[0-9]+)/(?P<client>[0-9]+)/', views.statement, name='statement_view'),
+
+    url(r'^test/invoices/', views.test_invoices, name='invoice_test'),
+
     url(r'^invoice/preview/', views.preview, name='invoice_preview'),
+    url(r'^invoice/view/(?P<pk>[0-9]+)/', views.diy_invoice, name='diy_invoice_view'),
     url(r'^invoice/(?P<pk>[0-9]+)/', views.invoice, name='invoice_view'),
     url(r'^admin/', admin.site.urls),
     url(r'^', include(router.urls)),

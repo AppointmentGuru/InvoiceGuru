@@ -1,0 +1,117 @@
+{% extends 'invoice/base/index.html' %}
+
+{% block main_content %}
+
+<form method="post" id="invoice-details-form" class='ag-ma' >
+    <h4>#{{invoice.invoice_number}}</h4>
+    <div class='alert info' >
+            <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+        <p>
+            If you would like to submit this invoice to a medical aid, we need you to provide us with a little
+            extra information.
+        </p>
+    </div>
+    {% csrf_token %}
+    <h6>Medical aid details</h6>
+
+    {% if form.errors %}
+    <div class='alert' >
+        {{form.errors}}
+    </div>
+    {% endif %}
+
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <select required class="mdl-textfield__input" id="medicalaid_scheme" name='medical_aid' >
+            <option>Please choose a medical aid</option>
+            {% for medicalaid in medial_aids_quickpick %}
+            <option value='{{medicalaid.name}}' >{{medicalaid.name}}</option>
+            {% endfor %}
+            <option>-------</option>
+            {% for medicalaid in medical_aids %}
+            <option value='{{medicalaid.name}}' >{{medicalaid.name}}</option>
+            {% endfor %}
+        </select>
+        <label class="mdl-textfield__label" for="medicalaid_name">Medical aid name</label>
+    </div>
+    {% for field in form %}
+        {% if field.name not in ignored_fields %}
+        {% if field.field.widget.input_type != 'checkbox' %}
+        <div id='{{field.name}}_container' class="{% if field.errors %}is-invalid{%endif%} mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input
+                type="{{field.field.widget.input_type}}"
+                {% if field.field.required %}required{% endif %}
+                {% if field.value %}value="{{field.value}}"{% endif %}
+                name='{{field.name}}' id="{{field.name}}"
+                class="mdl-textfield__input" >
+            <label class="mdl-textfield__label" for="{{field.name}}">{{ field.label_tag }}</label>
+            {% for error in field.errors %}
+            <span class="mdl-textfield__error">{{ error|escape }}</span>
+            {% endfor %}
+        </div>
+        <span class="mdl-textfield__hint" >{{ field.help_text|safe }}</span>
+        {% else %}
+        <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="{{field.name}}" >
+            <input
+                type="{{field.field.widget.input_type}}"
+                value="{{field.value}}"
+                onchange='toggleMember()'
+                class="mdl-checkbox__input"
+                name='{{field.name}}' id="{{field.name}}"
+                type="checkbox" class="mdl-checkbox__input" {% if field.value %}checked{% endif %} >
+                <span class="mdl-checkbox__label">{{ field.label_tag }}</span>
+        </label>
+        {% endif %}
+        {% endif %}
+        <!-- <div class="fieldWrapper">
+            {{ field.errors }}
+            {{ field.label_tag }} {{ field }}
+            {% if field.help_text %}
+            <p class="help">{{ field.help_text|safe }}</p>
+            {% endif %}
+        </div> -->
+    {% endfor %}
+
+
+    <!-- <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" type="text" id="medicalaid">
+        <label class="mdl-textfield__label" for="medicalaid">Choose a medical aid</label>
+    </div> -->
+
+    <div class="ag-actions">
+        <button
+            type="submit" form="invoice-details-form"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+            Save
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block script %}
+function toggleMember (e) {
+    var check = el = document.getElementById("is_main_member")
+    var e1 = document.getElementById('main_member_first_name_container');
+    var e2 = document.getElementById('main_member_last_name_container');
+    var e3 = document.getElementById('main_member_id_number_container');
+    if (check.checked) {
+        e1.style.display = 'none'
+        e2.style.display = 'none'
+        e3.style.display = 'none'
+    } else {
+        e1.style.display = 'block'
+        e2.style.display = 'block'
+        e3.style.display = 'block'
+    }
+}
+{% endblock %}
+
+{% block css %}
+#medical_aid_number_container {width:95%}
+
+#main_member_first_name_container,
+#main_member_last_name_container,
+#main_member_id_number_container {
+    display:none;
+}
+{% endblock %}
+

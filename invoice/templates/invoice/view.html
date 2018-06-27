@@ -1,0 +1,16 @@
+{% extends 'invoice/base/index.html' %}
+
+{% block header_links %}
+<nav class="mdl-navigation">
+    <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect mdl-button--accent" >
+    Pay
+    </button>
+</nav>
+{% endblock %}
+
+{% block main_content %}
+<iframe
+    src='/invoice/{{invoice.id}}?key={{invoice.password}}'
+    width='100%' height='800px' >
+</iframe>
+{% endblock %}
