@@ -159,7 +159,7 @@ def invoice(request, pk):
     template_key = request.GET.get('template', invoice.template)
     template_data = settings.TEMPLATE_REGISTRY.get(template_key)
     template_path = 'invoice/templates/{}'.format(template_data.get('filename', 'basic.html'))
-    template_path = 'invoice/templates/material.html'
+    # template_path = 'invoice/templates/material.html'
 
     context = invoice.context
     invoice_total = 0
