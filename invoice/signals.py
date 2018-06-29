@@ -1,9 +1,9 @@
 '''
 Signals for Invoice model
 '''
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-from .models import Invoice
+from .models import Invoice, ProofOfPayment, Payment
 from dateutil.parser import parse
 from decimal import Decimal
 import random
@@ -14,7 +14,6 @@ def apply_context(sender, instance, **kwargs):
     context = instance.context
     invoice_total = 0
     invoice_amount_paid = 0
-    object_ids = instance.object_ids
     appointments = context.get('appointments', [])
 
     for appt in appointments:

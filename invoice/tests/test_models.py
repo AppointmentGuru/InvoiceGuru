@@ -1,6 +1,32 @@
 from django.test import TestCase
-from api.testutils import create_mock_invoice
-from ..models import Invoice
+from api.testutils import (
+    create_mock_invoice,
+    create_mock_proof
+)
+from invoice.models import (
+    Invoice,
+    ProofOfPayment,
+    Payment
+)
+
+class PaymentTestCase(TestCase):
+
+    def setUp(self):
+        self.invoice = create_mock_invoice()
+
+class ProofOfPaymentTestCase(TestCase):
+
+    def setUp(self):
+        self.invoice = create_mock_invoice()
+        self.proof = create_mock_proof(self.invoice)
+
+    def test_approve_proof_of_payment(self):
+        self.proof.approve()
+        self.proof.refresh_from_db()
+
+        assert self.proof.approved == True
+        assert self.proof.payment is not None
+
 
 class CreateInvoiceTestCase(TestCase):
 

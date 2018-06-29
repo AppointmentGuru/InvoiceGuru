@@ -91,6 +91,7 @@ class InvoiceSettings(models.Model):
     snap_id = models.CharField(max_length=128, blank=True, null=True)
     show_snapcode_on_invoice = models.BooleanField(default=False)
     allow_pre_payments = models.BooleanField(default=False)
+    allow_submit_to_medical_aid = models.BooleanField(default=False)
 
     include_vat = models.BooleanField(default=False)
     vat_percent = models.PositiveIntegerField(default=0, blank=True, null=True)
@@ -279,6 +280,7 @@ class Payment(models.Model):
             payment.save()
         return payment
 
+
 def proof_upload_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
     filename_base, filename_ext = os.path.splitext(filename)
@@ -289,8 +291,20 @@ def proof_upload_path(instance, filename):
 class ProofOfPayment(models.Model):
     invoice = models.ForeignKey(Invoice)
     payment = models.ForeignKey(Payment, blank=True, null=True)
-    document = models.FileField(upload_to=proof_upload_path)
-
+    document = models.FileField(upload_to=proof_upload_path, blank=True, null=True) # <- ideally this should really be required. Just for testing :()
     approved = models.BooleanField(default = False)
+
+    medical_aid_email = models.EmailField(null=True, blank=True)
+    auto_submit_to_medical_aid = models.BooleanField(default=False)
+
+    def approve(self):
+        self.approved = True
+        self.save()
+        payment = Payment.from_invoice(self.invoice)
+        payment.proofofpayment_set.add(self)
+        payment.save()
+        if self.auto_submit_to_medical_aid:
+            print('Send to medical aid: {}'.format(self.medical_aid_email))
+
 
 from .signals import *

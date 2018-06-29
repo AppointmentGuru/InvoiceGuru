@@ -2,9 +2,9 @@
 
 {% block header_links %}
 <nav class="mdl-navigation">
-    <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect mdl-button--accent" >
+    <a href='/pay/{{invoice.id}}/?key={{invoice.password}}' class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect mdl-button--accent" >
     Pay
-    </button>
+    </a>
 </nav>
 {% endblock %}
 

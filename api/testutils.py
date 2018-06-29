@@ -1,6 +1,7 @@
-from invoice.models import Invoice
+from invoice.models import Invoice, ProofOfPayment
 from django.contrib.auth import get_user_model
-
+import django
+from unittest.mock import Mock
 from faker import Factory
 FAKE = Factory.create()
 
@@ -28,6 +29,15 @@ def name_address():
 
 def create_mock_user(username, password='testtest'):
     return get_user_model().objects.create_user(username=username, password=password)
+
+def create_mock_proof(invoice):
+    mock_file = Mock(spec=django.core.files.File)
+    mock_file.read.return_value = "fake file contents"
+    mock_file.name = 'some_file.pdf'
+    proof = ProofOfPayment()
+    proof.invoice = invoice
+    # proof.document = mock_file
+    return proof
 
 def create_mock_invoice(practitioner_id=None, customer_id=None):
 
