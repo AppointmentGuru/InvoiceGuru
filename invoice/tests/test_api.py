@@ -21,7 +21,6 @@ class ApiRootTestCase(TestCase):
                 response.status_code,
                 response.context)
 
-
 class SendEndpointTestCase(TestCase):
 
     def setUp(self):

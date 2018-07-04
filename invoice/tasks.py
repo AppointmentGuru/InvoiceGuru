@@ -139,7 +139,6 @@ def send_invoice_or_receipt(data):
         "context": {"invoice": invoice._get_serialized()},
         "urls": [invoice_url]
     }
-
     if to_emails is not None and len(to_emails) > 0:
         email_data = data.copy()
         email_data.update({
@@ -173,12 +172,14 @@ def mark_invoice_as_paid(data):
 
     data = {
         "invoice_id": .. ,
+        "payment_method": "unknown"
         "options": {
             "send_receipt": False
         }
     }
     '''
     invoice_id = data.get('invoice_id')
+    payment_method = data.get("payment_method", "unknown")
     should_send_receipt = data.get("options", {}).get('send_receipt', False)
 
     invoice = Invoice.objects.get(id=invoice_id)
@@ -187,18 +188,11 @@ def mark_invoice_as_paid(data):
     invoice.save()
     invoice.publish()
 
-    Payment.from_invoice(invoice)
+    Payment.from_invoice(invoice, payment_method=payment_method)
 
     if should_send_receipt:
-        send_receipt()
+        invoice.send(to_email=True)
     return invoice
-
-
-    # update_invoice()
-    payment = Payment.from_invoice(invoice)
-    invoice.publish()
-    return invoice
-
 
 def generate_invoice_number(invoice):
     invoice_number = '{}{}{}' . format(

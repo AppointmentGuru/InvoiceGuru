@@ -60,13 +60,21 @@ def create_mock_invoice(practitioner_id=None, customer_id=None):
                     "notes": None,
                     "price": "326.00",
                     "title": "Mathew",
-                    "client": 655,
+                    "client": {
+                        "email": "tech@appointmentguru.co",
+                        "last_name": "Joe",
+                        "first_name": "Soap",
+                        "phone_number": "+27832566533"
+                    },
                     "status": "N",
                     "product": 45,
                     "currency": "ZAR",
                     "end_time": "2017-08-10T13:15:00Z",
                     "included": True,
                     "full_name": "Joe Soap",
+                    "contact_email": "tech@appointmentguru.co",
+                    "contact_phone": "+27832566533",
+
                     "lineitems": [{
                         "id": 16,
                         "fields": ["icd10", "procedureCode"],

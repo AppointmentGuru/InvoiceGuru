@@ -141,6 +141,40 @@ class Invoice(models.Model):
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     modified_date = models.DateTimeField(auto_now=True, db_index=True)
 
+    def __get_client(self):
+        client = self.context.get("client")
+        if client is not None:
+            return client
+
+        appointments = self.context.get("appointments", [])
+        if len(appointments) > 0:
+            client = appointments[0].get("client")
+            IS_CLIENT_ID = isinstance(client, int)
+            if IS_CLIENT_ID:
+                name = appointment.get("full_name")
+                return {
+                    "first_name": name.split(" ")[0],
+                    "last_name": (" ").join(name.split(" ")[1:]),
+                    "email": appointment.get("contact_email"),
+                    "phone_number": appointment.get("contact_phone"),
+                }
+            return client
+        return {}
+
+    @property
+    def get_client_email(self):
+        return self.__get_client().get("email")
+
+    @property
+    def get_client_full_name(self):
+        fname = self.__get_client().get("first_name")
+        lname = self.__get_client().get("last_name")
+        return "{} {}".format(fname, lname)
+
+    @property
+    def get_client_phone_number(self):
+        return self.__get_client().get("phone_number")
+
     def get_short_url(self, force=False, admin_url=True):
         '''
         curl https://www.googleapis.com/urlshortener/v1/url?key=... \
@@ -206,12 +240,28 @@ class Invoice(models.Model):
         data.update({"context": { "appointments": summarized } })
         return data
 
-    def send(self, transport='email', to_phone=None, to_email=None, to_channel=None):
-        """
-        Send this. to a recipient.
-        If no specific contact details are provided, then it will
-        search for details in the invoice context
-        """
+    def send(self, to_email=False, to_phone=False, to_inapp = False):
+
+        from .tasks import send_invoice_or_receipt
+        data = {
+            "from_email": self.sender_email,
+            "invoice_id": self.id
+        }
+        if to_email and self.get_client_email:
+            data.update({
+                "to_emails": [self.get_client_email]
+            })
+        if to_phone and self.get_client_phone_number:
+            data.update({
+                "to_phone_numbers": [self.get_client_phone_number]
+            })
+        if to_inapp and self.get_client_phone_number:
+            data.update({
+                "to_channels": [self.get_client_phone_number]
+            })
+        return send_invoice_or_receipt(data)
+
+    def send_to_medical_aid(self):
         pass
 
     def publish(self):
@@ -283,7 +333,7 @@ class Payment(models.Model):
         payment.invoice_id = invoice.id
         payment.amount = invoice.amount_paid
         payment.payment_date = invoice.modified_date
-        payment.method = payment_method
+        payment.payment_method = payment_method
         if with_save:
             payment.save()
         return payment

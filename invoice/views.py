@@ -26,6 +26,7 @@ from .forms import (
     ProofOfPaymentForm,
     MedicalAidSubmissionForm
 )
+from .tasks import mark_invoice_as_paid
 
 def __get_invoice(request, pk):
     password = request.GET.get('key')
@@ -44,10 +45,12 @@ def snap_webhook(request):
     invoice_id = data.get('extra').get('invoiceId')
 
     try:
-        invoice = Invoice.objects.get(id=invoice_id)
-        invoice.status = 'paid'
-        invoice.save()
-        invoice.publish()
+        data = {
+            "invoice_id": invoice_id,
+            "payment_method": "snapscan",
+            "options": { "send_receipt": True }
+        }
+        mark_invoice_as_paid(data)
     except Invoice.DoesNotExist:
         data.update({
             "error": "No matching invoice found"

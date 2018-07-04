@@ -6,6 +6,8 @@ from django.test import TestCase, override_settings
 from django.conf import settings
 
 from api.testutils import create_mock_invoice
+from ..models import Payment
+
 import responses
 
 class InvoiceViewTestCase(TestCase):
@@ -31,6 +33,7 @@ class InvoiceViewTestCase(TestCase):
 class SnapScanWebHookTestCase(TestCase):
 
     @responses.activate
+    @override_settings(COMMUNICATIONGURU_API='https://communicationguru')
     @override_settings(KEEN_PROJECT_ID='1234')
     def setUp(self):
         '''
@@ -38,11 +41,16 @@ class SnapScanWebHookTestCase(TestCase):
         curl -i -X POST -d 'payload={\"id\":7,\"status\":\"completed\",\"totalAmount\":1000,\"tipAmount\":0,\"feeAmount\":35,\"settleAmount\":965,\"requiredAmount\":1000,\"date\":\"2018-04-23T13:51:59Z\",\"snapCode\":\"EJrKB_SJ\",\"snapCodeReference\":\"587e9743-3c7c-4e86-b54c-985ca29fe895\",\"userReference\":\"\",\"merchantReference\":\"1765\",\"statementReference\":null,\"authCode\":\"455303\",\"deliveryAddress\":null,\"extra\":{\"amount\":\"1000\",\"invoice_id\":\"1790\"}}' http://localhost:8000/incoming/snapscan/739B7B5E-B896-4C99-9AF5-AD424DB437A5/
         '''
         keen_url = 'https://api.keen.io/3.0/projects/{}/events/snapscan_webhook'.format(settings.KEEN_PROJECT_ID)
-        print(keen_url)
         responses.add(
             responses.POST,
             url=keen_url,
             json={'ok': 'true'}
+        )
+        responses.add(
+            responses.POST,
+            url='https://communicationguru/communications/',
+            json={"id": 1},
+            status=201
         )
 
         self.url = reverse('incoming_snapscan')
@@ -51,6 +59,12 @@ class SnapScanWebHookTestCase(TestCase):
             "payload": "{\"id\":7,\"status\":\"completed\",\"totalAmount\":1000,\"tipAmount\":0,\"feeAmount\":35,\"settleAmount\":965,\"requiredAmount\":1000,\"date\":\"2018-04-23T13:51:59Z\",\"snapCode\":\"EJrKB_SJ\",\"snapCodeReference\":\"587e9743-3c7c-4e86-b54c-985ca29fe895\",\"userReference\":\"\",\"merchantReference\":\"1765\",\"statementReference\":null,\"authCode\":\"455303\",\"deliveryAddress\":null,\"extra\":{\"amount\":\"1000\",\"invoiceId\":\""+str(self.invoice.id)+"\"}}"
         }
         self.result = self.client.post(self.url, data)
+        self.invoice.refresh_from_db()
+
+        assert len(responses.calls) == 2
+
+        self.keen_request = responses.calls[0].request
+        self.comms_request = responses.calls[1].request
 
     def test_returns_ok(self):
         assert self.result.status_code == 200
@@ -62,6 +76,16 @@ class SnapScanWebHookTestCase(TestCase):
     def test_updates_invoice_status(self):
         self.invoice.refresh_from_db()
         assert self.invoice.status == 'paid'
+
+    def test_it_creates_a_payment(self):
+        assert Payment.objects.count() == 1
+
+    def test_it_tags_the_payment_as_snapscan(self):
+        method = self.invoice.payment_set.first().payment_method
+        assert method == 'snapscan'
+
+    def test_it_sends_a_receipt(self):
+        pass
 
 
 
