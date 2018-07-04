@@ -6,7 +6,7 @@ def get_invoice_template(invoice):
     '''
 
     '''
-    if invoice.request_medical_aid_details == False: return 'invoice/view.html'
+    if invoice.integrate_medical_aid == False: return 'invoice/view.html'
 
     info = invoice.context.get('medicalaid_info')
     medical_info_exists = info is not None and len(info) > 5

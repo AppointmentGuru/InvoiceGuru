@@ -2,9 +2,28 @@
 
 {% block header_links %}
 <nav class="mdl-navigation">
-    <a href='/pay/{{invoice.id}}/?key={{invoice.password}}' class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect mdl-button--accent" >
+    <a id="tt3" class="mdl-navigation__link" href="/invoice/edit/{{invoice.id}}/?key={{invoice.password}}">
+        <!-- <div class="icon material-icons">cloud_upload</div> -->
+        Edit my information</a>
+    <div class="mdl-tooltip" data-mdl-for="tt3">
+    Information on this invoice not correct? You can edit it!
+    </div>
+    <a class="mdl-navigation__link" href="/invoice/edit/{{invoice.id}}/?key={{invoice.password}}">
+        <!-- <div class="icon material-icons">cloud_upload</div> -->
+        Download</a>
+    <a class="mdl-navigation__link" href="/invoice/edit/{{invoice.id}}/?key={{invoice.password}}">
+        <!-- <div class="icon material-icons">cloud_upload</div> -->
+        Email me a copy</a>
+    {% if not invoice.is_receipt %}
+    <a href='/invoice/pay/{{invoice.id}}/?key={{invoice.password}}' class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect mdl-button--accent" >
     Pay
     </a>
+    {% endif %}
+    {% if invoice.is_receipt and invoice.integrate_medical_aid %}
+    <a href='/invoice/submit/{{invoice.id}}/?key={{invoice.password}}' class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect mdl-button--accent" >
+    Submit to medical aid
+    </a>
+    {% endif %}
 </nav>
 {% endblock %}
 

@@ -21,7 +21,21 @@ from .helpers import (
 )
 from .models import Invoice, InvoiceSettings, Payment, ProofOfPayment
 from .medialaids import MEDIAL_AIDS
-from .forms import UpdateInvoiceDetailsForm, ProofOfPaymentForm
+from .forms import (
+    UpdateInvoiceDetailsForm,
+    ProofOfPaymentForm,
+    MedicalAidSubmissionForm
+)
+
+def __get_invoice(request, pk):
+    password = request.GET.get('key')
+    invoice = get_object_or_404(Invoice, pk=pk, password=password)
+    try:
+        invoice_settings = InvoiceSettings.objects.get(practitioner_id = invoice.practitioner_id)
+    except InvoiceSettings.DoesNotExist:
+        invoice_settings = None
+
+    return (invoice, invoice_settings)
 
 @csrf_exempt
 def snap_webhook(request):
@@ -106,6 +120,75 @@ def statement(request, practitioner, client):
 
     return render(request, 'invoice/statement.html', context=context)
 
+def edit_invoice(request, pk):
+    password = request.GET.get('key')
+    invoice = get_object_or_404(Invoice, pk=pk, password=password)
+    try:
+        invoice_settings = InvoiceSettings.objects.get(practitioner_id = invoice.practitioner_id)
+    except InvoiceSettings.DoesNotExist:
+        invoice_settings = None
+
+    if request.method == 'POST':
+        form = UpdateInvoiceDetailsForm(request.POST)
+        print(request.POST)
+        if form.is_valid():
+            form.save(invoice)
+            template = 'invoice/view.html'
+    else:
+        form = UpdateInvoiceDetailsForm()
+
+    try:
+        first_appointment = invoice.context.get('appointments')[0]
+    except IndexError:
+        first_appointment = {}
+
+    medical_aid_details = invoice.context.get('medicalaid_info')
+    if medical_aid_details is not None:
+        medical_aid_details = medical_aid_details.split('\n')
+
+    client_details = first_appointment.get("client", {})
+
+    medial_aids_quickpick = [
+        {"name": 'DISCOVERY Health Medical Scheme', "email": 'claims@discovery.co.za'},
+        {"name": 'BONITAS Medical Fund', "email": 'claims@bonitas.co.za'},
+        {"name": 'COMPCare WELLNESS Medical Scheme', "email": 'claims@universal.co.za'},
+        {"name": 'PROFMED', "email": 'claims@profmed.co.za'}
+    ]
+    ignored_fields = ['medical_aid']
+    context = {
+        "page_title": "Invoice #:",
+        "invoice": invoice,
+        "form": form,
+        "ignored_fields": ignored_fields,
+        "client": client_details,
+        "medical_aid": medical_aid_details,
+        "medial_aids_quickpick": medial_aids_quickpick,
+        "medical_aids": MEDIAL_AIDS
+    }
+    return render(request, 'invoice/edit.html', context=context)
+
+def submit_invoice(request, pk):
+
+    invoice, settings = __get_invoice(request, pk)
+    medical_aid = {
+        "name": 'DISCOVERY Health Medical Scheme',
+        "email": 'claims@discovery.co.za'
+    }
+    if request.method == 'POST':
+        form = MedicalAidSubmissionForm(request.POST)
+        if form.is_valid():
+            form.save(invoice)
+    else:
+        form = MedicalAidSubmissionForm()
+
+    context = {
+        "invoice": invoice,
+        "settings": settings,
+        "medical_aid": medical_aid,
+        "form": form
+    }
+    return render(request, 'invoice/submit.html', context=context)
+
 def pay_invoice(request, pk):
 
     password = request.GET.get('key')
@@ -142,7 +225,7 @@ def pay_invoice(request, pk):
 
     return render(request, 'invoice/pay.html', context=context)
 
-def diy_invoice(request, pk):
+def view_invoice(request, pk):
     password = request.GET.get('key')
     invoice = get_object_or_404(Invoice, pk=pk, password=password)
     template = get_invoice_template(invoice)

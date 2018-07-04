@@ -27,8 +27,10 @@ urlpatterns = [
     url(r'^test/invoices/', views.test_invoices, name='invoice_test'),
 
     url(r'^invoice/preview/', views.preview, name='invoice_preview'),
-    url(r'^invoice/view/(?P<pk>[0-9]+)/', views.diy_invoice, name='diy_invoice_view'),
+    url(r'^invoice/view/(?P<pk>[0-9]+)/', views.view_invoice, name='view_invoice_view'),
+    url(r'^invoice/edit/(?P<pk>[0-9]+)/', views.edit_invoice, name='edit_invoice_view'),
     url(r'^invoice/pay/(?P<pk>[0-9]+)/', views.pay_invoice, name='pay_invoice_view'),
+    url(r'^invoice/submit/(?P<pk>[0-9]+)/', views.submit_invoice, name='submit_invoice_view'),
     url(r'^invoice/(?P<pk>[0-9]+)/', views.invoice, name='invoice_view'),
     url(r'^admin/', admin.site.urls),
     url(r'^', include(router.urls)),

@@ -85,8 +85,7 @@ class InvoiceSettings(models.Model):
 
     include_booking_info = models.BooleanField(default=True)
 
-    request_contact_details = models.BooleanField(default=False) # <- not yet implemented
-    request_medical_aid_details = models.BooleanField(default=False)
+    integrate_medical_aid = models.BooleanField(default=False)
 
     snap_id = models.CharField(max_length=128, blank=True, null=True)
     show_snapcode_on_invoice = models.BooleanField(default=False)
@@ -101,6 +100,9 @@ class Invoice(models.Model):
 
     def __str__(self):
         return '#{}: {}'.format(self.invoice_number, self.title)
+
+    def get_absolute_url(self):
+        return '/invoice/view/{}/?key={}'.format(self.id, self.password)
 
     # relationships
     practitioner_id = models.CharField(max_length=128, db_index=True)
@@ -133,7 +135,7 @@ class Invoice(models.Model):
     short_url = models.URLField(blank=True, null=True)
 
     # settings:
-    request_medical_aid_details = models.BooleanField(default=False)
+    integrate_medical_aid = models.BooleanField(default=False)
     # automatically_submit_to_medical_aid = models.BooleanField(default=False)
 
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -191,20 +193,26 @@ class Invoice(models.Model):
             if value is not None:
                 setattr(self, field, value)
 
-    def apply_settings(self, invoice_settings):
-        '''
-        Apply invoice settings to invoice
-        '''
-        pass
+
+    def _get_serialized(self):
+        from .serializers import InvoiceSerializer
+        return InvoiceSerializer(self).data
 
     def _get_payload(self):
-        from .serializers import InvoiceSerializer
-        data = InvoiceSerializer(self).data
+        data = self._get_serialized()
         summarized = [{"id": appt.get('id')} \
                     for appt \
                     in data.get('context',{}).get('appointments')]
         data.update({"context": { "appointments": summarized } })
         return data
+
+    def send(self, transport='email', to_phone=None, to_email=None, to_channel=None):
+        """
+        Send this. to a recipient.
+        If no specific contact details are provided, then it will
+        search for details in the invoice context
+        """
+        pass
 
     def publish(self):
         if self.status == 'paid':
@@ -306,5 +314,10 @@ class ProofOfPayment(models.Model):
         if self.auto_submit_to_medical_aid:
             print('Send to medical aid: {}'.format(self.medical_aid_email))
 
+
+# class Action(models.Model):
+#     invoice = models.ForeignKey(Invoice, blank=True, null=True)
+#     payment = models.ForeignKey(Payment, blank=True, null=True)
+#     actor = models.CharField()
 
 from .signals import *

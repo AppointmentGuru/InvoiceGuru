@@ -8,7 +8,6 @@ def get_secret(f):
         return os.environ.get(f)
 
 
-
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get("ALLOWED_HOSTS", '').split(',')]
 # aws storage
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
@@ -70,10 +69,10 @@ PUB_SUB_CHANNEL = get_secret('PUBNUB_SCHOOL_CHANNEL_PREFIX')
 MEDICALAIDGURU_API = 'http://medicalaidguru'
 APPOINTMENTGURU_API = 'http://appointmentguru'
 COMMUNICATIONGURU_API = 'http://communicationguru'
-# COMMUNICATIONGURU_API = 'https://communicationguru.appointmentguru.co'
+COMMUNICATIONGURU_API = 'https://unibox.appointmentguru.co'
 # APPOINTMENTGURU_API = 'https://swarm.appointmentguru.co/v1'
 
-INVOICEGURU_BASE_URL = 'http://invoiceguru.appointmentguru.co'
+INVOICEGURU_BASE_URL = 'https://invoiceguru.appointmentguru.co'
 
 GOOGLE_API_SHORTENER_TOKEN = os.environ.get('GOOGLE_API_SHORTENER_TOKEN')
 

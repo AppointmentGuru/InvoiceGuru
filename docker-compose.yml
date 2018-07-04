@@ -25,7 +25,7 @@ services:
       - DATABASE_NAME=appointmentguru_medicalaidguru
 
   communicationguru:
-    image: appointmentguru/communicationguru:latest
+    image: appointmentguru/communicationguru:unibox
     command: sh /code/run.sh
     env_file:
       - env.dev

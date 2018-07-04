@@ -1,0 +1,42 @@
+{% extends 'invoice/base/index.html' %}
+
+{% block header_links %}
+<nav class="mdl-navigation">
+    <a id="tt3" class="mdl-navigation__link" href="/invoice/view/{{invoice.pk}}?key={{invoice.password}}" >
+        Show invoice</a>
+</nav>
+{% endblock %}
+
+{% block main_content %}
+<form method="post" id="medical-aid-submit-form" class='ag-ma' >
+{% csrf_token %}
+<section class='ag-ma' >
+    <h3>Submit to medical aid</h3>
+    {% if form.errors %}
+    <div class='alert' >
+        {{form.errors}}
+    </div>
+    {% endif %}
+    {% for field in form %}
+        <div id='{{field.name}}_container' class="{% if field.errors %}is-invalid{%endif%} mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+            <input
+                type="{{field.field.widget.input_type}}"
+                {% if field.field.required %}required{% endif %}
+                {% if field.value %}value="{{field.value}}"{% endif %}
+                name='{{field.name}}' id="{{field.name}}"
+                class="mdl-textfield__input" >
+            <label class="mdl-textfield__label" for="{{field.name}}">{{ field.label_tag }}</label>
+            {% for error in field.errors %}
+            <span class="mdl-textfield__error">{{ error|escape }}</span>
+            {% endfor %}
+        </div>
+    {% endfor %}
+    <button
+        type='submit'
+        form="medical-aid-submit-form"
+        class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+    Submit to {{medical_aid.name}}
+    </button>
+</section>
+</form>
+{% endblock %}

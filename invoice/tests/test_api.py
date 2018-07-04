@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from ..models import Invoice
 from api.testutils import create_mock_invoice, assert_response, get_proxy_headers
@@ -42,6 +42,36 @@ class SendEndpointTestCase(TestCase):
 
     def test_sends_invoice_to_customer(self):
         pass
+
+# @override_settings(PUB_SUB_BACKEND=('backends', 'MockBackend'))
+class MarkAsPaidEndpointTestCase(TestCase):
+
+    def setUp(self):
+        self.invoice = create_mock_invoice(1, 1)
+        url = reverse('invoice-paid', args=(self.invoice.id,))
+        self.response = self.client.post(url, **get_proxy_headers(1))
+        self.invoice.refresh_from_db()
+
+    def test_is_ok(self):
+        assert self.response.status_code == 200,\
+            'Expected 200. Got: {}: {}'.format(self.response.status_code, self.response)
+
+    def test_creates_payment(self):
+        num_payments = self.invoice.payment_set.count()
+        assert num_payments == 1,\
+            'Expected exactly 1 payment to be created. Got: {}'.format(num_payments)
+
+    def test_updates_invoice_status_to_paid(self):
+        assert self.invoice.status == 'paid'
+
+    def test_sets_amount_paid(self):
+        assert self.invoice.amount_paid == self.invoice.invoice_amount
+
+    def test_publishes_result(self):
+
+        # not sure how to test this
+        pass
+
 
 
 class BulkActionsInvoiceTestCase(TestCase):

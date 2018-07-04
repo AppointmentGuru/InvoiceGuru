@@ -13,6 +13,9 @@ from .serializers import InvoiceSerializer, InvoiceSettingsSerializer
 from .guru import send_invoice, publish
 from .helpers import to_context, fetch_data, fetch_appointments
 from .filters import InvoiceFilter
+from .tasks import (
+    mark_invoice_as_paid
+)
 
 class Guru:
 
@@ -132,21 +135,15 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         '''
         Mark an invoice as paid
         '''
-
-        invoice = Invoice.objects.get(id=pk)
-        invoice.amount_paid = invoice.invoice_amount
-        invoice.status = 'paid'
-        invoice.save()
-
-        data = InvoiceSerializer(invoice).data
-
-        # shorten the data:
-        summarized = [{"id": appt.get('id')} \
-                        for appt \
-                        in data.get('context',{}).get('appointments')]
-        data.update({"context": { "appointments": summarized } })
-
-        publish(settings.PUBLISHKEYS.invoice_paid, data)
+        send_receipt = request.data.get('send_receipt', False)
+        payload = {
+            "invoice_id": pk,
+            "options": {
+                "send_receipt": send_receipt
+            }
+        }
+        invoice = mark_invoice_as_paid(payload)
+        data = invoice._get_serialized()
         return response.Response(data)
 
 

@@ -1,5 +1,11 @@
 {% extends 'invoice/base/index.html' %}
 
+{% block header_links %}
+<nav class="mdl-navigation">
+    <a id="tt3" class="mdl-navigation__link" href="/invoice/view/{{invoice.pk}}?key={{invoice.password}}" >
+        Show invoice</a>
+</nav>
+{% endblock %}
 {% block main_content %}
 
 <form method="post" id="invoice-details-form" class='ag-ma' >

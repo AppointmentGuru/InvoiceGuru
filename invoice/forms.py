@@ -1,11 +1,38 @@
 from django import forms
 from django.template import Template, Context
 from .models import  ProofOfPayment
+from .tasks import submit_to_medical_aid
 
 class ProofOfPaymentForm(forms.ModelForm):
     class Meta:
         model = ProofOfPayment
         fields = ['document']
+
+class MedicalAidSubmissionForm(forms.Form):
+
+    customer_email = forms.EmailField(
+        required=True,
+        label='Your email address',
+        help_text='Medical aid responses will be sent to this email address'
+    )
+    claims_email = forms.EmailField(
+        required=True,
+        label='Medical aid claims email address',
+        help_text='We\'ll send your invoice to this address'
+    )
+
+    def save(self, invoice):
+        # submit to medical aid
+        customer_email = self.cleaned_data.get('customer_email')
+        claims_email = self.cleaned_data.get('claims_email')
+
+        data = {
+            "to_email": customer_email,
+            "from_email": customer_email,
+            "invoice_id": invoice.id
+        }
+        return submit_to_medical_aid(data)
+
 
 class UpdateInvoiceDetailsForm(forms.Form):
 
