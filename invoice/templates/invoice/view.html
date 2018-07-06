@@ -14,9 +14,11 @@
         <!-- <div class="icon material-icons">cloud_upload</div> -->
         Download</a>
     </form>
+    {% if invoice.get_client_email %}
     <a class="mdl-navigation__link" href="/invoice/view/{{invoice.id}}/?key={{invoice.password}}&send=true">
         <!-- <div class="icon material-icons">cloud_upload</div> -->
         Email me a copy</a>
+    {% endif %}
     {% if not invoice.is_receipt %}
     <a href='/invoice/pay/{{invoice.id}}/?key={{invoice.password}}' class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect mdl-button--accent" >
     Pay
