@@ -3,6 +3,7 @@ from django.template import Template, Context
 from .models import  ProofOfPayment
 from .tasks import submit_to_medical_aid
 
+
 class ProofOfPaymentForm(forms.ModelForm):
     class Meta:
         model = ProofOfPayment

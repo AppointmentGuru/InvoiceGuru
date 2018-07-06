@@ -63,6 +63,8 @@ def __send_templated_communication(transport, practitioner_id, channel, frm, to,
             })
     return requests.post(url, data, headers=headers)
 
+
+
 def __extract_message_context(data):
     """
     returns from_email, to_email, to_phone_number, invoice_id, invoice
@@ -125,7 +127,8 @@ def send_invoice_or_receipt(data):
 
     invoice = Invoice.objects.get(id=invoice_id)
     base = settings.INVOICEGURU_BASE_URL
-    invoice_url = "{}{}".format(base, invoice.get_absolute_url())
+    path = '/invoice/{}/?key={}'.format(invoice.pk, invoice.password)
+    invoice_url = "{}{}".format(base, path)
 
     template = MessageTemplate.SEND_INVOICE.value
     if invoice.is_receipt:

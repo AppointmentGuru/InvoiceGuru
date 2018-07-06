@@ -1,9 +1,10 @@
 '''
 Views for displaying invoices
 '''
+from django.urls import reverse
 from dateutil.parser import parse
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import user_passes_test
@@ -19,6 +20,7 @@ from .helpers import (
     codes_to_table,
     get_invoice_template
 )
+
 from .models import Invoice, InvoiceSettings, Payment, ProofOfPayment
 from .medialaids import MEDIAL_AIDS
 from .forms import (
@@ -133,10 +135,11 @@ def edit_invoice(request, pk):
 
     if request.method == 'POST':
         form = UpdateInvoiceDetailsForm(request.POST)
-        print(request.POST)
         if form.is_valid():
             form.save(invoice)
-            template = 'invoice/view.html'
+            url = reverse('view_invoice_view', args=invoice.id)
+            url = "{}?key={}".format(url, invoice.password)
+            return HttpResponseRedirect(url)
     else:
         form = UpdateInvoiceDetailsForm()
 
@@ -232,10 +235,13 @@ def view_invoice(request, pk):
     password = request.GET.get('key')
     invoice = get_object_or_404(Invoice, pk=pk, password=password)
     template = get_invoice_template(invoice)
+    message = None
+    if request.GET.get('send') is not None:
+        invoice.send(to_email=True)
+        message = "Invoice sent to : {}".format(invoice.get_client_email)
 
     if request.method == 'POST':
         form = UpdateInvoiceDetailsForm(request.POST)
-        print(request.POST)
         if form.is_valid():
             form.save(invoice)
             template = 'invoice/view.html'
@@ -262,6 +268,7 @@ def view_invoice(request, pk):
     ignored_fields = ['medical_aid']
     context = {
         "page_title": "Invoice #:",
+        "message": message,
         "invoice": invoice,
         "form": form,
         "ignored_fields": ignored_fields,

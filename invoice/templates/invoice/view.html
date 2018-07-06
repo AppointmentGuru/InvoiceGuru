@@ -8,10 +8,13 @@
     <div class="mdl-tooltip" data-mdl-for="tt3">
     Information on this invoice not correct? You can edit it!
     </div>
-    <a class="mdl-navigation__link" href="/invoice/edit/{{invoice.id}}/?key={{invoice.password}}">
+        <a class="mdl-navigation__link"
+            target="_blank"
+            href="http://localhost:8000/pdf-it/?url=http://host.docker.internal:8001/invoice/{{invoice.pk}}/?key={{invoice.password}}" >
         <!-- <div class="icon material-icons">cloud_upload</div> -->
         Download</a>
-    <a class="mdl-navigation__link" href="/invoice/edit/{{invoice.id}}/?key={{invoice.password}}">
+    </form>
+    <a class="mdl-navigation__link" href="/invoice/view/{{invoice.id}}/?key={{invoice.password}}&send=true">
         <!-- <div class="icon material-icons">cloud_upload</div> -->
         Email me a copy</a>
     {% if not invoice.is_receipt %}
@@ -28,6 +31,9 @@
 {% endblock %}
 
 {% block main_content %}
+{% if message %}
+<div class='alert success' >{{message}}</div>
+{% endif %}
 <iframe
     src='/invoice/{{invoice.id}}?key={{invoice.password}}'
     width='100%' height='800px' >

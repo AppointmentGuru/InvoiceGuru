@@ -18,6 +18,10 @@ from django.contrib import admin
 from invoice.api import router
 from invoice import views
 
+# let DRF handle errors
+handler500 = 'rest_framework.exceptions.server_error'
+handler400 = 'rest_framework.exceptions.bad_request'
+
 urlpatterns = [
     url(r'^bulk/preview/(?P<practitioner>[0-9]+)/(?P<from_date>[0-9]{4}-?[0-9]{2}-?[0-9]{2})/(?P<to_date>[0-9]{4}-?[0-9]{2}-?[0-9]{2})/', views.invoices, name='invoices_preview'),
     url(r'^incoming/snapscan/739B7B5E-B896-4C99-9AF5-AD424DB437A5/', views.snap_webhook, name='incoming_snapscan'),
