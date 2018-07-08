@@ -8,9 +8,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # get all paid invoices
-        paid_invoices = Invoice.objects.filter(status='paid', practitioner_id=1)
+        [p.delete() for p in Payment.objects.all()]
+        paid_invoices = Invoice.objects.filter(status='paid', practitioner_id=7)
 
         print ("Found {} invoices" .format(paid_invoices.count()))
 
         for invoice in paid_invoices:
-            Payment.from_invoice(invoice)
+            payment = Payment.from_invoice(invoice)

@@ -1,15 +1,15 @@
 '''
 InvoiceGuru API
 '''
-from rest_framework import routers, viewsets, decorators, response, status, filters
+from rest_framework import routers, viewsets, decorators, response, status, filters, permissions
 
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
-from .models import Invoice, InvoiceSettings
-from .serializers import InvoiceSerializer, InvoiceSettingsSerializer
+from .models import Invoice, InvoiceSettings, Payment
+from .serializers import InvoiceSerializer, InvoiceSettingsSerializer, PaymentSerializer
 from .guru import send_invoice, publish
 from .helpers import to_context, fetch_data, fetch_appointments
 from .filters import InvoiceFilter
@@ -162,9 +162,12 @@ class BulkInvoiceViewSet(viewsets.ModelViewSet):
     def generate(self, request):
         pass
 
-
+class PaymentViewSet(viewsets.ModelViewSet):
+    queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer
 
 router = routers.DefaultRouter()
 router.register(r'invoices/settings', InvoiceSettingsViewSet)
+router.register(r'payments', PaymentViewSet)
 router.register(r'invoices', InvoiceViewSet)
 router.register(r'invoices/bulk', BulkInvoiceViewSet, base_name='bulk-invoices')

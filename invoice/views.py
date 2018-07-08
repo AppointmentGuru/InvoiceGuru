@@ -4,6 +4,7 @@ Views for displaying invoices
 from django.urls import reverse
 from dateutil.parser import parse
 from django.conf import settings
+from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -11,7 +12,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Sum
 from decimal import Decimal
 from dateutil import parser
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 from .helpers import (
@@ -88,11 +89,47 @@ def invoices(request, practitioner, from_date, to_date):
     }
     return render(request, 'invoice/list.html', context=context)
 
+def combine_into_transactions(invoices, payments):
+    transactions = []
+    current_invoice = invoices.first()
+    current_payment = payments.first()
+    current_invoice_index = 0
+    current_payment_index = 0
+    while True:
+        print ("invoice: {} | payment: {}".format(
+            current_invoice_index, current_payment_index
+        ))
+        try:
+            current_invoice = invoices[current_invoice_index]
+            current_payment = payments[current_payment_index]
+        except IndexError:
+            transactions += invoices[current_invoice_index:]
+            transactions += invoices[current_payment_index:]
+            return transactions
+
+        print("inv: {} <= pay: {}".format(current_invoice.created_date, current_payment.payment_date))
+        if current_invoice.created_date >= current_payment.payment_date:
+            transactions.append(current_invoice)
+            current_invoice_index += 1
+        else:
+            transactions.append(current_payment)
+            current_payment_index += 1
+
 def transactions(request, practitioner):
+    '''
+from invoice.models import *
+practitioner=7
+payments = Payment.objects.filter(practitioner_id=practitioner).order_by('payment_date')[0:10]
+    '''
+    last30 = timezone.now() - timedelta(days=30)
+    invoices = Invoice.objects.filter(practitioner_id=practitioner, date__gte=last30).order_by('-date')
+    payments = Payment.objects.filter(practitioner_id=practitioner, payment_date__gte=last30).order_by('-payment_date')
 
-    invoices = Invoice.objects.filter(practitioner_id=practitioner)
-    payments = Payment.objects.filter(practitioner_id=practitioner)
-
+    transactions = combine_into_transactions(invoices, payments)
+    print(transactions)
+    context = {
+        "transactions": transactions
+    }
     return render(request, 'invoice/transactions.html', context=context)
 
 def statement(request, practitioner, client):

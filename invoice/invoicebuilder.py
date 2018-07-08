@@ -10,23 +10,33 @@ inv.appointments = [a.get('id') for a in inv.context.get('appointments')]
 print(InvoiceBuilder().build_context(inv))
     '''
 
-    def clean_invoice(self, invoice):
-        return self.build_context(
-            invoice.customer_id,
-            invoice.practitioner_id,
-            None,
-            invoice.appointment_ids
-        )
+    def __init__(self, invoice):
+        self.invoice = invoice
 
-    def build_context(self, invoice):
+    def from_legacy_context(self):
+        pass
+
+    def enrich(self, save_context=False):
+        '''
+        Invoice()
+        invoice.customer_id =
+        invoice.practitioner_id =
+        invoice.appointments = []
+        invoice.save()
+
+        context = InvoiceBuilder(invoice).enrich(save_context=True)
+        '''
 
         context = {}
         context.update({
-            "client": self.get_client(invoice.practitioner_id, invoice.customer_id),
-            "practitioner": self.get_practitioner(invoice.practitioner_id),
-            "appointments": self.get_appointments(invoice.practitioner_id, invoice.appointments),
-            "record": self.get_record(invoice.practitioner_id, invoice.customer_id)
+            "client": self.get_client(self.invoice.practitioner_id, self.invoice.customer_id),
+            "practitioner": self.get_practitioner(self.invoice.practitioner_id),
+            "appointments": self.get_appointments(self.invoice.practitioner_id, self.invoice.appointments),
+            "record": self.get_record(self.invoice.practitioner_id, self.invoice.customer_id)
         })
+        if save_context:
+            self.invoice.context = context
+            self.invoice.save()
         return context
 
     def reduce(self, obj, fields_to_keep):
@@ -37,8 +47,8 @@ print(InvoiceBuilder().build_context(inv))
         return new_obj
 
     def clean_practitioner(self, practitioner):
-        profile = practitioner.get("profile")
-        fields = ['first_name', 'last_name', 'phone_number', 'email']
+        profile = practitioner.get("profile", {})
+        fields = ['id', 'first_name', 'last_name', 'phone_number', 'email']
         profile_fields = ['practice_name','practice_number','logo_picture','currency','profession']
 
         user = self.reduce(practitioner, fields)
@@ -46,12 +56,19 @@ print(InvoiceBuilder().build_context(inv))
         user.update(profile)
         return user
 
-    def get_client(self, practitioner_id, client_id):
+    def get_client(self, practitioner_id, customer_id):
         base = settings.APPOINTMENTGURU_API
-        path = '/api/v2/practitioner/clients/'
-        url = "{}{}{}/".format(base, path, client_id)
-        headers = get_headers(practitioner_id)
+        path = '/api/users/'
+        url = "{}{}{}/".format(base, path, customer_id)
+        headers = get_headers(customer_id)
         return requests.get(url, headers=headers).json()
+
+    def get_record(self, practitioner_id, customer_id):
+
+        headers = get_headers(practitioner_id)
+        url = '{}/records/{}/'.format(settings.MEDICALAIDGURU_API, customer_id)
+        record_request = requests.get(url, headers=headers)
+        return record_request.json()
 
     def get_practitioner(self, practitioner_id):
         base = settings.APPOINTMENTGURU_API
@@ -78,10 +95,3 @@ print(InvoiceBuilder().build_context(inv))
                 })
                 appointments.append(data)
         return appointments
-
-    def get_record(self, practitioner_id, client_id):
-
-        headers = get_headers(practitioner_id)
-        url = '{}/records/{}'.format(settings.MEDICALAIDGURU_API, client_id)
-        record_request = requests.get(url, headers=headers)
-        return record_request.json()

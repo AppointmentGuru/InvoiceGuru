@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Invoice, InvoiceSettings
+from .models import Invoice, InvoiceSettings, Payment
 
 INVOICE_COMMON_FIELDS = [
     'id',
@@ -29,6 +29,13 @@ class InvoiceSettingsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InvoiceSettings
+        fields = '__all__'
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Payment
         fields = '__all__'
 
 class InvoiceSerializer(serializers.ModelSerializer):

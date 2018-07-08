@@ -1,0 +1,60 @@
+{% extends 'invoice/base/index.html' %}
+{% load humanize %}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block css %}
+.page-content {
+    width:100%;
+}
+.page-main {
+    margin-top: -31vh;
+}
+.invoice {
+    background-color: #ccc;
+}
+.payment {
+    background-color: #f1f1f1;
+}
+{% endblock %}
+{% block main_content %}
+<div class="mdl-cell mdl-cell--12-col">
+    <table class="mdl-data-table mdl-block dense" style='width:100%;' >
+    <thead>
+        <tr class='mdl-color--grey-100 mdl-color-text--grey-800' >
+            <th class="mdl-data-table__cell--non-numeric">&nbsp;</th>
+            <th class="mdl-data-table__cell--non-numeric">Customer</th>
+            <th class="mdl-data-table__cell--non-numeric">Date</th>
+            <th class="mdl-data-table__cell--non-numeric">Invoice #</th>
+            <th class="mdl-data-table__cell--non-numeric">Description</th>
+            <th class="mdl-data-table__cell--non-numeric">Charges</th>
+            <th class="mdl-data-table__cell--non-numeric">Credits</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for transaction in transactions %}
+        {% if transaction.invoice_number %}
+        <tr class='invoice' >
+                <th class="mdl-data-table__cell--non-numeric"><-</th>
+            <td class="mdl-data-table__cell--non-numeric">{{transaction.title}}</td>
+            <td class="mdl-data-table__cell--non-numeric">{{transaction.date|date}}</td>
+            <td class="mdl-data-table__cell--non-numeric">{{transaction.invoice_number}} [{{transaction.status}}] </td>
+            <td class="mdl-data-table__cell--non-numeric"></td>
+            <td>R{{transaction.invoice_amount|floatformat:2|intcomma}}</td>
+            <td>R0.00</td>
+        </tr>
+        {% else %}
+        <tr class='payment'>
+                <th class="mdl-data-table__cell--non-numeric">-></th>
+            <td class="mdl-data-table__cell--non-numeric">{{transaction.invoice.title}}</td>
+            <td class="mdl-data-table__cell--non-numeric">{{transaction.payment_date|date}}</td>
+            <td class="mdl-data-table__cell--non-numeric">{{transaction.invoice.invoice_number}}</td>
+            <td class="mdl-data-table__cell--non-numeric">Payment with {{transaction.payment_method}}</td>
+            <td>R0.00</td>
+            <td>R{{transaction.amount|floatformat:2|intcomma}}</td>
+            </tr>
+        {% endif %}
+        {% endfor %}
+    </tbody>
+    </table>
+</div>
+{% endblock %}

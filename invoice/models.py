@@ -301,6 +301,13 @@ class Invoice(models.Model):
 
 class Payment(models.Model):
 
+    def __str__(self):
+        return "{} -> {}. {}".format(
+            self.customer_id,
+            self.practitioner_id,
+            self.amount
+        )
+
     practitioner_id = models.CharField(max_length=128, db_index=True)
     customer_id = models.CharField(max_length=128, db_index=True)
 
@@ -332,7 +339,8 @@ class Payment(models.Model):
 
         payment.invoice_id = invoice.id
         payment.amount = invoice.amount_paid
-        payment.payment_date = invoice.modified_date
+        # payment.payment_date = invoice.modified_date
+        payment.payment_date = invoice.created_date
         payment.payment_method = payment_method
         if with_save:
             payment.save()
