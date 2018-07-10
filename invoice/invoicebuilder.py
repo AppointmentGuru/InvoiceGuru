@@ -13,8 +13,10 @@ print(InvoiceBuilder().build_context(inv))
     def __init__(self, invoice):
         self.invoice = invoice
 
-    def from_legacy_context(self):
-        pass
+    def populate_appointments_from_context(self):
+        appointments = self.context.get('appointments',[])
+        self.invoice.appointments = [appt.get('id') for appt in appointments]
+        self.invoice.save()
 
     def enrich(self, save_context=False):
         '''

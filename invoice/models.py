@@ -98,11 +98,37 @@ class InvoiceSettings(models.Model):
 
 class Invoice(models.Model):
 
+    cached_settings = None
+
     def __str__(self):
         return '#{}: {}'.format(self.invoice_number, self.title)
 
     def get_absolute_url(self):
         return '/invoice/view/{}/?key={}'.format(self.id, self.password)
+
+    @property
+    def get_download_url(self):
+        return '/invoice/{}/?key={}'.format(self.id, self.password)
+
+    def get_snapscan_url(self, settings):
+        snap_params = "?invoice_id={}&amount={}".format(invoice.id, format(amount_due, '.2f').replace('.', ''))
+
+    def get_snapscan_qr(self, settings):
+        base = "https://pos.snapscan.io/qr/"
+        snap_id = settings.snap_id
+        snap_params = "?invoice_id={}&amount={}".format(self.id, format(amount_due, '.2f').replace('.', ''))
+        "{}{{settings.snap_id}}{{snap_params}}&strict=true"
+
+    @property
+    def settings(self):
+        if self.cached_settings is not None:
+            return self.cached_settings
+        try:
+            settings = InvoiceSettings.objects.get(practitioner_id = self.practitioner_id)
+            self.cached_settings = settings
+            return settings
+        except InvoiceSettings.DoesNotExist:
+            return None
 
     # relationships
     practitioner_id = models.CharField(max_length=128, db_index=True)
@@ -199,6 +225,9 @@ class Invoice(models.Model):
         self.short_url = short_url
         self.save()
         return short_url
+
+    def enrich(self):
+        return InvoiceBuilder(self).enrich()
 
     def get_context(self, default_context = {}):
 

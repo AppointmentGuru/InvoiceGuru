@@ -1,13 +1,17 @@
 from django import forms
+from django.conf import settings
 from django.template import Template, Context
 from .models import  ProofOfPayment
 from .tasks import submit_to_medical_aid
+from .guru import get_headers
 
+import requests
 
 class ProofOfPaymentForm(forms.ModelForm):
     class Meta:
         model = ProofOfPayment
         fields = ['document']
+
 
 class MedicalAidSubmissionForm(forms.Form):
 
@@ -38,36 +42,78 @@ class MedicalAidSubmissionForm(forms.Form):
 class UpdateInvoiceDetailsForm(forms.Form):
 
     # medical aid info:
-    medical_aid = forms.CharField(required=True)
-    medical_aid_scheme = forms.CharField(required=False)
-    medical_aid_number = forms.CharField(required=True)
+    medicalaid = forms.CharField(required=True)
+    name = forms.CharField(required=False, widget=forms.HiddenInput())
+    scheme = forms.CharField(required=False)
+    number = forms.CharField(required=False)
+    # name = forms.CharField(required=True)
 
     # patient details
     patient_first_name = forms.CharField(required=True)
     patient_last_name = forms.CharField(required=True)
     patient_id_number = forms.CharField(required=True)
 
-    is_main_member = forms.BooleanField(required=False, label='I am the main member', initial=True)
+    is_dependent = forms.BooleanField(required=False, label='Patient is a dependant')
 
-    main_member_first_name = forms.CharField(required=False)
-    main_member_last_name = forms.CharField(required=False)
-    main_member_id_number = forms.CharField(required=False)
+    member_first_name = forms.CharField(required=False)
+    member_last_name = forms.CharField(required=False)
+    member_id_number = forms.CharField(required=False)
+
+    def get_medicalaids(self):
+        base = settings.MEDICALAIDGURU_API
+        path = '/medicalaid/'
+        url = '{}{}'.format(base,path)
+        data = requests.get(url).json().get('results', [])
+        return data
+
+    @classmethod
+    def from_customer(cls, customer_id, practitioner_id):
+        headers = get_headers(customer_id)
+        base = settings.MEDICALAIDGURU_API
+        path = '/records/{}/?customer_id={}&practitioner_id={}'.format(
+            customer_id,
+            customer_id,
+            practitioner_id
+        )
+        url = "{}{}".format(base, path)
+        result = requests.get(url, headers=headers)
+        if result.status_code == 200:
+            initial_data = result.json().get("medical_aid")
+            return cls(initial=initial_data)
+
+        return cls()
+
+    def save_medicalaid(self, customer_id, medicalaid):
+        headers = get_headers(customer_id)
+        base = settings.MEDICALAIDGURU_API
+        path = '/records/{}/'.format(customer_id)
+
+        record = {
+            "medical_aid": medicalaid
+        }
+        url = '{}{}'.format(base, path)
+        print (url)
+        print (record)
+        print (headers)
+        return requests.patch(url, json=record, headers=headers)
 
     def save(self, invoice, commit = True):
         data = self.cleaned_data
-        print(data)
 
-        formatted_medical_aid = """Medical Aid: {{medical_aid}}
-Scheme: {{medical_aid_scheme}}
-Medical Aid #: {{medical_aid_number}}
+        result = self.save_medicalaid(invoice.customer_id, data)
+        print (result)
+        print (result.content)
+
+        formatted_medical_aid = """{{name}}
+{% if scheme %}{{scheme}}{% endif %}
+#: {{number}}
 Patient details:
 {{patient_first_name}} {{patient_last_name}}
-ID Number: {{medical_aid_number}}
-{% if is_main_member %}Patient is main member
-{% else %}
+{% if patient_id_number %}ID Number: {{patient_id_number}}{% endif %}
+{% if not is_dependent %}✓ Patient is main member{% else %}
 Main member details:
-{{main_member_first_name}} {{main_member_last_name}}
-ID Number: {{main_member_id_number}}{% endif %}"""
+{{member_first_name}} {{member_last_name}}
+{% if member_id_number %}ID Number: {{member_id_number}}{% endif %}{% endif %}"""
         context = Context(data)
         template = Template(formatted_medical_aid)
         invoice.context.update({
@@ -84,7 +130,6 @@ class InvoiceConstructionForm(forms.Form):
     default_context = forms.CharField(required=True)
 
     def save(self, commit = True):
-        import ipdb;ipdb.set_trace()
         clean_data = self.cleaned_data
         practitioner_id = clean_data.get('practitioner_id')
         appointments = clean_data.get('appointment_ids').split(',')

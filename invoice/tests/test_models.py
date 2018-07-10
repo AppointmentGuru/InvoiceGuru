@@ -1,13 +1,43 @@
 from django.test import TestCase
+from django import db
+from django.conf import settings
 from api.testutils import (
     create_mock_invoice,
     create_mock_proof
 )
 from invoice.models import (
     Invoice,
+    InvoiceSettings,
     ProofOfPayment,
     Payment
 )
+
+class InvoiceModelTestCase(TestCase):
+
+    def setUp(self):
+        self.invoice = create_mock_invoice()
+        self.settings = InvoiceSettings()
+        self.settings.practitioner_id = self.invoice.practitioner_id
+        self.settings.save()
+
+        # need this to count db queries
+        settings.DEBUG = True
+        db.reset_queries()
+
+    def test_get_settings_from_invoice(self):
+        assert self.settings.id == self.invoice.settings.id
+
+    def test_getting_settings_is_cached(self):
+        db.reset_queries()
+        len(db.connection.queries) == 0
+        self.invoice.settings
+        len(db.connection.queries) == 1
+        self.invoice.settings
+        len(db.connection.queries) == 1
+
+    def test_if_no_settings_exist_return_none(self):
+        invoice = create_mock_invoice()
+        assert invoice.settings is None
 
 class PaymentTestCase(TestCase):
 

@@ -13,7 +13,7 @@ def publish(key, payload):
         settings.PUB_SUB_CHANNEL)
     return pubsub.publish(key, payload)
 
-def get_headers(user_id, consumer='appointmentguru'):
+def get_headers(user_id, consumer='invoiceguru'):
     return {
         'X_ANONYMOUS_CONSUMER': 'False',
         'X_AUTHENTICATED_USERID': str(user_id),

@@ -23,6 +23,8 @@ services:
       - env.dev
     environment:
       - DATABASE_NAME=appointmentguru_medicalaidguru
+    ports:
+      - "8002:80"
 
   communicationguru:
     image: appointmentguru/communicationguru:unibox

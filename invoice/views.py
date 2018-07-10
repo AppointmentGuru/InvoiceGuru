@@ -174,39 +174,19 @@ def edit_invoice(request, pk):
         form = UpdateInvoiceDetailsForm(request.POST)
         if form.is_valid():
             form.save(invoice)
-            url = reverse('view_invoice_view', args=invoice.id)
+            url = reverse('view_invoice_view', args=(invoice.id,))
             url = "{}?key={}".format(url, invoice.password)
             return HttpResponseRedirect(url)
     else:
-        form = UpdateInvoiceDetailsForm()
+        form = UpdateInvoiceDetailsForm.from_customer(invoice.customer_id, invoice.practitioner_id)
 
-    try:
-        first_appointment = invoice.context.get('appointments')[0]
-    except IndexError:
-        first_appointment = {}
-
-    medical_aid_details = invoice.context.get('medicalaid_info')
-    if medical_aid_details is not None:
-        medical_aid_details = medical_aid_details.split('\n')
-
-    client_details = first_appointment.get("client", {})
-
-    medial_aids_quickpick = [
-        {"name": 'DISCOVERY Health Medical Scheme', "email": 'claims@discovery.co.za'},
-        {"name": 'BONITAS Medical Fund', "email": 'claims@bonitas.co.za'},
-        {"name": 'COMPCare WELLNESS Medical Scheme', "email": 'claims@universal.co.za'},
-        {"name": 'PROFMED', "email": 'claims@profmed.co.za'}
-    ]
-    ignored_fields = ['medical_aid']
+    ignored_fields = ['medicalaid', 'name']
     context = {
-        "page_title": "Invoice #:",
+        "page_title": "Your details",
         "invoice": invoice,
         "form": form,
+        "medicalaids": form.get_medicalaids(),
         "ignored_fields": ignored_fields,
-        "client": client_details,
-        "medical_aid": medical_aid_details,
-        "medial_aids_quickpick": medial_aids_quickpick,
-        "medical_aids": MEDIAL_AIDS
     }
     return render(request, 'invoice/edit.html', context=context)
 
