@@ -55,6 +55,15 @@ class InvoiceModelTestCase(TestCase):
             'https://pos.snapscan.io/qr/12345?invoice_id={}&amount=1234&strict=true'.format(self.invoice.id)
         )
 
+    def test_get_serialized(self):
+        from ..serializers import INVOICE_COMMON_FIELDS
+        data = self.invoice._get_serialized()
+        for field in INVOICE_COMMON_FIELDS:
+            import ipdb;ipdb.set_trace()
+            assert data.get(field) is not None, \
+                'Field: {} not found on serialized invoice'.format(field)
+
+
 class PaymentTestCase(TestCase):
 
     def setUp(self):

@@ -114,6 +114,10 @@ class Invoice(models.Model):
     def get_download_url(self):
         return '/invoice/{}/?key={}'.format(self.id, self.password)
 
+    @property
+    def get_view_url(self):
+        return '/invoice/view/{}/?key={}'.format(self.id, self.password)
+
     def __get_snap_url(self, is_qr_code=True):
         base = "https://pos.snapscan.io/qr/"
         snap_id = self.settings.snap_id

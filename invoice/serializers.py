@@ -17,6 +17,10 @@ INVOICE_COMMON_FIELDS = [
     'amount_paid',
     'date',
     'due_date',
+    'get_snapscan_url',
+    'get_snapscan_qr',
+    'get_download_url',
+    'get_view_url'
 ]
 
 class InvoiceListViewSerializer(serializers.ModelSerializer):

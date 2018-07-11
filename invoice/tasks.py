@@ -139,7 +139,9 @@ def send_invoice_or_receipt(data):
         "frm": from_email,
         "channel" : "practitioner-{}".format(invoice.practitioner_id),
         "template": template,
-        "context": {"invoice": invoice._get_serialized()},
+        "context": {
+            "invoice": invoice._get_serialized()
+        },
         "urls": [invoice_url]
     }
     if to_emails is not None and len(to_emails) > 0:
