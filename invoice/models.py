@@ -107,17 +107,35 @@ class Invoice(models.Model):
         return '/invoice/view/{}/?key={}'.format(self.id, self.password)
 
     @property
+    def amount_due(self):
+        return self.invoice_amount - self.amount_paid
+
+    @property
     def get_download_url(self):
         return '/invoice/{}/?key={}'.format(self.id, self.password)
 
-    def get_snapscan_url(self, settings):
-        snap_params = "?invoice_id={}&amount={}".format(invoice.id, format(amount_due, '.2f').replace('.', ''))
-
-    def get_snapscan_qr(self, settings):
+    def __get_snap_url(self, is_qr_code=True):
         base = "https://pos.snapscan.io/qr/"
-        snap_id = settings.snap_id
-        snap_params = "?invoice_id={}&amount={}".format(self.id, format(amount_due, '.2f').replace('.', ''))
-        "{}{{settings.snap_id}}{{snap_params}}&strict=true"
+        snap_id = self.settings.snap_id
+        if is_qr_code:
+            snap_id = "{}.svg".format(snap_id)
+        snap_params = "?invoice_id={}&amount={}".format(
+            self.id,
+            format(self.amount_due, '.2f').replace('.', '')
+        )
+        return "{}{}{}&strict=true".format(
+            base,
+            snap_id,
+            snap_params
+        )
+
+    @property
+    def get_snapscan_url(self):
+        return self.__get_snap_url(is_qr_code=False)
+
+    @property
+    def get_snapscan_qr(self):
+        return self.__get_snap_url(is_qr_code=True)
 
     @property
     def settings(self):

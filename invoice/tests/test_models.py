@@ -16,7 +16,9 @@ class InvoiceModelTestCase(TestCase):
 
     def setUp(self):
         self.invoice = create_mock_invoice()
+        self.invoice.invoice_amount = 12.34
         self.settings = InvoiceSettings()
+        self.settings.snap_id = '12345'
         self.settings.practitioner_id = self.invoice.practitioner_id
         self.settings.save()
 
@@ -38,6 +40,20 @@ class InvoiceModelTestCase(TestCase):
     def test_if_no_settings_exist_return_none(self):
         invoice = create_mock_invoice()
         assert invoice.settings is None
+
+    def test_get_snapscan_qr_url(self):
+        snap_url = self.invoice.get_snapscan_qr
+        self.assertEqual(
+            snap_url,
+            'https://pos.snapscan.io/qr/12345.svg?invoice_id={}&amount=1234&strict=true'.format(self.invoice.id)
+        )
+
+    def test_get_snapscan_link_url(self):
+        snap_url = self.invoice.get_snapscan_url
+        self.assertEqual(
+            snap_url,
+            'https://pos.snapscan.io/qr/12345?invoice_id={}&amount=1234&strict=true'.format(self.invoice.id)
+        )
 
 class PaymentTestCase(TestCase):
 
