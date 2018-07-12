@@ -46,12 +46,24 @@ def apply_context(sender, instance, **kwargs):
         instance.amount_paid = invoice_amount_paid
 
     instance.invoice_amount = invoice_total
-    instance.due_date = context.get('due_date')
-    instance.date = context.get('date')
+    if instance.due_date is None:
+        instance.due_date = context.get('due_date')
+    if instance.date is None:
+        instance.date = context.get('date')
 
     if instance.customer_id is None:
         instance.customer_id = context.get('customer_id')
     # instance.object_ids = object_ids
+
+    if instance.invoicee_details is None:
+        client = context.get('client', None)
+        if client is not None:
+            instance.invoicee_details = """{} {}
+{}""".format(
+        client.get('first_name'),
+        client.get('last_name'),
+        client.get('email')
+    )
 
     appointments_exist = (len(appointments) > 0)
     if instance.invoice_period_from is None and appointments_exist:

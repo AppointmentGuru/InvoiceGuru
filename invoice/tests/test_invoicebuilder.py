@@ -18,6 +18,11 @@ class InvoiceBuilderEnrichesContextTestCase(TestCase):
         self.invoice.practitioner_id = 2
         self.invoice.appointments = [3,4,5]
 
+        practitioner_data = {
+            'id': 2,
+            'username': 'jane@soap.com',
+        }
+
         responses.add(
             responses.GET,
             'http://appointmentguru/api/users/1/',
@@ -28,16 +33,8 @@ class InvoiceBuilderEnrichesContextTestCase(TestCase):
         )
         responses.add(
             responses.GET,
-            'http://appointmentguru/api/v2/practitioner/me/',
-            json={
-                'results': [
-                    {
-                        'id': 2,
-                        'username': 'jane@soap.com',
-                        "profile": {}
-                    }
-                ]
-            },
+            'http://appointmentguru/api/practitioners/2/',
+            json=practitioner_data,
             status=200
         )
         responses.add(
@@ -72,13 +69,31 @@ class InvoiceBuilderEnrichesContextTestCase(TestCase):
         assert self.invoice.context is not None
 
     def test_it_sets_practitioner(self):
-        assert self.invoice.context.get('practitioner').get('id') == 2
+        assert self.invoice.context.get('practitioner').get('id') == 2,\
+            'Practitioner data is missing: {}'.format(
+                self.invoice.context.get('practitioner')
+            )
 
     def test_it_sets_client(self):
         assert self.invoice.context.get('client').get('id') == 1
 
     def test_it_sets_appointments(self):
-        assert len(self.invoice.context.get('appointments')) == 3
+        appointments = self.invoice.context.get('appointments', [])
+        num_appointments = len(appointments)
+        assert num_appointments == 3,\
+            'Expected 3 appointments. Got: {}. {}'.format(num_appointments, appointments)
 
-
+    def test_it_formats_a_billing_address(self):
+        data = {
+            "profile": {
+                "services": [
+                    {"address": {
+                        "name": "Downtown Abby",
+                        "address": "10 Downtown Abbey, England"
+                    }}
+                ]
+            }
+        }
+        result = self.builder.get_billing_address(data)
+        self.assertEquals(result, 'Downtown Abby\n10 Downtown Abbey, England\n')
 

@@ -79,22 +79,18 @@ class InvoiceSettings(models.Model):
 
     billing_address = models.TextField(blank=True, null=True, help_text='The address of the billing party')
 
-    invoice_address = models.TextField(blank=True, null=True, help_text='Your address as shown on invoices' )
-    customer_info = models.TextField(blank=True, null=True, help_text='Choose how you would like to display your customers info')
+    customer_info = models.TextField(blank=True, null=True, verbose_name='Customer info template', help_text='Choose how you would like to display your customers info')
     lineitem_template = models.TextField(blank=True, null=True, default='codetable.html')
 
     include_booking_info = models.BooleanField(default=True)
-
     integrate_medical_aid = models.BooleanField(default=False)
-
-    snap_id = models.CharField(max_length=128, blank=True, null=True)
     show_snapcode_on_invoice = models.BooleanField(default=False)
     allow_pre_payments = models.BooleanField(default=False)
     allow_submit_to_medical_aid = models.BooleanField(default=False)
-
     include_vat = models.BooleanField(default=False)
-    vat_percent = models.PositiveIntegerField(default=0, blank=True, null=True)
 
+    snap_id = models.CharField(max_length=128, blank=True, null=True)
+    vat_percent = models.PositiveIntegerField(default=0, blank=True, null=True)
 
 class Invoice(models.Model):
 
@@ -134,6 +130,10 @@ class Invoice(models.Model):
         )
 
     @property
+    def show_snapcode_on_invoice(self):
+        return self.settings.show_snapcode_on_invoice
+
+    @property
     def get_snapscan_url(self):
         return self.__get_snap_url(is_qr_code=False)
 
@@ -151,6 +151,7 @@ class Invoice(models.Model):
             return settings
         except InvoiceSettings.DoesNotExist:
             return None
+
 
     # relationships
     practitioner_id = models.CharField(max_length=128, db_index=True)
@@ -181,6 +182,10 @@ class Invoice(models.Model):
     invoice_period_to = models.DateField(db_index=True, blank=True, null=True)
 
     short_url = models.URLField(blank=True, null=True)
+
+    # free text fields:
+    invoicee_details = models.TextField(blank=True, null=True)
+    medicalaid_details = models.TextField(blank=True, null=True)
 
     # settings:
     integrate_medical_aid = models.BooleanField(default=False)

@@ -234,11 +234,12 @@
 					<table>
 						<tr>
 							<td>
-								{% if practice_name %}<strong>Practice name:</strong> {{practice_name}}<br/>{% endif %}
-								{% if practice_number %}<strong>Practice number:</strong> {{practice_number}}<br/>{% endif %}
-								<strong>Invoiced by:</strong><br/>
-								<!--email_off-->{{from_string|linebreaks}}<!--/email_off-->
-
+                                <div style='max-width: 60%;'>
+                                    {% if invoice.context.practitioner.practice_name %}<div><strong>{{invoice.context.practitioner.practice_name}}</strong></div>{% endif %}
+                                    {% if invoice.context.practitioner.practice_number %}<strong>Practice number:</strong> {{invoice.context.practitioner.practice_number}}<br/>{% endif %}
+                                    {{invoice.context.practitioner.first_name}} {{invoice.context.practitioner.last_name}}
+                                    <!--email_off-->{{settings.billing_address|linebreaks}}<!--/email_off-->
+                                </div>
 								<div class='amount-due {{invoice.status}}' >
 									<strong>Amount due: </strong>
 									<div class='metric'>
@@ -253,14 +254,14 @@
 							</td>
 
 							<td>
-{% if customer_info %}
-<strong>Bill to:</strong><br/>
+{% if invoice.invoicee_details %}
+<strong>Bill to:</strong>
 <!--email_off-->
-{{customer_info|linebreaks}}
+{{invoice.invoicee_details|markdown|linebreaks}}
 {% endif %}
-{% if medicalaid_info %}
+{% if invoice.medicalaid_details %}
 <div><strong>Medical Aid:</strong></div>
-{{medicalaid_info|linebreaks}}
+{{invoice.medicalaid_details|markdown|linebreaks}}
 {% endif %}
 <!--/email_off-->
 							</td>
@@ -268,7 +269,7 @@
 					</table>
 				</td>
 			</tr>
-			{% for appointment in appointments %}
+			{% for appointment in invoice.context.appointments %}
 				<tr class="heading">
 					{% if appointment.invoice_title %}
 					<td>{{appointment.invoice_title}}</td>
@@ -358,11 +359,14 @@
 					{{invoice.currency}} {{amount_due|intcomma}}
 				</td>
 			</tr>
-			{% if banking_details %}
-			<tr>
+			{% if invoice.context.practitioner.banking_details %}
+            <tr>
+                <td colspan="2" ><hr/></td>
+            </tr>
+            <tr>
 				<td>
 				<strong>Banking details:</strong>
-{{banking_details|markdown|linebreaks}}
+{{invoice.context.practitioner.banking_details|markdown|linebreaks}}
 				</td>
 				<td>
 					{% if settings.show_snapcode_on_invoice %}

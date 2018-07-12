@@ -65,7 +65,7 @@ def snap_webhook(request):
 @user_passes_test(lambda u: u.is_superuser)
 def test_invoices(request):
     context = {
-        "invoices": Invoice.objects.all().order_by('?')[0:10]
+        "invoices": Invoice.objects.all().order_by('-id')[181:200]
     }
     return render(request, 'invoice/listall.html', context=context)
 
@@ -305,7 +305,7 @@ def invoice(request, pk):
     template_key = request.GET.get('template', invoice.template)
     template_data = settings.TEMPLATE_REGISTRY.get(template_key)
     template_path = 'invoice/templates/{}'.format(template_data.get('filename', 'basic.html'))
-
+    template_path = 'invoice/templates/basic_v2.html'
     context = invoice.context
     invoice_total = 0
     amount_paid = 0
@@ -333,7 +333,6 @@ def invoice(request, pk):
 
     if amount_due == 0:
         is_receipt = True
-
     context['invoice'] = invoice
     context['is_receipt'] = is_receipt
     context['amount_paid'] = amount_paid
