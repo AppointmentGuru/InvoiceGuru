@@ -17,7 +17,7 @@
 		font-family:'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
 		text-align:center;
 		color:#777;
-		font-size: 14px;
+		font-size: 12px;
 		margin-bottom:0px;
 		padding-bottom:0px;
 	}
@@ -258,10 +258,14 @@
 <strong>Bill to:</strong>
 <!--email_off-->
 {{invoice.invoicee_details|markdown|linebreaks}}
-{% endif %}
-{% if invoice.medicalaid_details %}
-<div><strong>Medical Aid:</strong></div>
-{{invoice.medicalaid_details|markdown|linebreaks}}
+	{% endif %}
+	{% if invoice.integrate_medical_aid %}
+	{% if invoice.context.record.medical_aid %}
+		{% include "invoice/templates/includes/medicalaid.html" with invoice=invoice medicalaid=invoice.context.record.medical_aid %}
+	{% elif invoice.medicalaid_details %}
+		<div><strong>Medical Aid:</strong></div>
+		{{invoice.medicalaid_details|markdown|linebreaks}}
+	{% endif %}
 {% endif %}
 <!--/email_off-->
 							</td>
@@ -398,8 +402,11 @@
 	{% if settings.include_booking_info %}
 	<div style='background-color:#607D8B;padding:15px;color:#fff;' >
 		Book your next appointment online at:
-		<a style='color:white;' href="https://bookme.guru/{{appointments.0.practitioner.profile.sub_domain}}/" >
-			https://bookme.guru/{{appointments.0.practitioner.profile.sub_domain}}/
+		<a
+			style='color:white;'
+			target='_top'
+			href="https://bookme.guru/{{invoice.context.practitioner.sub_domain}}/" >
+				https://bookme.guru/{{invoice.context.practitioner.sub_domain}}/
 		</a>
 	</div>
 	{% endif %}

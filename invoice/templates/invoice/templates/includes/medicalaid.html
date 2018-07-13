@@ -1,0 +1,14 @@
+<div><strong>Medical Aid:</strong></div>
+{% if medicalaid.name %}<strong>{{medicalaid.name}}</strong><br/>{% endif %}
+{% if medicalaid.scheme %}{{medicalaid.scheme}}<br/>{% endif %}
+{% if medicalaid.number %}Membership #: {{medicalaid.number}}<br/>{% endif %}
+<strong>Patient:</strong><br/>
+{{medicalaid.patient_first_name}} {{medicalaid.patient_last_name}}.
+{% if medicalaid.patient_id_number %}ID#: {{medicalaid.patient_id_number}}{% endif %}
+{% if medicalaid.is_dependent %}
+<br/><strong>Main member:</strong><br/>
+{{medicalaid.member_first_name}} {{medicalaid.member_last_name}}.
+{% if medicalaid.member_id_number %}ID#: {{medicalaid.member_id_number}}{% endif %}
+{% else %}
+<br/>✔ Patient is main member
+{% endif %}

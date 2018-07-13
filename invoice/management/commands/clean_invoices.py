@@ -8,7 +8,9 @@ class Command(BaseCommand):
     help = 'Summarize the context for appointments'
 
     def handle(self, *args, **options):
-        invoices = Invoice.objects.all().order_by('-id')[181:200]
+        invoices = Invoice.objects.all().order_by('-id')
+        invoices = Invoice.objects.filter(practitioner_id=1).order_by('-id')
+
         # invoices=Invoice.objects.filter(id=1692)
 
         for invoice in invoices:
@@ -16,4 +18,4 @@ class Command(BaseCommand):
             builder = InvoiceBuilder(invoice)
             builder.populate_appointments_from_context()
             builder.enrich(save_context=True)
-
+            # invoice.apply_settings()

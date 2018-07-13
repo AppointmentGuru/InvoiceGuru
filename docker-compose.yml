@@ -35,7 +35,8 @@ services:
       - env.dev
     environment:
       - DATABASE_NAME=appointmentguru_communicationguru
-
+    ports:
+      - "8000:80"
   # app:
   web:
     restart: on-failure:10

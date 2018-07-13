@@ -159,7 +159,12 @@ print(InvoiceBuilder().build_context(inv))
             practitioner_id
         )
         record_request = requests.get(url, headers=headers)
-        return record_request.json()
+        if record_request.status_code == 200:
+            return record_request.json()
+        else:
+            print(record_request.content)
+            print(url)
+            print(headers)
 
     def get_practitioner(self, practitioner_id):
         base = settings.APPOINTMENTGURU_API

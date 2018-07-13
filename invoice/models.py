@@ -104,7 +104,8 @@ class Invoice(models.Model):
 
     @property
     def amount_due(self):
-        return self.invoice_amount - self.amount_paid
+        due = self.invoice_amount - self.amount_paid
+        return format(due, '.2f')
 
     @property
     def get_download_url(self):
@@ -121,7 +122,7 @@ class Invoice(models.Model):
             snap_id = "{}.svg".format(snap_id)
         snap_params = "?invoice_id={}&amount={}".format(
             self.id,
-            format(self.amount_due, '.2f').replace('.', '')
+            self.amount_due.replace('.', '')
         )
         return "{}{}{}&strict=true".format(
             base,
@@ -273,6 +274,21 @@ class Invoice(models.Model):
         context = clean_context(context)
         self.context = context
         return context
+
+    def apply_settings(self, with_save=True):
+        if self.settings is not None:
+            fields = dir(InvoiceSettings)
+            for field in fields:
+                IS_PRIVATE_FIELD = field.startswith('_')
+                EXISTS = hasattr(self, field)
+
+                if not IS_PRIVATE_FIELD and EXISTS:
+                    FIELD_IS_EMPTY = getattr(self, field, None) is None
+                    if FIELD_IS_EMPTY:
+                        value = getattr(self.settings, field)
+                        setattr(self, field, value)
+            if with_save:
+                self.save()
 
     def apply_context(self):
         '''

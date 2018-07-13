@@ -12,14 +12,13 @@ from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Sum
 from decimal import Decimal
 from dateutil import parser
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import json
 
 from .helpers import (
     fetch_data,
     to_context,
-    codes_to_table,
-    get_invoice_template
+    codes_to_table
 )
 
 from .models import Invoice, InvoiceSettings, Payment, ProofOfPayment
@@ -65,7 +64,7 @@ def snap_webhook(request):
 @user_passes_test(lambda u: u.is_superuser)
 def test_invoices(request):
     context = {
-        "invoices": Invoice.objects.all().order_by('-id')[181:200]
+        "invoices": Invoice.objects.filter(practitioner_id=1).order_by('-id')
     }
     return render(request, 'invoice/listall.html', context=context)
 
@@ -133,27 +132,48 @@ payments = Payment.objects.filter(practitioner_id=practitioner).order_by('paymen
     return render(request, 'invoice/transactions.html', context=context)
 
 def statement(request, practitioner, client):
+    from_date = date(2018,1,1)
+    invoices = Invoice.objects.filter(
+        practitioner_id=practitioner,
+        customer_id=client,
+        date__gte=from_date
+    ).order_by('-date')
+    payments = Payment.objects.filter(
+        practitioner_id=practitioner,
+        customer_id=client,
+        payment_date__gte=from_date
+    ).order_by('-payment_date')
 
-    invoices = Invoice.objects.filter(practitioner_id=practitioner, customer_id=client)
-    payments = Payment.objects.filter(practitioner_id=practitioner, customer_id=client)
+    settings = InvoiceSettings.objects.get(practitioner_id = practitioner)
+    transactions = combine_into_transactions(invoices, payments)
 
+    balance_brought_forward = 0
     amount_paid = payments.aggregate(amount_paid=Sum('amount')).get('amount_paid')
     amount_due = invoices.aggregate(amount_due=Sum('invoice_amount')).get('amount_due')
 
-    statement_date = parser.parse('2018-04-25')
-    statement_due_date = parser.parse('2018-04-30')
-    invoices = Invoice.objects.filter(id=1692)
+    statement_date = parser.parse('2018-01-01')
+    statement_due_date = parser.parse('2018-07-30')
 
-    amount_paid = 0
-    amount_due = invoices.aggregate(amount_due=Sum('invoice_amount')).get('amount_due')
+    invoice = invoices.first()
+    client = invoice.context.get("client")
+    practitioner = invoice.context.get("practitioner")
+
+    # amount_paid = 0
+    # amount_due = invoices.aggregate(amount_due=Sum('invoice_amount')).get('amount_due')
 
     balance = {
+        "outstanding": balance_brought_forward,
         "paid": amount_paid,
         "due": amount_due,
         "diff": (amount_due - amount_paid)
     }
     context = {
+        "transactions": transactions,
+        "settings": settings,
         "invoices": invoices,
+        "invoice": invoice,
+        "client": client,
+        "practitioner": practitioner,
         "payments": payments,
         "balance": balance,
         "statement_date": statement_date,
@@ -249,52 +269,19 @@ def pay_invoice(request, pk):
     return render(request, 'invoice/pay.html', context=context)
 
 def view_invoice(request, pk):
-    password = request.GET.get('key')
-    invoice = get_object_or_404(Invoice, pk=pk, password=password)
-    template = get_invoice_template(invoice)
+
+    invoice, settings = __get_invoice(request, pk)
     message = None
     if request.GET.get('send') is not None:
         invoice.send(to_email=True)
         message = "Invoice sent to : {}".format(invoice.get_client_email)
 
-    if request.method == 'POST':
-        form = UpdateInvoiceDetailsForm(request.POST)
-        if form.is_valid():
-            form.save(invoice)
-            template = 'invoice/view.html'
-    else:
-        form = UpdateInvoiceDetailsForm()
-
-    try:
-        first_appointment = invoice.context.get('appointments')[0]
-    except IndexError:
-        first_appointment = {}
-
-    medical_aid_details = invoice.context.get('medicalaid_info')
-    if medical_aid_details is not None:
-        medical_aid_details = medical_aid_details.split('\n')
-
-    client_details = first_appointment.get("client", {})
-
-    medial_aids_quickpick = [
-        {"name": 'DISCOVERY Health Medical Scheme', "email": 'claims@discovery.co.za'},
-        {"name": 'BONITAS Medical Fund', "email": 'claims@bonitas.co.za'},
-        {"name": 'COMPCare WELLNESS Medical Scheme', "email": 'claims@universal.co.za'},
-        {"name": 'PROFMED', "email": 'claims@profmed.co.za'}
-    ]
-    ignored_fields = ['medical_aid']
     context = {
-        "page_title": "Invoice #:",
+        "page_title": "Invoice #: {}".format(invoice.invoice_number),
         "message": message,
-        "invoice": invoice,
-        "form": form,
-        "ignored_fields": ignored_fields,
-        "client": client_details,
-        "medical_aid": medical_aid_details,
-        "medial_aids_quickpick": medial_aids_quickpick,
-        "medical_aids": MEDIAL_AIDS
+        "invoice": invoice
     }
-    return render(request, template, context=context)
+    return render(request, 'invoice/view.html', context=context)
     # return render(request, 'invoice/app.html', context=context)
 
 @csrf_exempt

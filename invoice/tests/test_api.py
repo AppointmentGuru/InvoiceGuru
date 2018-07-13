@@ -2,6 +2,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from ..models import Invoice
 from api.testutils import create_mock_invoice, assert_response, get_proxy_headers
+import responses
 
 class ApiRootTestCase(TestCase):
 
@@ -45,6 +46,7 @@ class SendEndpointTestCase(TestCase):
 # @override_settings(PUB_SUB_BACKEND=('backends', 'MockBackend'))
 class MarkAsPaidEndpointTestCase(TestCase):
 
+    @responses.activate
     def setUp(self):
         self.invoice = create_mock_invoice(1, 1)
         url = reverse('invoice-paid', args=(self.invoice.id,))
@@ -70,7 +72,6 @@ class MarkAsPaidEndpointTestCase(TestCase):
 
         # not sure how to test this
         pass
-
 
 
 class BulkActionsInvoiceTestCase(TestCase):

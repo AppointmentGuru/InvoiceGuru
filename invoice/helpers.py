@@ -2,18 +2,6 @@ from django.conf import settings
 from dateutil.parser import parse
 import requests
 
-def get_invoice_template(invoice):
-    '''
-
-    '''
-    if invoice.integrate_medical_aid == False: return 'invoice/view.html'
-
-    info = invoice.context.get('medicalaid_info')
-    medical_info_exists = info is not None and len(info) > 5
-    if not medical_info_exists: return 'invoice/edit.html'
-
-    return 'invoice/view.html'
-
 def get_headers(practitioner_id):
     return {
         'X_ANONYMOUS_CONSUMER': 'false',

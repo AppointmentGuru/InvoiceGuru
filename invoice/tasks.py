@@ -23,18 +23,18 @@ class Transport(Enum):
     INAPP = 'in-app'
 
 class MessageTemplate(Enum):
-    SUBMIT_TO_MEDICAL_AID = 3
-    SEND_RECEIPT = 2
-    SEND_INVOICE = 1
+    SUBMIT_TO_MEDICAL_AID = 'SUBMIT_TO_MEDICAL_AID'
+    SEND_RECEIPT = 'SEND_RECEIPT'
+    SEND_INVOICE = 'SEND_INVOICE'
 
-def __send_templated_communication(transport, practitioner_id, channel, frm, to, template, context, urls=None, **kwargs):
+def __send_templated_communication(transport, practitioner_id, channel, frm, to, template_slug, context, urls=None, **kwargs):
     headers = get_headers(practitioner_id)
     base = settings.COMMUNICATIONGURU_API
     url = "{}/communications/".format(base)
     data = {
         "channel": channel,
         "context": json.dumps(context),
-        "template": template, # this should be able to be a slugaroo
+        "template_slug": template_slug,
     }
     if urls is not None:
         data.update({
@@ -61,8 +61,10 @@ def __send_templated_communication(transport, practitioner_id, channel, frm, to,
             "recipient_channel": to,
             "backends": ["services.backends.onesignal.OneSignalBackend"]
             })
+    print(url)
+    print(headers)
+    print(data)
     return requests.post(url, data, headers=headers)
-
 
 
 def __extract_message_context(data):
@@ -134,11 +136,21 @@ def send_invoice_or_receipt(data):
     if invoice.is_receipt:
         template = MessageTemplate.SEND_RECEIPT.value
 
+    appointment_object_ids = ['appointment:{}'.format(id) for appt in invoice.appointments]
+    object_ids = [
+        "practitioner:{}".format(invoice.practitioner_id),
+        "customer:{}".format(invoice.customer_id),
+        "user:{}".format(invoice.practitioner_id),
+        "user:{}".format(invoice.customer_id),
+        "invoice:{}".format(invoice.id)
+    ]
+    object_ids.extend(appointment_object_ids)
     data = {
         "practitioner_id": invoice.practitioner_id,
         "frm": from_email,
         "channel" : "practitioner-{}".format(invoice.practitioner_id),
-        "template": template,
+        "template_slug": template,
+        "object_ids": object_ids,
         "context": {
             "invoice": invoice._get_serialized()
         },

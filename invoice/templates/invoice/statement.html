@@ -16,25 +16,18 @@
     <!-- headline-->
     <div class="mdl-cell mdl-cell--6-col">
         <h6>Payable to</h6>
-Christo Crampton<br/>
-64 2nd ave,<br/>
-Parkhurst
+{{settings.billing_address|linebreaks}}
         <!-- <img src="https://media-appointmentguru.s3.amazonaws.com:443/practitioner/images/1/logo.png" style="max-width:300px; max-height:150px;"> -->
     </div>
     <div class="mdl-cell mdl-cell--6-col" style='text-align: right;' >
         <h6>Statement</h6>
-<strong>Date:</strong> {{statement_date|date}}<br/>
-<strong>Due date:</strong> {{statement_due_date|date}}
+<strong>Date:</strong> {{statement_date|date}} - {{statement_due_date|date}}
     </div>
 
     <!-- meta-->
     <div class="mdl-cell mdl-cell--6-col">
         <h6 class='ag-mt-0' >Bill to:</h6>
-<pre>Vumatel (Pty) Ltd
-VAT reg: 4020266740
-PO Box 1811
-Parklands
-2121</pre>
+        {{invoice.invoicee_details|linebreaks}}
     </div>
     <div class="mdl-cell mdl-cell--6-col" >
         <table class="mdl-data-table mdl-block dense" style='float:right;' >
@@ -46,15 +39,19 @@ Parklands
         <tbody>
             <tr>
                 <td class="mdl-data-table__cell--non-numeric">Previous balance</td>
+                <td>R{{balance.outstanding|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td class="mdl-data-table__cell--non-numeric">Total charged</td>
+                <td>R{{balance.due|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td class="mdl-data-table__cell--non-numeric">Payments</td>
                 <td>R{{balance.paid|floatformat:2|intcomma}}</td>
             </tr>
             <tr>
-                <td class="mdl-data-table__cell--non-numeric">New charges</td>
-                <td>R{{balance.due|floatformat:2|intcomma}}</td>
-            </tr>
-                <tr>
                 <td class="mdl-data-table__cell--non-numeric callout">Amount due</td>
-                <td>R{{balance.due|floatformat:2|intcomma}}</td>
+                <td>R{{balance.diff|floatformat:2|intcomma}}</td>
             </tr>
         </tbody>
         </table>
@@ -63,6 +60,7 @@ Parklands
 
     <!-- lineitems-->
     <div class="mdl-cell mdl-cell--12-col">
+        <h6>Account summary</h6>
         <table class="mdl-data-table mdl-block dense" style='width:100%;' >
         <thead>
             <tr class='mdl-color--grey-100 mdl-color-text--grey-800' >
@@ -71,28 +69,28 @@ Parklands
                 <th class="mdl-data-table__cell--non-numeric">Description</th>
                 <th class="mdl-data-table__cell--non-numeric">Charges</th>
                 <th class="mdl-data-table__cell--non-numeric">Credits</th>
-                <th class="mdl-data-table__cell--non-numeric">Line Total</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td class="mdl-data-table__cell--non-numeric">{{statement_date|date}}</td>
-                <td class="mdl-data-table__cell--non-numeric"></td>
-                <td class="mdl-data-table__cell--non-numeric">Previous balance (forwarded)</td>
-                <td>R0.00</td>
-                <td>R0.00</td>
-                <td>R0.00</td>
+        {% for transaction in transactions %}
+            {% if transaction.invoice_number %}
+            <tr class='invoice' >
+                <td class="mdl-data-table__cell--non-numeric">{{transaction.date|date}}</td>
+                <td class="mdl-data-table__cell--non-numeric">{{transaction.invoice_number}}</td>
+                <td class="mdl-data-table__cell--non-numeric">Invoiced</td>
+                <td>R{{transaction.invoice_amount|floatformat:2|intcomma}}</td>
+                <td >--</td>
             </tr>
-            {% for invoice in invoices %}
-            <tr>
-                <td class="mdl-data-table__cell--non-numeric">{{invoice.date|date}}</td>
-                <td class="mdl-data-table__cell--non-numeric">{{invoice.invoice_number}}</td>
-                <td class="mdl-data-table__cell--non-numeric"></td>
-                <td>R{{invoice.invoice_amount|floatformat:2|intcomma}}</td>
-                <td>R0.00</td>
-                <td>R{{invoice.invoice_amount|floatformat:2|intcomma}}</td>
-            </tr>
-            {% endfor %}
+            {% else %}
+            <tr class='payment'>
+                <td class="mdl-data-table__cell--non-numeric">{{transaction.payment_date|date}}</td>
+                <td class="mdl-data-table__cell--non-numeric">{{transaction.invoice.invoice_number}}</td>
+                <td class="mdl-data-table__cell--non-numeric">Payment. Thank-you</td>
+                <td>--</td>
+                <td>R{{transaction.amount|floatformat:2|intcomma}}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
         </tbody>
         </table>
     </div>
@@ -101,7 +99,7 @@ Parklands
             <thead>
                 <tr class='mdl-color--grey-100 mdl-color-text--grey-800' >
                     <th class="mdl-data-table__cell--non-numeric">Current account balance</th>
-                    <td class='callout' >R{{balance.due|floatformat:2|intcomma}}</td>
+                    <td class='callout' >R{{balance.diff|floatformat:2|intcomma}}</td>
                 </tr>
             </thead>
         </table>
@@ -109,9 +107,7 @@ Parklands
 
     <div class="mdl-cell mdl-cell--12-col" >
         <h6>Banking details:</h6>
-        Christopher Crampton.
-        FNB.
-        Account number: 60232195566
+        {{practitioner.banking_details|linebreaks}}
     </div>
 
 {% comment %}
