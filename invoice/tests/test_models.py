@@ -12,6 +12,15 @@ from invoice.models import (
     Payment
 )
 
+class InvoiceQuickCreateModelTestCase(TestCase):
+
+    def setUp(self):
+        self.invoice = Invoice()
+        self.invoice.customer_id = 1
+        self.invoice.practitioner_id = 2
+        self.invoice.appointments = [3,4,5]
+        self.invoice.template = 'basic_v2'
+
 class InvoiceModelTestCase(TestCase):
 
     def setUp(self):

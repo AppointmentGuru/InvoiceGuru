@@ -10,6 +10,19 @@ from ..models import Payment
 
 import responses
 
+class InvoiceSubmitViewTestCase(TestCase):
+
+    def setUp(self):
+        self.invoice = create_mock_invoice()
+        self.url = '/invoice/submit/{}/?key={}'.format(
+            self.invoice.id,
+            self.invoice.password
+        )
+
+    def test_load_with_existing_record(self):
+        res = self.client.get(self.url)
+        import ipdb;ipdb.set_trace()
+
 class InvoiceViewTestCase(TestCase):
 
     def setUp(self):

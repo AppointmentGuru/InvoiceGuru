@@ -1,0 +1,46 @@
+{% extends 'invoice/base/index.html' %}
+{% block css %}
+p label {
+    min-width: 200px;
+    margin-left: 20px;
+    display: inline-block;
+}
+{% endblock %}
+{% block main_content %}
+
+<div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
+    <div class="mdl-tabs__tab-bar">
+        <a href="#preview-panel" class="mdl-tabs__tab is-active">Preview</a>
+        <a href="#new-panel" class="mdl-tabs__tab">New</a>
+    </div>
+
+    <div class="mdl-tabs__panel is-active" id="preview-panel">
+        <select
+            onchange='
+                document.getElementById("viewframe").src = this.options[this.selectedIndex].value;
+                document.getElementById("link").href = this.options[this.selectedIndex].value.replace("/invoice/","/invoice/view/");
+                ' >
+            {% for invoice in invoices %}
+                <option value='/invoice/{{invoice.pk}}/?key={{invoice.password}}' >
+                [{{invoice.practitioner_id}}] {{invoice}} [{{invoice.status}}]
+                </option>
+            {% endfor %}
+        </select>
+        <a id="link" href='' >View</a>
+        <iframe id='viewframe' src='{{invoices.first.get_download_url}}'
+            width='100%' height='800px' >
+        </iframe>
+    </div>
+    <div class="mdl-tabs__panel" id="new-panel">
+        <form method='POST' >
+            {% csrf_token %}
+            <h3>Create a new invoice</h3>
+            {% if form.errors %}
+            {{form.errors}}
+            {% endif %}
+            {{ form.as_p }}
+            <button type='submit' ></button>
+        </form>
+    </div>
+<div>
+{% endblock %}

@@ -12,6 +12,9 @@
 {% csrf_token %}
 <section class='ag-ma' >
     <h3>Submit to medical aid</h3>
+    {% if message %}
+    <div class='alert success' >{{message}}</div>
+    {% endif %}
     {% if form.errors %}
     <div class='alert' >
         {{form.errors}}

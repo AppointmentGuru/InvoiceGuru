@@ -181,7 +181,10 @@ print(InvoiceBuilder().build_context(inv))
 
     def get_appointments_from_legacy_context(self):
         # return none if no context already exists on here
-        if self.invoice.context is None: return None
+        CONTEXT_IS_NONE = self.invoice.context is None
+        NO_APPOINTMENTS = self.invoice.context.get('appointments', None) is None
+        if CONTEXT_IS_NONE or NO_APPOINTMENTS: return None
+
         appointments = []
         for appointment in self.invoice.context.get('appointments', []):
             cleaned_appointment = self.clean_appointment(appointment)

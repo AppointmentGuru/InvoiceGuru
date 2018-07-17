@@ -1,17 +1,39 @@
 from django import forms
 from django.conf import settings
 from django.template import Template, Context
-from .models import  ProofOfPayment
+from .models import  ProofOfPayment, Invoice
 from .tasks import submit_to_medical_aid
 from .guru import get_headers
 
 import requests
+
+def medicalaids():
+    base = settings.MEDICALAIDGURU_API
+    path = '/medicalaid/'
+    url = '{}{}'.format(base,path)
+    data = requests.get(url).json().get('results', [])
+    return data
 
 class ProofOfPaymentForm(forms.ModelForm):
     class Meta:
         model = ProofOfPayment
         fields = ['document']
 
+class QuickInvoiceForm(forms.ModelForm):
+    class Meta:
+        model = Invoice
+        fields = [
+            'practitioner_id',
+            'customer_id',
+            'appointments',
+            'title',
+            'template',
+            'date',
+            'due_date',
+            'invoice_period_from',
+            'invoice_period_to',
+            'template'
+        ]
 
 class MedicalAidSubmissionForm(forms.Form):
 
@@ -26,13 +48,22 @@ class MedicalAidSubmissionForm(forms.Form):
         help_text='We\'ll send your invoice to this address'
     )
 
+    @staticmethod
+    def get_medicalaid(invoice):
+        id = invoice.context.get('record', {}).get('medical_aid', {}).get('medicalaid')
+        if id is None: return None
+        aids = medicalaids()
+        for aid in aids:
+            if str(aid.get("id")) == str(id):
+                return (aid, aids)
+
     def save(self, invoice):
         # submit to medical aid
         customer_email = self.cleaned_data.get('customer_email')
         claims_email = self.cleaned_data.get('claims_email')
 
         data = {
-            "to_email": customer_email,
+            "to_email": claims_email,
             "from_email": customer_email,
             "invoice_id": invoice.id
         }
@@ -60,11 +91,7 @@ class UpdateInvoiceDetailsForm(forms.Form):
     member_id_number = forms.CharField(required=False)
 
     def get_medicalaids(self):
-        base = settings.MEDICALAIDGURU_API
-        path = '/medicalaid/'
-        url = '{}{}'.format(base,path)
-        data = requests.get(url).json().get('results', [])
-        return data
+        return medicalaids()
 
     @classmethod
     def from_customer(cls, customer_id, practitioner_id):

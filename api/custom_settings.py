@@ -28,11 +28,16 @@ TEMPLATE_REGISTRY = {
         'title': 'A simple invoice template',
         'description': 'A quick and easy template for simple invoices'
     },
-    'material': {
-        'filename': 'material.html',
-        'title': 'A meterial design themed invoice template',
-        'description': 'An attractive simple invoice template'
-    }
+    'basic_v2': {
+        'filename': 'basic_v2.html',
+        'title': 'Version 2 of the simple invoice template',
+        'description': 'A quick and easy template for simple invoices'
+    },
+    # 'material': {
+    #     'filename': 'material.html',
+    #     'title': 'A meterial design themed invoice template',
+    #     'description': 'An attractive simple invoice template'
+    # }
 }
 
 DATABASES = {
@@ -70,10 +75,11 @@ PUB_SUB_CHANNEL = get_secret('PUBNUB_SCHOOL_CHANNEL_PREFIX')
 MEDICALAIDGURU_API = 'http://medicalaidguru'
 APPOINTMENTGURU_API = 'http://appointmentguru'
 COMMUNICATIONGURU_API = 'http://communicationguru'
-COMMUNICATIONGURU_API = 'https://unibox.appointmentguru.co'
+# COMMUNICATIONGURU_API = 'https://unibox.appointmentguru.co'
 # APPOINTMENTGURU_API = 'https://swarm.appointmentguru.co/v1'
 
 INVOICEGURU_BASE_URL = 'https://invoiceguru.appointmentguru.co'
+INVOICEGURU_BASE_URL = 'http://host.docker.internal:8001'
 
 GOOGLE_API_SHORTENER_TOKEN = os.environ.get('GOOGLE_API_SHORTENER_TOKEN')
 

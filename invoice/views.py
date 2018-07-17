@@ -26,7 +26,8 @@ from .medialaids import MEDIAL_AIDS
 from .forms import (
     UpdateInvoiceDetailsForm,
     ProofOfPaymentForm,
-    MedicalAidSubmissionForm
+    MedicalAidSubmissionForm,
+    QuickInvoiceForm,
 )
 from .tasks import mark_invoice_as_paid
 
@@ -63,10 +64,18 @@ def snap_webhook(request):
 
 @user_passes_test(lambda u: u.is_superuser)
 def test_invoices(request):
+    form = QuickInvoiceForm()
+    if request.method == 'POST':
+        form = QuickInvoiceForm(request.POST)
+        if form.is_valid():
+            invoice = form.save()
+            return HttpResponseRedirect(invoice.get_view_url)
+
     context = {
-        "invoices": Invoice.objects.filter(practitioner_id=1).order_by('-id')
+        "invoices": Invoice.objects.filter(practitioner_id=1).order_by('-id'),
+        "form": form
     }
-    return render(request, 'invoice/listall.html', context=context)
+    return render(request, 'invoice/test.html', context=context)
 
 @user_passes_test(lambda u: u.is_superuser)
 def invoices(request, practitioner, from_date, to_date):
@@ -234,22 +243,29 @@ def edit_invoice(request, pk):
 def submit_invoice(request, pk):
 
     invoice, settings = __get_invoice(request, pk)
-    medical_aid = {
-        "name": 'DISCOVERY Health Medical Scheme',
-        "email": 'claims@discovery.co.za'
-    }
+    message = None
+    medical_aid, medical_aids = MedicalAidSubmissionForm.get_medicalaid(invoice)
     if request.method == 'POST':
         form = MedicalAidSubmissionForm(request.POST)
         if form.is_valid():
             form.save(invoice)
+            claimed_email = form.cleaned_data.get('claims_email')
+            message = "Receipt has been submitted to {}".format(claimed_email)
     else:
-        form = MedicalAidSubmissionForm()
+        initial = {
+            "customer_email": invoice.get_client_email
+        }
+        if medical_aid is not None:
+            initial['claims_email'] = medical_aid.get('email')
+        form = MedicalAidSubmissionForm(initial=initial)
 
     context = {
         "invoice": invoice,
         "settings": settings,
         "medical_aid": medical_aid,
-        "form": form
+        "medical_aids": medical_aids,
+        "form": form,
+        "message": message,
     }
     return render(request, 'invoice/submit.html', context=context)
 

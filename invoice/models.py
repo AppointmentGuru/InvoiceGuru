@@ -352,8 +352,8 @@ class Invoice(models.Model):
 
     @property
     def is_receipt(self):
-        if self.status == 'paid': return True
-        return (self.invoice_amount - self.amount_paid) == 0
+        return self.status == 'paid'
+        # return (self.invoice_amount - self.amount_paid) == 0
 
     @property
     def invoice_number(self):

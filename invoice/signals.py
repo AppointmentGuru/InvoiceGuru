@@ -4,6 +4,7 @@ Signals for Invoice model
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from .models import Invoice, ProofOfPayment, Payment
+from .invoicebuilder import InvoiceBuilder
 from dateutil.parser import parse
 from decimal import Decimal
 import random
@@ -14,6 +15,10 @@ def apply_context(sender, instance, **kwargs):
     context = instance.context
     invoice_total = 0
     invoice_amount_paid = 0
+    if instance.template == 'basic_v2' and instance.pk is None:
+        builder = InvoiceBuilder(instance)
+        builder.enrich(save_context=True)
+
     appointments = context.get('appointments', [])
 
     for appt in appointments:

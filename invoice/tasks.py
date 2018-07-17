@@ -94,7 +94,7 @@ def submit_to_medical_aid(data):
         "invoice": invoice._get_serialized()
     }
     base = settings.INVOICEGURU_BASE_URL
-    invoice_url = "{}{}".format(base, invoice.get_absolute_url())
+    invoice_url = "{}{}".format(base, invoice.get_download_url)
 
     result = __send_templated_communication(
         transport = Transport.EMAIL,
@@ -102,7 +102,7 @@ def submit_to_medical_aid(data):
         channel = "practitioner-{}".format(invoice.practitioner_id),
         frm = from_email,
         to = to_email,
-        template = MessageTemplate.SUBMIT_TO_MEDICAL_AID.value,
+        template_slug = MessageTemplate.SUBMIT_TO_MEDICAL_AID.value,
         context = context,
         urls = [invoice_url]
     )
