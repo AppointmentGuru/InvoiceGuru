@@ -82,12 +82,12 @@ class InvoiceSettings(models.Model):
     customer_info = models.TextField(blank=True, null=True, verbose_name='Customer info template', help_text='Choose how you would like to display your customers info')
     lineitem_template = models.TextField(blank=True, null=True, default='codetable.html')
 
-    include_booking_info = models.BooleanField(default=True)
-    integrate_medical_aid = models.BooleanField(default=False)
-    show_snapcode_on_invoice = models.BooleanField(default=False)
-    allow_pre_payments = models.BooleanField(default=False)
-    allow_submit_to_medical_aid = models.BooleanField(default=False)
-    include_vat = models.BooleanField(default=False)
+    include_booking_info = models.NullBooleanField(default=True)
+    integrate_medical_aid = models.NullBooleanField(default=False)
+    show_snapcode_on_invoice = models.NullBooleanField(default=False)
+    allow_pre_payments = models.NullBooleanField(default=False)
+    allow_submit_to_medical_aid = models.NullBooleanField(default=False)
+    include_vat = models.NullBooleanField(default=False)
 
     snap_id = models.CharField(max_length=128, blank=True, null=True)
     vat_percent = models.PositiveIntegerField(default=0, blank=True, null=True)
@@ -189,7 +189,7 @@ class Invoice(models.Model):
     medicalaid_details = models.TextField(blank=True, null=True)
 
     # settings:
-    integrate_medical_aid = models.BooleanField(default=False)
+    integrate_medical_aid = models.NullBooleanField(default=False)
     # automatically_submit_to_medical_aid = models.BooleanField(default=False)
 
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
