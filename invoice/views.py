@@ -13,7 +13,7 @@ from django.db.models import Sum
 from decimal import Decimal
 from dateutil import parser
 from datetime import datetime, timedelta, date
-import json
+import json, calendar
 
 from .helpers import (
     fetch_data,
@@ -119,10 +119,31 @@ def transactions(request, practitioner):
 from invoice.models import *
 practitioner=7
 payments = Payment.objects.filter(practitioner_id=practitioner).order_by('payment_date')[0:10]
+
+possible time periods:
+
+- days=14
+- from_date + to_date
+- month + year
     '''
-    last30 = timezone.now() - timedelta(days=30)
-    invoices = Invoice.objects.filter(practitioner_id=practitioner, date__gte=last30).order_by('-date')
-    payments = Payment.objects.filter(practitioner_id=practitioner, payment_date__gte=last30).order_by('-payment_date')
+
+    month = int(request.GET.get('month', date.today().month))
+    year = int(request.GET.get('year', date.today().year))
+    last_day = calendar.monthrange(year, month)[1]
+
+    start_date = date(year, month, 1)
+    end_date = date(year, month, last_day)
+
+    invoices = Invoice.objects.filter(
+        practitioner_id=practitioner,
+        date__gte=start_date,
+        date__lte=end_date
+    ).order_by('date')
+    payments = Payment.objects.filter(
+        practitioner_id=practitioner,
+        payment_date__gte=start_date,
+        payment_date__lte=end_date
+    ).order_by('payment_date')
 
     transactions = combine_into_transactions(invoices, payments)
     print(transactions)

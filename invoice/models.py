@@ -411,8 +411,8 @@ class Payment(models.Model):
 
         payment.invoice_id = invoice.id
         payment.amount = invoice.amount_paid
-        # payment.payment_date = invoice.modified_date
-        payment.payment_date = invoice.created_date
+        payment.payment_date = invoice.modified_date
+        # payment.payment_date = invoice.created_date
         payment.payment_method = payment_method
         if with_save:
             payment.save()

@@ -7,6 +7,7 @@ from testutils import create_mock_invoice
 
 COMMUNICATIONGURU = 'https://unibox.appointmentguru.co/communications/'
 
+
 class IntegrationTestCase(TestCase):
 
     def setUp(self):
