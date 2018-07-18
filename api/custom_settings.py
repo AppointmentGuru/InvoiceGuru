@@ -78,8 +78,11 @@ COMMUNICATIONGURU_API = 'http://unibox'
 # COMMUNICATIONGURU_API = 'https://unibox.appointmentguru.co'
 # APPOINTMENTGURU_API = 'https://swarm.appointmentguru.co/v1'
 
-INVOICEGURU_BASE_URL = 'https://invoiceguru.appointmentguru.co'
-INVOICEGURU_BASE_URL = 'http://host.docker.internal:8001'
+INVOICEGURU_BASE_URL =  os.environ.get(
+                            'INVOICEGURU_BASE_URL',
+                            'https://invoiceguru.appointmentguru.co'
+                        )
+# INVOICEGURU_BASE_URL = 'http://host.docker.internal:8001'
 
 GOOGLE_API_SHORTENER_TOKEN = os.environ.get('GOOGLE_API_SHORTENER_TOKEN')
 
@@ -95,6 +98,7 @@ class PUBLISHKEYS:
     '''A config of the events published by this service'''
     invoice_sent='invoice_sent'
     invoice_paid='invoice_paid'
+    payment_received='payment_received'
 
 sentry_url = 'https://{}:{}@sentry.io/{}'.format(
     os.environ.get('SENTRY_PUBLIC_KEY'),

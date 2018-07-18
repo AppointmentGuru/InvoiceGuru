@@ -307,7 +307,7 @@ def pay_invoice(request, pk):
 
 def view_invoice(request, pk):
 
-    invoice, settings = __get_invoice(request, pk)
+    invoice, invoice_settings = __get_invoice(request, pk)
     message = None
     if request.GET.get('send') is not None:
         invoice.send(to_email=True)
@@ -316,7 +316,9 @@ def view_invoice(request, pk):
     context = {
         "page_title": "Invoice #: {}".format(invoice.invoice_number),
         "message": message,
-        "invoice": invoice
+        "invoice": invoice,
+        "settings": invoice_settings,
+        "invoiceguru_url": settings.INVOICEGURU_BASE_URL,
     }
     return render(request, 'invoice/view.html', context=context)
     # return render(request, 'invoice/app.html', context=context)
