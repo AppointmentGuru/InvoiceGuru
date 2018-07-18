@@ -72,7 +72,7 @@ def test_invoices(request):
             return HttpResponseRedirect(invoice.get_view_url)
 
     context = {
-        "invoices": Invoice.objects.filter(practitioner_id=1).order_by('-id'),
+        "invoices": Invoice.objects.filter(practitioner_id=1, template='basic_v2').order_by('-id'),
         "form": form
     }
     return render(request, 'invoice/test.html', context=context)

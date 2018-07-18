@@ -189,7 +189,7 @@ class Invoice(models.Model):
     medicalaid_details = models.TextField(blank=True, null=True)
 
     # settings:
-    integrate_medical_aid = models.NullBooleanField(default=False)
+    integrate_medical_aid = models.NullBooleanField()
     # automatically_submit_to_medical_aid = models.BooleanField(default=False)
 
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
