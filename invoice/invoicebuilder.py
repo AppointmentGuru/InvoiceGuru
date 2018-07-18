@@ -207,5 +207,4 @@ print(InvoiceBuilder().build_context(inv))
                 appointments.append(data)
             else:
                 print("{}: Appt #{}: {}".format(practitioner_id, appointment_id, result.status_code))
-                import ipdb;ipdb.set_trace()
         return appointments
