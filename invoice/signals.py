@@ -15,9 +15,9 @@ def apply_context(sender, instance, **kwargs):
     context = instance.context
     invoice_total = 0
     invoice_amount_paid = 0
-    if instance.template == 'basic_v2' and instance.pk is None:
+    if instance.template == 'basic_v2' and instance.context.get('id') is None:
         builder = InvoiceBuilder(instance)
-        builder.enrich(save_context=True)
+        instance.context = builder.enrich(save_context=False)
 
     appointments = context.get('appointments', [])
 
