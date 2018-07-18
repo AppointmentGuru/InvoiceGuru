@@ -74,7 +74,7 @@ PUB_SUB_CHANNEL = get_secret('PUBNUB_SCHOOL_CHANNEL_PREFIX')
 # service dependencies:
 MEDICALAIDGURU_API = 'http://medicalaidguru'
 APPOINTMENTGURU_API = 'http://appointmentguru'
-COMMUNICATIONGURU_API = 'http://communicationguru'
+COMMUNICATIONGURU_API = 'http://unibox'
 # COMMUNICATIONGURU_API = 'https://unibox.appointmentguru.co'
 # APPOINTMENTGURU_API = 'https://swarm.appointmentguru.co/v1'
 

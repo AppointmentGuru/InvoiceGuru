@@ -390,8 +390,8 @@
 				<td>
 				<strong>Notes:</strong>
 {% if invoice.notes %}{{invoice.notes|markdown|linebreaks}}{% endif %}
-{% if is_receipt and settings.receipt_notes|markdown|linebreaks %}{{settings.receipt_notes}}{% endif %}
-{% if not is_receipt and settings.invoice_notes|markdown|linebreaks %}{{settings.invoice_notes}}{% endif %}
+{% if invoice.is_receipt and settings.receipt_notes|markdown|linebreaks %}{{settings.receipt_notes}}{% endif %}
+{% if not invoice.is_receipt and settings.invoice_notes|markdown|linebreaks %}{{settings.invoice_notes}}{% endif %}
 				</td>
 				<td>
 

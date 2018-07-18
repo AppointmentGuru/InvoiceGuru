@@ -28,7 +28,7 @@ services:
     ports:
       - "8002:80"
 
-  communicationguru:
+  unibox:
     image: appointmentguru/communicationguru:unibox
     command: sh /code/run.sh
     env_file:
