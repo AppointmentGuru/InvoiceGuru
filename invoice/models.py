@@ -11,6 +11,7 @@ from .helpers import (
     to_context,
     clean_context
 )
+from dateutil.parser import parse
 
 INVOICE_STATUSES = [
     ('new', 'new'),
@@ -214,6 +215,38 @@ class Invoice(models.Model):
                 }
             return client
         return {}
+
+    @classmethod
+    def from_appointment(cls, practitioner_id, appointment_id, with_save=True, send=False):
+        instance = cls()
+        builder = InvoiceBuilder(instance)
+        appointments = builder.get_appointments(practitioner_id, [appointment_id])
+
+        if len(appointments) > 0:
+            appointment = appointments[0]
+            dt = parse(appointment.get('start_time')).date()
+            title = appointment.get('invoice_title') or appointment.get('title')
+            client_id = appointment.get('client_id') or appointment.get('client', {}).get('id')
+
+            instance.customer_id = client_id
+            instance.practitioner_id = practitioner_id
+            instance.appointments = [appointment_id]
+            instance.date = dt
+            instance.due_date = dt
+            instance.title = title
+            instance.invoice_period_from = dt
+            instance.invoice_period_to = dt
+            instance.template = 'basic_v2'
+            if appointment.get('status') == 'P':
+                instance.status = 'paid'
+
+            if with_save:
+                instance.save()
+
+            if send:
+                instance.send(to_email=True)
+            return instance
+        return None
 
     @property
     def get_client_email(self):

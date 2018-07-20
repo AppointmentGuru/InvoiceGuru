@@ -1,3 +1,6 @@
+import responses
+from django.conf import settings
+
 MESSAGE_SUCCESS_RESPONSE = {
 	"id": 60,
 	"owner": "836",
@@ -26,3 +29,56 @@ MESSAGE_SUCCESS_RESPONSE = {
 	},
 	"template": None
 }
+
+def expect_get_user_response(user_id):
+	responses.add(
+		responses.GET,
+		'{}/api/users/{}/'.format(settings.APPOINTMENTGURU_API, user_id),
+		json={
+			'id': user_id,
+			'first_name': 'Joe'},
+		status=200
+	)
+def expect_get_practitioner_response(practitioner_id):
+	practitioner_data = {
+		'id': 2,
+		'username': 'jane@soap.com',
+	}
+	responses.add(
+		responses.GET,
+		'{}/api/practitioners/{}/'.format(settings.APPOINTMENTGURU_API, practitioner_id),
+		json=practitioner_data,
+		status=200
+	)
+
+def expect_get_record_response(customer_id, practitioner_id):
+	responses.add(
+		responses.GET,
+		'{}/records/{}/'.format(settings.MEDICALAIDGURU_API, customer_id),
+		json={
+			'customer_id': customer_id,
+			'practitioners': [practitioner_id],
+			'patient': {
+				'first_name': 'Joe'
+			}
+		},
+		status=200
+	)
+
+def expect_get_appointments(appointment_ids, practitioner_id, response_data={}):
+	for x in appointment_ids:
+		data = {
+			'process': { },
+			'id': x,
+			'practitioner': { "id": practitioner_id },
+			'client': { "id": 123 },
+			'start_time': "2018-07-08T14:05:49.594+02:00",
+			'end_time': "2018-07-08T14:35:49.594+02:00"
+		}
+		data.update(response_data)
+		responses.add(
+			responses.GET,
+			'{}/api/appointments/{}/'.format(settings.APPOINTMENTGURU_API, x),
+			json = data,
+			status = 200
+		)

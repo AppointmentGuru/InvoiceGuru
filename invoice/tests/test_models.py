@@ -11,6 +11,14 @@ from invoice.models import (
     ProofOfPayment,
     Payment
 )
+from .responses import (
+    expect_get_appointments,
+    expect_get_practitioner_response,
+    expect_get_record_response,
+    expect_get_user_response
+)
+from datetime import date
+import responses
 
 class InvoiceQuickCreateModelTestCase(TestCase):
 
@@ -90,6 +98,55 @@ class ProofOfPaymentTestCase(TestCase):
 
         assert self.proof.approved == True
         assert self.proof.payment is not None
+
+class CreateInvoiceFromAppointmentTestCase(TestCase):
+
+    appointment_data = {
+        "client": {
+            "id": 3,
+        },
+        "start_time": "2018-07-26T07:00:00Z",
+        "end_time": "2018-07-26T16:00:00Z",
+        "invoice_title": "This is the invoice title"
+    }
+
+    @responses.activate
+    def setUp(self):
+        self.practitioner_id = 1
+        self.appointment_id = 2
+        self.customer_id = 3
+
+        # expected requests:
+        expect_get_appointments([self.appointment_id], self.practitioner_id, self.appointment_data)
+        expect_get_practitioner_response(self.practitioner_id)
+        expect_get_record_response(self.customer_id, self.practitioner_id)
+        expect_get_user_response(self.customer_id)
+
+        self.invoice = Invoice.from_appointment(
+            self.practitioner_id,
+            self.appointment_id
+        )
+        self.invoice.refresh_from_db()
+
+    def test_create_invoice_from_appointment(self):
+        assert self.invoice.id is not None
+
+    def test_it_sets_context(self):
+
+        assert int(self.invoice.customer_id) == int(self.customer_id), \
+            'Expected {}. got: {}'.format(self.customer_id, self.invoice.customer_id)
+        assert int(self.invoice.context.get('appointments')[0].get('id')) == int(self.appointment_id)
+        assert int(self.invoice.appointments[0]) == int(self.appointment_id)
+        assert int(self.invoice.practitioner_id) == int(self.practitioner_id)
+
+    def test_it_sets_dates(self):
+
+        expected_date = date(2018, 7, 26)
+
+        assert self.invoice.date == expected_date
+        assert self.invoice.due_date == expected_date
+        assert self.invoice.invoice_period_from == expected_date
+        assert self.invoice.invoice_period_to == expected_date
 
 
 class CreateInvoiceTestCase(TestCase):
