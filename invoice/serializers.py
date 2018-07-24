@@ -9,6 +9,7 @@ INVOICE_COMMON_FIELDS = [
     'status',
     'password',
     'invoice_period_from',
+    'template',
     'object_ids',
     'appointments',
     'invoice_period_to',
