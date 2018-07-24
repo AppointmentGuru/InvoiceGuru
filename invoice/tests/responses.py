@@ -41,7 +41,7 @@ def expect_get_user_response(user_id):
 	)
 def expect_get_practitioner_response(practitioner_id):
 	practitioner_data = {
-		'id': 2,
+		'id': practitioner_id,
 		'username': 'jane@soap.com',
 	}
 	responses.add(

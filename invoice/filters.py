@@ -16,3 +16,21 @@ class InvoiceFilter(FilterSet):
         model = Invoice
         fields = ['practitioner_id', 'date', 'customer_id']
 
+
+def filter_transaction_invoices(request):
+
+    customer_id = request.query_params.get('customer_id')
+    date_from = request.query_params.get('date_from')
+    date_to = request.query_params.get('date_to')
+    query = {
+        "practitioner_id": request.user.id
+    }
+    if customer_id is not None:
+        query['customer_id'] = request.query_params.get('customer_id')
+    if date_from is not None:
+        query['date__gte'] = date_from
+    if date_to is not None:
+        query['date__lte'] = date_to
+    return Invoice.objects.filter(**query).order_by('date')
+
+

@@ -105,12 +105,13 @@ sentry_url = 'https://{}:{}@sentry.io/{}'.format(
     os.environ.get('SENTRY_SECRET_KEY'),
     os.environ.get('SENTRY_PROJECT_ID')
 )
-RAVEN_CONFIG = {
-    'dsn': sentry_url,
-    # If you are using git, you can also automatically configure the
-    # release based on the git info.
-    # 'release': raven.fetch_git_sha(os.path.abspath(os.pardir)),
-}
+if not DEBUG:
+    RAVEN_CONFIG = {
+        'dsn': sentry_url,
+        # If you are using git, you can also automatically configure the
+        # release based on the git info.
+        # 'release': raven.fetch_git_sha(os.path.abspath(os.pardir)),
+    }
 
 if not DEBUG:
     LOGGING = {

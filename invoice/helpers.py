@@ -8,6 +8,33 @@ def get_headers(practitioner_id):
         'X_AUTHENTICATED_USERID': str(practitioner_id),
     }
 
+def combine_into_transactions(invoices, payments):
+    transactions = []
+    current_invoice = invoices.first()
+    current_payment = payments.first()
+    current_invoice_index = 0
+    current_payment_index = 0
+    while True:
+        print ("invoice: {} | payment: {}".format(
+            current_invoice_index, current_payment_index
+        ))
+        try:
+            current_invoice = invoices[current_invoice_index]
+            current_payment = payments[current_payment_index]
+        except IndexError:
+            transactions += invoices[current_invoice_index:]
+            transactions += invoices[current_payment_index:]
+            return transactions
+
+        print("inv: {} <= pay: {}".format(current_invoice.created_date, current_payment.payment_date))
+        if current_invoice.created_date >= current_payment.payment_date:
+            transactions.append(current_invoice)
+            current_invoice_index += 1
+        else:
+            transactions.append(current_payment)
+            current_payment_index += 1
+
+
 class Person:
 
     def __init__(self, person):

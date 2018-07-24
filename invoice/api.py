@@ -8,11 +8,30 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
-from .models import Invoice, InvoiceSettings, Payment
-from .serializers import InvoiceSerializer, InvoiceSettingsSerializer, PaymentSerializer
 from .guru import send_invoice, publish
-from .helpers import to_context, fetch_data, fetch_appointments
-from .filters import InvoiceFilter
+from .filters import (
+    InvoiceFilter,
+    filter_transaction_invoices
+)
+from .serializers import (
+    InvoiceSerializer,
+    InvoiceSettingsSerializer,
+    PaymentSerializer,
+    TransactionSerializer
+)
+from .models import (
+    Invoice,
+    InvoiceSettings,
+    Payment
+)
+from .helpers import (
+    to_context,
+    fetch_data,
+    fetch_appointments,
+    combine_into_transactions
+)
+
+
 from .tasks import (
     mark_invoice_as_paid
 )
@@ -29,6 +48,41 @@ class Guru:
             'X_ANONYMOUS_CONSUMER': 'false',
             'X_AUTHENTICATED_USERID': str(authenticated_user_id),
         }
+
+class TransactionsViewSet(viewsets.ViewSet):
+
+    def list(self, request):
+        """
+        available filters:
+
+        customer_ids
+
+        date options:
+            - date_from
+            - date_to
+
+            - month
+            - year
+
+            - last  # number of days
+        """
+        practitioner_id = request.user.id
+        invoices = filter_transaction_invoices(request)
+
+        payments = Payment.objects.filter(
+            practitioner_id=practitioner_id,
+        ).order_by('payment_date')
+
+        raw_transactions = combine_into_transactions(invoices, payments)
+        transactions = []
+        for transaction in raw_transactions:
+            IS_INVOICE = isinstance(transaction, Invoice)
+            if IS_INVOICE:
+                data = TransactionSerializer.from_invoice(transaction).data
+            else:
+                data = TransactionSerializer.from_payment(transaction).data
+            transactions.append(data)
+        return response.Response(transactions)
 
 class InvoiceSettingsViewSet(viewsets.ModelViewSet):
     queryset = InvoiceSettings.objects.all()
@@ -171,3 +225,4 @@ router.register(r'invoices/settings', InvoiceSettingsViewSet)
 router.register(r'payments', PaymentViewSet)
 router.register(r'invoices', InvoiceViewSet)
 router.register(r'invoices/bulk', BulkInvoiceViewSet, base_name='bulk-invoices')
+router.register(r'transactions', TransactionsViewSet, base_name='transactions')

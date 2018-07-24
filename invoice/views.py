@@ -18,7 +18,8 @@ import json, calendar
 from .helpers import (
     fetch_data,
     to_context,
-    codes_to_table
+    codes_to_table,
+    combine_into_transactions
 )
 
 from .models import Invoice, InvoiceSettings, Payment, ProofOfPayment
@@ -96,32 +97,6 @@ def invoices(request, practitioner, from_date, to_date):
         'total_value': total_value,
     }
     return render(request, 'invoice/list.html', context=context)
-
-def combine_into_transactions(invoices, payments):
-    transactions = []
-    current_invoice = invoices.first()
-    current_payment = payments.first()
-    current_invoice_index = 0
-    current_payment_index = 0
-    while True:
-        print ("invoice: {} | payment: {}".format(
-            current_invoice_index, current_payment_index
-        ))
-        try:
-            current_invoice = invoices[current_invoice_index]
-            current_payment = payments[current_payment_index]
-        except IndexError:
-            transactions += invoices[current_invoice_index:]
-            transactions += invoices[current_payment_index:]
-            return transactions
-
-        print("inv: {} <= pay: {}".format(current_invoice.created_date, current_payment.payment_date))
-        if current_invoice.created_date >= current_payment.payment_date:
-            transactions.append(current_invoice)
-            current_invoice_index += 1
-        else:
-            transactions.append(current_payment)
-            current_payment_index += 1
 
 def transactions(request, practitioner):
     '''

@@ -11,7 +11,7 @@ class Command(BaseCommand):
         [p.delete() for p in Payment.objects.all()]
         paid_invoices = Invoice.objects.filter(
                             status='paid',
-                            practitioner_id=1604
+                            practitioner_id=1
                         )
 
         print ("Found {} invoices" .format(paid_invoices.count()))

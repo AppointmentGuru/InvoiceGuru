@@ -73,8 +73,14 @@ class MarkAsPaidEndpointTestCase(TestCase):
         # not sure how to test this
         pass
 
-
-class BulkActionsInvoiceTestCase(TestCase):
+class TransactionListTestCase(TestCase):
 
     def setUp(self):
-        pass
+        self.headers = get_proxy_headers(1)
+        self.url = reverse('transactions-list')
+
+    def test_filter_with_customer_id(self):
+        data = {
+            "customer_id": 1
+        }
+        res = self.client.get(self.url, data, **self.headers)
