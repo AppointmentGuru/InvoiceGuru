@@ -16,7 +16,7 @@ kong_oauth==0.1
 school_pubsub==0.3
 keen
 
-django-filter
+django-filter==1.1.0
 django-anymail
 pytz
 
