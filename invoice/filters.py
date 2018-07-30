@@ -47,6 +47,6 @@ def filter_payments(request):
         query['payment_date__gte'] = date_from
     if date_to is not None:
         query['payment_date__lte'] = date_to
-    return Payment.objects.filter(**query).order_by('date')
+    return Payment.objects.filter(**query).order_by('payment_date')
 
 

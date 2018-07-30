@@ -11,7 +11,8 @@ from django.conf import settings
 from .guru import send_invoice, publish
 from .filters import (
     InvoiceFilter,
-    filter_transaction_invoices
+    filter_transaction_invoices,
+    filter_payments
 )
 from .serializers import (
     InvoiceSerializer,
