@@ -16,7 +16,9 @@
     <!-- headline-->
     <div class="mdl-cell mdl-cell--6-col">
         <h6>Payable to</h6>
-{{settings.billing_address|linebreaks}}
+Christo Crampton<br/>
+64 2nd ave, Parkhurst
+<!-- {{settings.billing_address|linebreaks}} -->
         <!-- <img src="https://media-appointmentguru.s3.amazonaws.com:443/practitioner/images/1/logo.png" style="max-width:300px; max-height:150px;"> -->
     </div>
     <div class="mdl-cell mdl-cell--6-col" style='text-align: right;' >
@@ -27,7 +29,13 @@
     <!-- meta-->
     <div class="mdl-cell mdl-cell--6-col">
         <h6 class='ag-mt-0' >Bill to:</h6>
-        {{invoice.invoicee_details|linebreaks}}
+Vumatel (Pty) Ltd<br/>
+VAT reg: 4020266740<br/>
+PO Box 1811<br/>
+Parklands<br/>
+2121
+        
+        <!-- {{invoice.invoicee_details|linebreaks}} -->
     </div>
     <div class="mdl-cell mdl-cell--6-col" >
         <table class="mdl-data-table mdl-block dense" style='float:right;' >
@@ -67,8 +75,8 @@
                 <th class="mdl-data-table__cell--non-numeric">Date</th>
                 <th class="mdl-data-table__cell--non-numeric">Invoice #</th>
                 <th class="mdl-data-table__cell--non-numeric">Description</th>
-                <th class="mdl-data-table__cell--non-numeric">Charges</th>
-                <th class="mdl-data-table__cell--non-numeric">Credits</th>
+                <th >Charges</th>
+                <th >Credits</th>
             </tr>
         </thead>
         <tbody>
@@ -107,6 +115,7 @@
 
     <div class="mdl-cell mdl-cell--12-col" >
         <h6>Banking details:</h6>
+        Christopher Crampton. <br/>FNB. <br/>Account number: 60232195566
         {{practitioner.banking_details|linebreaks}}
     </div>
 

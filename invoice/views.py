@@ -137,7 +137,7 @@ possible time periods:
     return render(request, 'invoice/transactions.html', context=context)
 
 def statement(request, practitioner, client):
-    from_date = date(2018,1,1)
+    from_date = date(2018,6,26)
     invoices = Invoice.objects.filter(
         practitioner_id=practitioner,
         customer_id=client,
@@ -148,16 +148,17 @@ def statement(request, practitioner, client):
         customer_id=client,
         payment_date__gte=from_date
     ).order_by('-payment_date')
-
     settings = InvoiceSettings.objects.get(practitioner_id = practitioner)
     transactions = combine_into_transactions(invoices, payments)
-
     balance_brought_forward = 0
-    amount_paid = payments.aggregate(amount_paid=Sum('amount')).get('amount_paid')
-    amount_due = invoices.aggregate(amount_due=Sum('invoice_amount')).get('amount_due')
+    amount_paid = payments.aggregate(amount_paid=Sum('amount')).get('amount_paid', 0)
+    amount_due = invoices.aggregate(amount_due=Sum('invoice_amount')).get('amount_due', 0)
 
-    statement_date = parser.parse('2018-01-01')
-    statement_due_date = parser.parse('2018-07-30')
+    if amount_due is None: amount_due = 0
+    if amount_paid is None: amount_paid = 0
+
+    statement_date = parser.parse('2018-06-25')
+    statement_due_date = parser.parse('2018-07-25')
 
     invoice = invoices.first()
     client = invoice.context.get("client")

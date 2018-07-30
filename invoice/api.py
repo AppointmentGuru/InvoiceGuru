@@ -66,12 +66,8 @@ class TransactionsViewSet(viewsets.ViewSet):
 
             - last  # number of days
         """
-        practitioner_id = request.user.id
         invoices = filter_transaction_invoices(request)
-
-        payments = Payment.objects.filter(
-            practitioner_id=practitioner_id,
-        ).order_by('payment_date')
+        payments = filter_payments(request)
 
         raw_transactions = combine_into_transactions(invoices, payments)
         transactions = []
@@ -97,7 +93,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     ordering_fields = ('date', 'due_date', 'id', 'date_created', 'invoice_amount')
     ordering = ('-date',)
 
-    def get_queryset(self):
+    def get_queryset(self):        
         user = self.request.user
         return Invoice.objects.filter(
             Q(practitioner_id=user.id) |

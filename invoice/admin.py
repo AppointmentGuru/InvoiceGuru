@@ -1,9 +1,14 @@
 from django.contrib import admin
 from .models import Invoice, InvoiceSettings, Payment, ProofOfPayment
 
+class PaymentAdmin(admin.ModelAdmin):    
+    list_display = ('practitioner_id', 'customer_id', 'payment_date', 'invoice', 'currency', 'amount',)
+    list_filter = ('practitioner_id', 'payment_method', )
+
+
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'practitioner_id', 'customer_id', 'sender_email', 'date', 'due_date', 'currency', 'invoice_amount', 'amount_paid', 'status')
-    list_filter = ('status', 'practitioner_id', )
+    list_filter = ('practitioner_id', 'status',)
 
 class InvoiceSettingsAdmin(admin.ModelAdmin):
     list_display = ('id',
@@ -26,5 +31,5 @@ class InvoiceSettingsAdmin(admin.ModelAdmin):
 
 admin.site.register(Invoice, InvoiceAdmin)
 admin.site.register(InvoiceSettings, InvoiceSettingsAdmin)
-admin.site.register(Payment)
+admin.site.register(Payment, PaymentAdmin)
 admin.site.register(ProofOfPayment)
