@@ -9,7 +9,7 @@ from invoice.models import (
     Invoice,
     InvoiceSettings,
     ProofOfPayment,
-    Payment
+    Transaction
 )
 from .responses import (
     expect_get_appointments,
@@ -34,6 +34,7 @@ class InvoiceModelTestCase(TestCase):
     def setUp(self):
         self.invoice = create_mock_invoice()
         self.invoice.invoice_amount = 12.34
+        self.invoice.integrate_medical_aid = True
         self.settings = InvoiceSettings()
         self.settings.snap_id = '12345'
         self.settings.practitioner_id = self.invoice.practitioner_id
@@ -74,17 +75,12 @@ class InvoiceModelTestCase(TestCase):
 
     def test_get_serialized(self):
         from ..serializers import INVOICE_COMMON_FIELDS
+        self.invoice.date = self.invoice.date.date() # <- this seems wrong :^/
         data = self.invoice._get_serialized()
         for field in INVOICE_COMMON_FIELDS:
-            import ipdb;ipdb.set_trace()
             assert data.get(field) is not None, \
                 'Field: {} not found on serialized invoice'.format(field)
 
-
-class PaymentTestCase(TestCase):
-
-    def setUp(self):
-        self.invoice = create_mock_invoice()
 
 class ProofOfPaymentTestCase(TestCase):
 
@@ -97,7 +93,7 @@ class ProofOfPaymentTestCase(TestCase):
         self.proof.refresh_from_db()
 
         assert self.proof.approved == True
-        assert self.proof.payment is not None
+        assert self.proof.transaction is not None
 
 class CreateInvoiceFromAppointmentTestCase(TestCase):
 

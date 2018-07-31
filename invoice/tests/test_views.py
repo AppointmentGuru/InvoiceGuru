@@ -6,7 +6,7 @@ from django.test import TestCase, override_settings
 from django.conf import settings
 
 from api.testutils import create_mock_invoice
-from ..models import Payment
+from ..models import Transaction
 
 import responses
 
@@ -19,9 +19,9 @@ class InvoiceSubmitViewTestCase(TestCase):
             self.invoice.password
         )
 
-    def test_load_with_existing_record(self):
-        res = self.client.get(self.url)
-        import ipdb;ipdb.set_trace()
+    # def test_load_with_existing_record(self):
+    #     res = self.client.get(self.url)
+
 
 class InvoiceViewTestCase(TestCase):
 
@@ -90,11 +90,11 @@ class SnapScanWebHookTestCase(TestCase):
         self.invoice.refresh_from_db()
         assert self.invoice.status == 'paid'
 
-    def test_it_creates_a_payment(self):
-        assert Payment.objects.count() == 1
+    def test_it_creates_a_transaction(self):
+        assert Transaction.objects.count() == 1
 
     def test_it_tags_the_payment_as_snapscan(self):
-        method = self.invoice.payment_set.first().payment_method
+        method = self.invoice.transaction_set.first().method
         assert method == 'snapscan'
 
     def test_it_sends_a_receipt(self):

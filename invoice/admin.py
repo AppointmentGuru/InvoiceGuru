@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import Invoice, InvoiceSettings, Payment, ProofOfPayment
+from .models import Invoice, InvoiceSettings, Transaction, ProofOfPayment
 
-class PaymentAdmin(admin.ModelAdmin):    
-    list_display = ('practitioner_id', 'customer_id', 'payment_date', 'invoice', 'currency', 'amount',)
-    list_filter = ('practitioner_id', 'payment_method', )
+class TransactionAdmin(admin.ModelAdmin):    
+    list_display = ('practitioner_id', 'customer_id', 'date', 'type', 'invoice', 'currency', 'amount',)
+    list_filter = ('practitioner_id', 'method', )
 
 
 class InvoiceAdmin(admin.ModelAdmin):
@@ -31,5 +31,5 @@ class InvoiceSettingsAdmin(admin.ModelAdmin):
 
 admin.site.register(Invoice, InvoiceAdmin)
 admin.site.register(InvoiceSettings, InvoiceSettingsAdmin)
-admin.site.register(Payment, PaymentAdmin)
+admin.site.register(Transaction, TransactionAdmin)
 admin.site.register(ProofOfPayment)

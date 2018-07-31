@@ -12,6 +12,7 @@ from .helpers import (
     clean_context
 )
 from dateutil.parser import parse
+from datetime import datetime
 
 INVOICE_STATUSES = [
     ('new', 'new'),
@@ -335,6 +336,8 @@ class Invoice(models.Model):
 
     def _get_serialized(self):
         from .serializers import InvoiceSerializer
+        if isinstance(self.date, datetime):
+            self.date = self.date.date() # make sure date is only a date
         return InvoiceSerializer(self).data
 
     def _get_payload(self):
@@ -404,7 +407,12 @@ class Invoice(models.Model):
         base = settings.INVOICEGURU_BASE_URL
         return '{}/invoice/{}?key={}'.format(base, self.pk, self.customer_password)
 
-class Payment(models.Model):
+TRANSACTION_TYPES = [
+    ('Invoice', 'Invoice'),
+    ('Payment', 'Payment'),
+]
+
+class Transaction(models.Model):
 
     def __str__(self):
         return "{} -> {}. {}".format(
@@ -415,41 +423,70 @@ class Payment(models.Model):
 
     practitioner_id = models.CharField(max_length=128, db_index=True)
     customer_id = models.CharField(max_length=128, db_index=True)
+    actor_id = models.CharField(max_length=128, db_index=True)
 
     invoice = models.ForeignKey(Invoice, blank=True, null=True)
+
+    auto_created = models.BooleanField(default=False, db_index=True, help_text='Checked if this transactions was automatically created by the system')
     appointments = ArrayField(models.CharField(max_length=100, blank=True, null=True), default=[], db_index=True, blank=True, null=True)
+
+    type = models.CharField(max_length=10,blank=True, null=True, choices=TRANSACTION_TYPES, db_index=True)
 
     currency = models.CharField(max_length=4,blank=True, null=True, default='ZAR')
     amount = models.DecimalField(decimal_places=2, max_digits=10, default=0, db_index=True)
-    payment_method = models.CharField(max_length=128, choices=PAYMENT_METHODS, db_index=True)
-    payment_date = models.DateTimeField(db_index=True)
+    method = models.CharField(max_length=128, choices=PAYMENT_METHODS, db_index=True)
+    date = models.DateTimeField(db_index=True)
 
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     modified_date = models.DateTimeField(auto_now=True, db_index=True)
 
     @classmethod
-    def from_invoice(cls, invoice, payment_method='unknown', with_save=True):
+    def from_invoice(cls, invoice, method='unknown', date=None, with_save=True):
+        '''
+        Creates a transaction from an invoice. 
+        If invoice is not in correct status, returns None 
+
+        raises TransactionAlreadyExists error if a matching transaction already exists
+
+        '''
+
+        if invoice.status not in ['paid', 'sent']:
+            return None
+        
+        transaction_type = 'Invoice'
+        if invoice.status == 'paid':
+            transaction_type = 'Payment'
 
         # check for dupes:
-        existing_payments = Payment.objects.filter(invoice=invoice)
-        if existing_payments.count() > 0:
-            print("Payment already exists")
-            return existing_payments.first()
+        existing_transactions = Transaction.objects.filter(
+            invoice=invoice, 
+            auto_created=True,
+            type=transaction_type
+        )
+        if existing_transactions.count() > 0:
+            print("transaction already exists")
+            return existing_transactions.first()
 
-        payment = cls()
+        transaction = cls()
         copy_fields = ['practitioner_id', 'customer_id', 'appointments']
         for field in copy_fields:
             value = getattr(invoice, field)
-            setattr(payment, field, value)
+            setattr(transaction, field, value)
 
-        payment.invoice_id = invoice.id
-        payment.amount = invoice.amount_paid
-        payment.payment_date = invoice.modified_date
-        # payment.payment_date = invoice.created_date
-        payment.payment_method = payment_method
+        if date is None:
+            date = invoice.modified_date
+
+        transaction.type = transaction_type
+        
+        transaction.auto_created = True 
+        transaction.invoice_id = invoice.id
+        transaction.amount = invoice.amount_paid
+        transaction.date = date
+        # transaction.transaction_date = invoice.created_date
+        transaction.method = method
         if with_save:
-            payment.save()
-        return payment
+            transaction.save()
+        return transaction
 
 
 def proof_upload_path(instance, filename):
@@ -461,7 +498,7 @@ def proof_upload_path(instance, filename):
 
 class ProofOfPayment(models.Model):
     invoice = models.ForeignKey(Invoice)
-    payment = models.ForeignKey(Payment, blank=True, null=True)
+    transaction = models.ForeignKey(Transaction, blank=True, null=True)
     document = models.FileField(upload_to=proof_upload_path, blank=True, null=True) # <- ideally this should really be required. Just for testing :()
     approved = models.BooleanField(default = False)
 
@@ -471,7 +508,8 @@ class ProofOfPayment(models.Model):
     def approve(self):
         self.approved = True
         self.save()
-        payment = Payment.from_invoice(self.invoice)
+        self.invoice.status = 'sent'
+        payment = Transaction.from_invoice(self.invoice)
         payment.proofofpayment_set.add(self)
         payment.save()
         if self.auto_submit_to_medical_aid:

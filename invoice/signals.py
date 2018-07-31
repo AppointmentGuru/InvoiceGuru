@@ -3,7 +3,7 @@ Signals for Invoice model
 '''
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-from .models import Invoice, ProofOfPayment, Payment
+from .models import Invoice, ProofOfPayment
 from .invoicebuilder import InvoiceBuilder
 from dateutil.parser import parse
 from decimal import Decimal
@@ -23,7 +23,7 @@ def apply_context(sender, instance, **kwargs):
 
     for appt in appointments:
 
-        codes = appt.get('codes',[])
+        codes = getattr(appt, 'codes', [])
         if len(codes) > 0:
             li_total = sum([Decimal(code.get('price')) for code in codes])
             if appt['price'] != li_total:

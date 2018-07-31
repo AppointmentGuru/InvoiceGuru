@@ -58,7 +58,7 @@ class MarkAsPaidEndpointTestCase(TestCase):
             'Expected 200. Got: {}: {}'.format(self.response.status_code, self.response)
 
     def test_creates_payment(self):
-        num_payments = self.invoice.payment_set.count()
+        num_payments = self.invoice.transaction_set.count()
         assert num_payments == 1,\
             'Expected exactly 1 payment to be created. Got: {}'.format(num_payments)
 
@@ -77,7 +77,7 @@ class TransactionListTestCase(TestCase):
 
     def setUp(self):
         self.headers = get_proxy_headers(1)
-        self.url = reverse('transactions-list')
+        self.url = reverse('transaction-list')
 
     def test_filter_with_customer_id(self):
         data = {

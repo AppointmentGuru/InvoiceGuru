@@ -11,17 +11,18 @@ class GuruTestCase(TestCase):
     def setUp(self):
         self.invoice = create_mock_invoice()
 
+    @responses.activate
     def test_publish(self):
 
-        data = InvoiceSerializer(self.invoice).data
+        data = self.invoice._get_serialized()
         publish('test-key', data)
 
 class InvoiceSendTestCase(TestCase):
-
+    
     def __add_response(self):
         responses.add(
             responses.POST,
-            'http://communicationguru/communications/',
+            'http://unibox/communications/',
             json=MESSAGE_SUCCESS_RESPONSE,
             status=201
         )
@@ -36,6 +37,7 @@ class InvoiceSendTestCase(TestCase):
     def setUp(self):
         self.invoice = create_mock_invoice()
 
+    @override_settings(COMMUNICATIONGURU_API='http://unibox')
     @override_settings(GOOGLE_API_SHORTENER_TOKEN='1234')
     @responses.activate
     def test_send_email(self):
@@ -48,6 +50,7 @@ class InvoiceSendTestCase(TestCase):
         assert data.get('preferred_transport') == 'email'
         assert data.get('recipient_emails') == [test_to_email]
 
+    @override_settings(COMMUNICATIONGURU_API='http://unibox')    
     @override_settings(GOOGLE_API_SHORTENER_TOKEN='1234')
     @responses.activate
     def test_send_sms(self):
@@ -62,6 +65,7 @@ class InvoiceSendTestCase(TestCase):
         assert data.get('preferred_transport') == 'sms'
         assert data.get('recipient_phone_number') == test_phone_number
 
+    @override_settings(COMMUNICATIONGURU_API='http://unibox')    
     @override_settings(GOOGLE_API_SHORTENER_TOKEN='1234')
     @responses.activate
     def test_send_sms_and_multiple_emails(self):

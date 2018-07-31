@@ -18,11 +18,10 @@ import json, calendar
 from .helpers import (
     fetch_data,
     to_context,
-    codes_to_table,
-    combine_into_transactions
+    codes_to_table
 )
 
-from .models import Invoice, InvoiceSettings, Payment, ProofOfPayment
+from .models import Invoice, InvoiceSettings, Transaction, ProofOfPayment
 from .medialaids import MEDIAL_AIDS
 from .forms import (
     UpdateInvoiceDetailsForm,
@@ -117,20 +116,15 @@ possible time periods:
 
     start_date = date(year, month, 1)
     end_date = date(year, month, last_day)
+    customer_id = request.GET.get('customer_id', None)
 
-    invoices = Invoice.objects.filter(
-        practitioner_id=practitioner,
+    transactions = Transaction.objects.filter(
         date__gte=start_date,
-        date__lte=end_date
-    ).order_by('date')
-    payments = Payment.objects.filter(
-        practitioner_id=practitioner,
-        payment_date__gte=start_date,
-        payment_date__lte=end_date
-    ).order_by('payment_date')
-
-    transactions = combine_into_transactions(invoices, payments)
-    print(transactions)
+        date__lte=end_date,
+        practitioner_id=request.user.id
+    )    
+    if customer_id is not None: 
+        transactions = transactions.filter(customer_id=customer_id)
     context = {
         "transactions": transactions
     }
@@ -138,21 +132,15 @@ possible time periods:
 
 def statement(request, practitioner, client):
     from_date = date(2018,6,26)
-    invoices = Invoice.objects.filter(
-        practitioner_id=practitioner,
-        customer_id=client,
-        date__gte=from_date
-    ).order_by('-date')
-    payments = Payment.objects.filter(
+    transactions = Transaction.objects.filter(
         practitioner_id=practitioner,
         customer_id=client,
         payment_date__gte=from_date
     ).order_by('-payment_date')
     settings = InvoiceSettings.objects.get(practitioner_id = practitioner)
-    transactions = combine_into_transactions(invoices, payments)
     balance_brought_forward = 0
-    amount_paid = payments.aggregate(amount_paid=Sum('amount')).get('amount_paid', 0)
-    amount_due = invoices.aggregate(amount_due=Sum('invoice_amount')).get('amount_due', 0)
+    amount_paid = transactions.filter(type='payment').aggregate(amount_paid=Sum('amount')).get('amount_paid', 0)
+    amount_due = transactions.filter(type='payment').aggregate(amount_due=Sum('invoice_amount')).get('amount_due', 0)
 
     if amount_due is None: amount_due = 0
     if amount_paid is None: amount_paid = 0
