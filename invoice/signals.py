@@ -3,7 +3,7 @@ Signals for Invoice model
 '''
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-from .models import Invoice, ProofOfPayment, Payment
+from .models import Invoice, ProofOfPayment
 from .invoicebuilder import InvoiceBuilder
 from dateutil.parser import parse
 from decimal import Decimal

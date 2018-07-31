@@ -11,25 +11,22 @@ from django.conf import settings
 from .guru import send_invoice, publish
 from .filters import (
     InvoiceFilter,
-    filter_transaction_invoices,
-    filter_payments
+    TransactionFilter
 )
 from .serializers import (
     InvoiceSerializer,
     InvoiceSettingsSerializer,
-    PaymentSerializer,
     TransactionSerializer
 )
 from .models import (
     Invoice,
     InvoiceSettings,
-    Payment
+    Transaction
 )
 from .helpers import (
     to_context,
     fetch_data,
-    fetch_appointments,
-    combine_into_transactions
+    fetch_appointments
 )
 
 
@@ -50,40 +47,21 @@ class Guru:
             'X_AUTHENTICATED_USERID': str(authenticated_user_id),
         }
 
-class TransactionsViewSet(viewsets.ViewSet):
-
-    def list(self, request):
-        """
-        available filters:
-
-        customer_ids
-
-        date options:
-            - date_from
-            - date_to
-
-            - month
-            - year
-
-            - last  # number of days
-        """
-        invoices = filter_transaction_invoices(request)
-        payments = filter_payments(request)
-
-        raw_transactions = combine_into_transactions(invoices, payments)
-        transactions = []
-        for transaction in raw_transactions:
-            IS_INVOICE = isinstance(transaction, Invoice)
-            if IS_INVOICE:
-                data = TransactionSerializer.from_invoice(transaction).data
-            else:
-                data = TransactionSerializer.from_payment(transaction).data
-            transactions.append(data)
-        return response.Response(transactions)
-
 class InvoiceSettingsViewSet(viewsets.ModelViewSet):
     queryset = InvoiceSettings.objects.all()
     serializer_class = InvoiceSettingsSerializer
+
+class TransactionViewSet(viewsets.ModelViewSet):
+    queryset = Transaction.objects.all()
+    serializer_class = TransactionSerializer
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
+    filter_class = TransactionFilter
+    ordering_fields = ('date', 'customer_id', 'practitioner_id', 'amount',)
+    ordering = ('-date',) 
+
+    def get_queryset(self):        
+        user = self.request.user
+        return Transaction.objects.filter(practitioner_id=user.id)
 
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
@@ -213,13 +191,8 @@ class BulkInvoiceViewSet(viewsets.ModelViewSet):
     def generate(self, request):
         pass
 
-class PaymentViewSet(viewsets.ModelViewSet):
-    queryset = Payment.objects.all()
-    serializer_class = PaymentSerializer
-
 router = routers.DefaultRouter()
 router.register(r'invoices/settings', InvoiceSettingsViewSet)
-router.register(r'payments', PaymentViewSet)
+router.register(r'transactions', TransactionViewSet)
 router.register(r'invoices', InvoiceViewSet)
 router.register(r'invoices/bulk', BulkInvoiceViewSet, base_name='bulk-invoices')
-router.register(r'transactions', TransactionsViewSet, base_name='transactions')
