@@ -12,6 +12,7 @@ from .helpers import (
     clean_context
 )
 from dateutil.parser import parse
+from datetime import datetime
 
 INVOICE_STATUSES = [
     ('new', 'new'),
@@ -335,6 +336,8 @@ class Invoice(models.Model):
 
     def _get_serialized(self):
         from .serializers import InvoiceSerializer
+        if isinstance(self.date, datetime):
+            self.date = self.date.date() # make sure date is only a date
         return InvoiceSerializer(self).data
 
     def _get_payload(self):
@@ -505,6 +508,7 @@ class ProofOfPayment(models.Model):
     def approve(self):
         self.approved = True
         self.save()
+        self.invoice.status = 'sent'
         payment = Transaction.from_invoice(self.invoice)
         payment.proofofpayment_set.add(self)
         payment.save()

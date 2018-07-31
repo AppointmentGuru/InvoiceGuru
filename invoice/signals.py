@@ -23,7 +23,7 @@ def apply_context(sender, instance, **kwargs):
 
     for appt in appointments:
 
-        codes = appt.get('codes',[])
+        codes = getattr(appt, 'codes', [])
         if len(codes) > 0:
             li_total = sum([Decimal(code.get('price')) for code in codes])
             if appt['price'] != li_total:

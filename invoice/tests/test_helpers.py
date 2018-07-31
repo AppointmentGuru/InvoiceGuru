@@ -7,39 +7,11 @@ from api.testutils import (
 )
 from invoice.helpers import (
     clean_object,
-    clean_context,
-    get_invoice_template
+    clean_context
 )
 from .datas import (
     example_context
 )
-
-class GetInvoiceTemplateTestCase(TestCase):
-
-    def setUp(self):
-        self.invoice = create_mock_invoice()
-
-    def test_no_details_requested(self):
-        result = get_invoice_template(self.invoice)
-        assert result == 'invoice/view.html'
-
-    def test_medical_aid_details_required(self):
-        self.invoice.request_medical_aid_details = True
-        possible_empty_values = [None, "", "{}"]
-        for val in possible_empty_values:
-            self.invoice.context.update({
-                "medicalaid_info": val
-            })
-            result = get_invoice_template(self.invoice)
-            assert result == 'invoice/edit.html'
-
-    def test_medical_aid_details_already_exist(self):
-        self.invoice.request_medical_aid_details = True
-        self.invoice.context.update({
-            "medicalaid_info": "Joe Soap. Disovery"
-        })
-        result = get_invoice_template(self.invoice)
-        assert result == 'invoice/view.html'
 
 
 class CleanContextTestCase(TestCase):

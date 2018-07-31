@@ -92,8 +92,9 @@ print(InvoiceBuilder().build_context(inv))
         return context
 
     def reduce(self, obj, fields_to_keep):
-
         new_obj = {}
+        if obj is None: return new_obj
+                    
         for field in fields_to_keep:
             new_obj[field] = obj.get(field)
         return new_obj

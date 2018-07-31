@@ -7,6 +7,9 @@ from ..invoicebuilder import InvoiceBuilder
 
 import responses
 
+from faker import Factory
+FAKE = Factory.create()
+
 class InvoiceBuilderEnrichesContextTestCase(TestCase):
 
     @override_settings(APPOINTMENTGURU_API='http://appointmentguru')
@@ -57,7 +60,9 @@ class InvoiceBuilderEnrichesContextTestCase(TestCase):
                     'process': { },
                     'practitioner': { "id": 2},
                     'start_time': "2018-07-08T14:05:49.594+02:00",
-                    'end_time': "2018-07-08T14:35:49.594+02:00"
+                    'end_time': "2018-07-08T14:35:49.594+02:00",
+                    'price': FAKE.pyint(),
+                    'amount_paid': 0
                 },
                 status=200
             )
