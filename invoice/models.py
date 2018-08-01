@@ -225,8 +225,7 @@ class Invoice(models.Model):
         to_date = now - timedelta(days=min_days)
 
         filters = {
-            "due_date__lte": to_date,
-            "status": "paid"
+            "due_date__lte": to_date
         }
 
         if max_days is not None:
