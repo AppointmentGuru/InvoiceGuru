@@ -237,8 +237,7 @@ class Invoice(models.Model):
 
         filters.update(other_filters)
         invoices =  Invoice.objects.filter(**filters)
-        invoices.exclude(status='paid')
-        print(invoices.count())
+        invoices = invoices.exclude(status='paid')
         return invoices
 
     @classmethod
