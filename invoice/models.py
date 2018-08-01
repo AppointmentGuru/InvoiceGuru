@@ -235,7 +235,7 @@ class Invoice(models.Model):
             })
 
         filters.update(other_filters)
-        invoices =  Invoice.objects.filter(**filters)
+        invoices =  Invoice.objects.filter(**filters).order_by('-due_date')
         invoices = invoices.exclude(status='paid')
         return invoices
 
