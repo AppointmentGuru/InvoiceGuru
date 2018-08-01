@@ -1,8 +1,6 @@
 '''
 InvoiceGuru API
 '''
-from rest_framework import routers, viewsets, decorators, response, status, filters, permissions
-
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -16,6 +14,7 @@ from .filters import (
 from .serializers import (
     InvoiceSerializer,
     InvoiceSettingsSerializer,
+    InvoiceListViewSerializer,
     TransactionSerializer
 )
 from .models import (
@@ -27,6 +26,16 @@ from .helpers import (
     to_context,
     fetch_data,
     fetch_appointments
+)
+
+from rest_framework import (
+    routers,
+    viewsets,
+    decorators,
+    response,
+    status,
+    filters,
+    permissions
 )
 
 
@@ -57,9 +66,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
     filter_class = TransactionFilter
     ordering_fields = ('date', 'customer_id', 'practitioner_id', 'amount',)
-    ordering = ('-date',) 
+    ordering = ('-date',)
 
-    def get_queryset(self):        
+    def get_queryset(self):
         user = self.request.user
         return Transaction.objects.filter(practitioner_id=user.id)
 
@@ -72,7 +81,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     ordering_fields = ('date', 'due_date', 'id', 'date_created', 'invoice_amount')
     ordering = ('-date',)
 
-    def get_queryset(self):        
+    def get_queryset(self):
         user = self.request.user
         return Invoice.objects.filter(
             Q(practitioner_id=user.id) |
@@ -175,6 +184,30 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         data = invoice._get_serialized()
         return response.Response(data)
 
+class ReportsViewSet(viewsets.ViewSet):
+    """
+    A viewset for getting customized views for reports
+    """
+
+    @decorators.list_route(methods=['get'])
+    def overdue(self, request):
+
+        filters = {
+            "practitioner_id": request.user.id
+        }
+        customer_id = request.GET.get('customer_id', None)
+        if customer_id is not None:
+            filters.update({
+                "customer_id": customer_id
+            })
+        data = {
+            "thirty": InvoiceListViewSerializer(Invoice.past_due(0, 30, other_filters=filters), many=True).data,
+            "sixty": InvoiceListViewSerializer(Invoice.past_due(30, 60, other_filters=filters), many=True).data,
+            "ninety": InvoiceListViewSerializer(Invoice.past_due(60, 90, other_filters=filters), many=True).data,
+            # "older": InvoiceListViewSerializer(Invoice.past_due(90, other_filters=filters), many=True).data
+        }
+
+        return response.Response(data)
 
 class BulkInvoiceViewSet(viewsets.ModelViewSet):
     '''
@@ -195,4 +228,5 @@ router = routers.DefaultRouter()
 router.register(r'invoices/settings', InvoiceSettingsViewSet)
 router.register(r'transactions', TransactionViewSet)
 router.register(r'invoices', InvoiceViewSet)
+router.register(r'invoices/reports', ReportsViewSet, base_name='reports')
 router.register(r'invoices/bulk', BulkInvoiceViewSet, base_name='bulk-invoices')

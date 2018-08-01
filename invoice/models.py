@@ -12,7 +12,7 @@ from .helpers import (
     clean_context
 )
 from dateutil.parser import parse
-from datetime import datetime
+from datetime import datetime, timedelta
 
 INVOICE_STATUSES = [
     ('new', 'new'),
@@ -216,6 +216,30 @@ class Invoice(models.Model):
                 }
             return client
         return {}
+
+    @staticmethod
+    def past_due(min_days, max_days = None, other_filters = None):
+
+        if other_filters is None: other_filters = {}
+        now = timezone.now()
+        to_date = now - timedelta(days=min_days)
+
+        filters = {
+            "due_date__lte": to_date,
+            "status": "paid"
+        }
+
+        if max_days is not None:
+            from_date = now - timedelta(days=max_days)
+            filters.update({
+                "due_date__gte": from_date
+            })
+
+        filters.update(other_filters)
+        invoices =  Invoice.objects.filter(**filters)
+        invoices.exclude(status='paid')
+        print(invoices.count())
+        return invoices
 
     @classmethod
     def from_appointment(cls, practitioner_id, appointment_id, with_save=True, send=False):
@@ -443,8 +467,8 @@ class Transaction(models.Model):
     @classmethod
     def from_invoice(cls, invoice, method='unknown', date=None, with_save=True):
         '''
-        Creates a transaction from an invoice. 
-        If invoice is not in correct status, returns None 
+        Creates a transaction from an invoice.
+        If invoice is not in correct status, returns None
 
         raises TransactionAlreadyExists error if a matching transaction already exists
 
@@ -452,14 +476,14 @@ class Transaction(models.Model):
 
         if invoice.status not in ['paid', 'sent']:
             return None
-        
+
         transaction_type = 'Invoice'
         if invoice.status == 'paid':
             transaction_type = 'Payment'
 
         # check for dupes:
         existing_transactions = Transaction.objects.filter(
-            invoice=invoice, 
+            invoice=invoice,
             auto_created=True,
             type=transaction_type
         )
@@ -477,8 +501,8 @@ class Transaction(models.Model):
             date = invoice.modified_date
 
         transaction.type = transaction_type
-        
-        transaction.auto_created = True 
+
+        transaction.auto_created = True
         transaction.invoice_id = invoice.id
         transaction.amount = invoice.amount_paid
         transaction.date = date

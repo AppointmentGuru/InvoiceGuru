@@ -1,3 +1,6 @@
+"""
+Helpers are functions which help internal code with complicated tasks
+"""
 from django.conf import settings
 from dateutil.parser import parse
 import requests
