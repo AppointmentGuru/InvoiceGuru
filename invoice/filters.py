@@ -18,8 +18,8 @@ class InvoiceFilter(FilterSet):
 
 class TransactionFilter(FilterSet):
     	# time needs to be in the format: 2016-10-17 11:34:51
-    after_utc = django_filters.DateFilter(name="date", lookup_expr='gte')
-    before_utc = django_filters.DateFilter(name="date", lookup_expr='lte')
+    after_utc = django_filters.DateFilter(name="date__date", lookup_expr='gte')
+    before_utc = django_filters.DateFilter(name="date__date", lookup_expr='lte')
 
     # status_in = todo ..
 
