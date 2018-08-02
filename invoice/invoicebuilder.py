@@ -10,6 +10,16 @@ from invoice.models import Invoice
 inv = Invoice.objects.order_by('?').first()
 inv.appointments = [a.get('id') for a in inv.context.get('appointments')]
 print(InvoiceBuilder().build_context(inv))
+
+
+# enrichment process:
+from invoice.invoicebuilder import InvoiceBuilder
+from invoice.models import Invoice
+builder = InvoiceBuilder(invoice)
+builder.enrich(with_save=True) # expand context
+builder.set_customer_info_from_context() # set customer info + medical aid info if possible
+builder.apply_settings() # unless various fields are set, set them from settings
+builder.profit()
     '''
 
     def __init__(self, invoice):
@@ -91,10 +101,64 @@ print(InvoiceBuilder().build_context(inv))
         self.update_settings(raw_practitioner)
         return context
 
+    def set_customer_info_from_context(self, with_save=False):
+        '''
+        from values in context, set invoicee_details and medicalaid_details
+        '''
+        record = self.invoice.context.get('record', {})
+        client = record.get('patient', None) or self.invoice.context.get('client', None)
+        aid = record.get('medical_aid')
+
+        if client is not None:
+            self.invoice.invoicee_details = """
+{} {}
+email: {}
+contact: {}
+{}
+""".format(
+    client.get('first_name'),
+    client.get('last_name'),
+    client.get('email'),
+    client.get('phone_number') or client.get('cell_phone'),
+    client.get('home_address') or '',
+).strip()
+
+        if aid is not None:
+            self.invoice.medicalaid_details = """
+{}. {}
+#{}.
+Patient:
+{} {}
+ID: {}
+""".format(
+    aid.get('name'),
+    aid.get('scheme'),
+    aid.get('number'),
+    aid.get('patient_first_name'),
+    aid.get('patient_last_name'),
+    aid.get('patient_id_number'),
+).strip()
+
+            if aid.get('is_dependent'):
+                self.invoice.medicalaid_details = """
+{}
+Main member:
+{} {}
+ID: {}
+""".format(
+    self.invoice.medicalaid_details,
+    aid.get('member_first_name'),
+    aid.get('member_last_name'),
+    aid.get('member_id_number'),
+).strip()
+        if with_save:
+            self.invoice.save()
+        return self.invoice
+
     def reduce(self, obj, fields_to_keep):
         new_obj = {}
         if obj is None: return new_obj
-                    
+
         for field in fields_to_keep:
             new_obj[field] = obj.get(field)
         return new_obj
