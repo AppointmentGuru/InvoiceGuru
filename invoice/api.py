@@ -38,7 +38,6 @@ from rest_framework import (
     permissions
 )
 
-
 from .tasks import (
     mark_invoice_as_paid
 )

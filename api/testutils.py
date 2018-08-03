@@ -48,6 +48,9 @@ def create_mock_invoice(practitioner_id=None, customer_id=None):
         "customer_id": customer_id or FAKE.numerify(),
         "sender_email": "support@appointmentguru.co",
         "title": "Joe Soap",
+        "invoicee_details": "some address",
+        "medicalaid_details": "some medical aid",
+        ""
         "context": {
                 "notes": "",
                 "due_date": "2017-09-14",

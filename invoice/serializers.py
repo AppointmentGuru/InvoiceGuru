@@ -19,6 +19,8 @@ INVOICE_COMMON_FIELDS = [
     'amount_due',
     'date',
     'due_date',
+    'invoicee_details',
+    'medicalaid_details',
     'integrate_medical_aid',
     'show_snapcode_on_invoice',
     'get_snapscan_url',
