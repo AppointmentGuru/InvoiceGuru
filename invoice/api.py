@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 
 from .guru import send_invoice, publish
+from .mixins import MultiSerializerMixin
 from .filters import (
     InvoiceFilter,
     TransactionFilter
@@ -71,7 +72,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return Transaction.objects.filter(practitioner_id=user.id)
 
-class InvoiceViewSet(viewsets.ModelViewSet):
+class InvoiceViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
 
@@ -80,42 +81,17 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     ordering_fields = ('date', 'due_date', 'id', 'date_created', 'invoice_amount')
     ordering = ('-date',)
 
+    default_serializer_class = InvoiceSerializer
+    serializer_map = {
+        'list': InvoiceListViewSerializer
+    }
+
     def get_queryset(self):
         user = self.request.user
         return Invoice.objects.filter(
             Q(practitioner_id=user.id) |
             Q(customer_id=user.id)
         )
-
-    @decorators.list_route(methods=['get', 'post'])
-    def construct(self, request):
-        '''
-        Given a practitioner_id, list of appointments, and customer_id, construct an invoice context
-        TODO: move this into POST /invoice
-        '''
-        practitioner_id = request.GET.get('practitioner_id')
-        appointment_ids = request.GET.get('appointment_ids', '').split(',')
-        client_id = request.GET.get('client_id')
-        default_context = request.data.get('context', {})
-        practitioner, appointments, medical_record = fetch_data(practitioner_id, appointment_ids, client_id)
-
-        invoice = Invoice()
-        invoice.practitioner_id = practitioner_id
-        invoice.customer_id = client_id
-        invoice.appointment_ids = appointment_ids
-        invoice.get_context(default_context=default_context)
-
-        data = { "context": invoice.context }
-        result_code = status.HTTP_200_OK
-        if request.method == 'POST':
-            invoice.apply_context()
-            invoice.save()
-
-            data['id'] = invoice.id
-            data['password'] = invoice.password
-            result_code = status.HTTP_201_CREATED
-
-        return response.Response(data, status=result_code)
 
     @decorators.detail_route(methods=['post'])
     def appointments(self, request, pk=None):

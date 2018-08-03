@@ -1,7 +1,10 @@
 from django.contrib import admin
 from .models import Invoice, InvoiceSettings, Transaction, ProofOfPayment
 
-class TransactionAdmin(admin.ModelAdmin):    
+class TransactionInline(admin.TabularInline):
+    model = Transaction
+
+class TransactionAdmin(admin.ModelAdmin):
     list_display = ('practitioner_id', 'customer_id', 'date', 'type', 'invoice', 'currency', 'amount',)
     list_filter = ('practitioner_id', 'method', )
 
@@ -9,6 +12,7 @@ class TransactionAdmin(admin.ModelAdmin):
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'practitioner_id', 'customer_id', 'sender_email', 'date', 'due_date', 'currency', 'invoice_amount', 'amount_paid', 'status')
     list_filter = ('practitioner_id', 'status',)
+    inlines = [TransactionInline]
 
 class InvoiceSettingsAdmin(admin.ModelAdmin):
     list_display = ('id',

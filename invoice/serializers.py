@@ -29,18 +29,6 @@ INVOICE_COMMON_FIELDS = [
     'get_view_url'
 ]
 
-class InvoiceListViewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Invoice
-        fields = INVOICE_COMMON_FIELDS
-        ordering = ('date', 'created',)
-
-class InvoiceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Invoice
-        fields = INVOICE_COMMON_FIELDS + ['context']
-        ordering = ('date', 'created',)
-
 class InvoiceSettingsSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -53,3 +41,21 @@ class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = '__all__'
+
+
+class InvoiceSerializer(serializers.ModelSerializer):
+
+    transaction_set = TransactionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Invoice
+        fields = INVOICE_COMMON_FIELDS + ['context', 'transaction_set']
+        ordering = ('date', 'created',)
+
+
+class InvoiceListViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Invoice
+        fields = INVOICE_COMMON_FIELDS
+        ordering = ('date', 'created',)
+
