@@ -122,8 +122,8 @@ possible time periods:
         date__gte=start_date,
         date__lte=end_date,
         practitioner_id=request.user.id
-    )    
-    if customer_id is not None: 
+    )
+    if customer_id is not None:
         transactions = transactions.filter(customer_id=customer_id)
     context = {
         "transactions": transactions
@@ -131,16 +131,21 @@ possible time periods:
     return render(request, 'invoice/transactions.html', context=context)
 
 def statement(request, practitioner, client):
-    from_date = date(2018,6,26)
+    from_date = date(2018,7,26)
     transactions = Transaction.objects.filter(
         practitioner_id=practitioner,
         customer_id=client,
-        payment_date__gte=from_date
-    ).order_by('-payment_date')
+        date__gte=from_date
+    ).order_by('-date')
+    invoices = Invoice.objects.filter(
+        practitioner_id=practitioner,
+        customer_id=client,
+        date__gte=from_date
+    )
     settings = InvoiceSettings.objects.get(practitioner_id = practitioner)
     balance_brought_forward = 0
     amount_paid = transactions.filter(type='payment').aggregate(amount_paid=Sum('amount')).get('amount_paid', 0)
-    amount_due = transactions.filter(type='payment').aggregate(amount_due=Sum('invoice_amount')).get('amount_due', 0)
+    amount_due = transactions.filter(type='payment').aggregate(amount_due=Sum('amount')).get('amount_due', 0)
 
     if amount_due is None: amount_due = 0
     if amount_paid is None: amount_paid = 0
@@ -149,6 +154,11 @@ def statement(request, practitioner, client):
     statement_due_date = parser.parse('2018-07-25')
 
     invoice = invoices.first()
+    if invoice is None:
+        invoice = Invoice.objects.filter(
+            practitioner_id=practitioner,
+            customer_id=client
+        ).last()
     client = invoice.context.get("client")
     practitioner = invoice.context.get("practitioner")
 
@@ -168,7 +178,6 @@ def statement(request, practitioner, client):
         "invoice": invoice,
         "client": client,
         "practitioner": practitioner,
-        "payments": payments,
         "balance": balance,
         "statement_date": statement_date,
         "statement_due_date": statement_due_date

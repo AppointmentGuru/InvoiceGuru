@@ -34,7 +34,7 @@ VAT reg: 4020266740<br/>
 PO Box 1811<br/>
 Parklands<br/>
 2121
-        
+
         <!-- {{invoice.invoicee_details|linebreaks}} -->
     </div>
     <div class="mdl-cell mdl-cell--6-col" >
@@ -91,7 +91,7 @@ Parklands<br/>
             </tr>
             {% else %}
             <tr class='payment'>
-                <td class="mdl-data-table__cell--non-numeric">{{transaction.payment_date|date}}</td>
+                <td class="mdl-data-table__cell--non-numeric">{{transaction.date|date}}</td>
                 <td class="mdl-data-table__cell--non-numeric">{{transaction.invoice.invoice_number}}</td>
                 <td class="mdl-data-table__cell--non-numeric">Payment. Thank-you</td>
                 <td>--</td>
