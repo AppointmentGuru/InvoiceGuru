@@ -100,7 +100,7 @@ class PUBLISHKEYS:
     invoice_paid='invoice_paid'
     payment_received='payment_received'
 
-NOSQL_BACKENDS = [] # os.environ.get('NOSQL_BACKENDS', '').split(',')
+NOSQL_BACKENDS = os.environ.get('NOSQL_BACKENDS', '').split(',')
 
 #  FireStore settings
 FIRESTORE_CREDENTIALS_FILE = '/code/firestore-credentials.json'

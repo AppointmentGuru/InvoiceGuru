@@ -101,7 +101,7 @@ class InvoiceSettings(models.Model):
 class Invoice(models.Model):
 
     collection = 'invoices'
-    serializer_path = 'invoice.serializers.InvoiceListSerializer'
+    serializer_path = 'invoice.serializers.InvoiceSerializer'
     readonly_sync = True
 
     cached_settings = None
@@ -186,7 +186,7 @@ class Invoice(models.Model):
     invoice_amount = models.DecimalField(decimal_places=2, max_digits=10, default=0, db_index=True)
     amount_paid = models.DecimalField(decimal_places=2, max_digits=10, default=0, db_index=True)
 
-    date = models.DateField(default=timezone.now, db_index=True, blank=True, null=True)
+    date = models.DateField(default=timezone.localdate, db_index=True, blank=True, null=True)
     due_date = models.DateField(blank=True, null=True, db_index=True)
 
     invoice_period_from = models.DateField(db_index=True, blank=True, null=True)

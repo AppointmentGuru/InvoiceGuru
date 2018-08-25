@@ -75,11 +75,11 @@ class SnapScanWebHookTestCase(TestCase):
         self.invoice.refresh_from_db()
 
         num_calls = len(responses.calls)
-        assert num_calls == 2,\
-            'Expected 2 calls. Got: {}'.format(num_calls)
+        assert num_calls == 1,\
+            'Expected 1 calls. Got: {}'.format(num_calls)
 
-        self.keen_request = responses.calls[0].request
-        self.comms_request = responses.calls[1].request
+        # self.keen_request = responses.calls[0].request
+        # self.comms_request = responses.calls[1].request
 
     def test_returns_ok(self):
         assert self.result.status_code == 200
