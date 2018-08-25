@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.test import TestCase, override_settings
 from invoice.models import Invoice
 from ..invoicebuilder import InvoiceBuilder
-
+from api.testutils import create_mock_v2_invoice
 import responses
 
 from faker import Factory
@@ -16,56 +16,8 @@ class InvoiceBuilderEnrichesContextTestCase(TestCase):
     @override_settings(MEDICALAIDGURU_API='http://medicalaidguru')
     @responses.activate
     def setUp(self):
-        self.invoice = Invoice()
-        self.invoice.customer_id = 1
-        self.invoice.practitioner_id = 2
-        self.invoice.appointments = [3,4,5]
 
-        practitioner_data = {
-            'id': 2,
-            'username': 'jane@soap.com',
-        }
-
-        responses.add(
-            responses.GET,
-            'http://appointmentguru/api/users/1/',
-            json={
-                'id': 1,
-                'first_name': 'Joe'},
-            status=200
-        )
-        responses.add(
-            responses.GET,
-            'http://appointmentguru/api/practitioners/2/',
-            json=practitioner_data,
-            status=200
-        )
-        responses.add(
-            responses.GET,
-            'http://medicalaidguru/records/1/',
-            json={
-                'customer_id': '1',
-                'practitioners': ['2'],
-                'patient': {
-                    'first_name': 'Joe'
-                }
-            },
-            status=200
-        )
-        for x in [3,4,5]:
-            responses.add(
-                responses.GET,
-                'http://appointmentguru/api/appointments/{}/'.format(x),
-                json={
-                    'process': { },
-                    'practitioner': { "id": 2},
-                    'start_time': "2018-07-08T14:05:49.594+02:00",
-                    'end_time': "2018-07-08T14:35:49.594+02:00",
-                    'price': FAKE.pyint(),
-                    'amount_paid': 0
-                },
-                status=200
-            )
+        self.invoice = create_mock_v2_invoice()
 
         self.builder = InvoiceBuilder(self.invoice)
         self.context = self.builder.enrich(save_context=True)

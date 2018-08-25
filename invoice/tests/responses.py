@@ -1,5 +1,9 @@
 import responses
 from django.conf import settings
+from decimal import Decimal
+
+from faker import Factory
+FAKE = Factory.create()
 
 MESSAGE_SUCCESS_RESPONSE = {
 	"id": 60,
@@ -73,7 +77,9 @@ def expect_get_appointments(appointment_ids, practitioner_id, response_data={}):
 			'practitioner': { "id": practitioner_id },
 			'client': { "id": 123 },
 			'start_time': "2018-07-08T14:05:49.594+02:00",
-			'end_time': "2018-07-08T14:35:49.594+02:00"
+			'end_time': "2018-07-08T14:35:49.594+02:00",
+			'price': FAKE.pyint(),
+        	'amount_paid': 0
 		}
 		data.update(response_data)
 		responses.add(
@@ -82,3 +88,6 @@ def expect_get_appointments(appointment_ids, practitioner_id, response_data={}):
 			json = data,
 			status = 200
 		)
+
+def expect_enrich_invoice_responses():
+	pass

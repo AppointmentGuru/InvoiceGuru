@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'django_markdown2',
+    'django_nosql',
 
     'invoice', 'api',
 

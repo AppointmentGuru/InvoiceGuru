@@ -14,6 +14,9 @@ raven
 
 kong_oauth==0.1
 school_pubsub==0.3
+django_nosql==0.0.2
+firebase-admin==2.13.0
+google-cloud-firestore
 keen
 
 django-filter==1.1.0

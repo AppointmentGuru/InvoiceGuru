@@ -71,6 +71,10 @@ class InvoiceSettings(models.Model):
     Global settings that apply to all generated invoices
     '''
 
+    collection = 'invoices_settings'
+    serializer_path = 'invoice.serializers.InvoiceSettingsSerializer'
+    readonly_sync = True
+
     def __str__(self):
         return 'Settings for Practitioner #{}'.format(self.practitioner_id)
 
@@ -95,6 +99,10 @@ class InvoiceSettings(models.Model):
     vat_percent = models.PositiveIntegerField(default=0, blank=True, null=True)
 
 class Invoice(models.Model):
+
+    collection = 'invoices'
+    serializer_path = 'invoice.serializers.InvoiceListSerializer'
+    readonly_sync = True
 
     cached_settings = None
 
@@ -204,7 +212,8 @@ class Invoice(models.Model):
 
         appointments = self.context.get("appointments", [])
         if len(appointments) > 0:
-            client = appointments[0].get("client")
+            appointment = appointments[0]
+            client = appointment.get("client")
             IS_CLIENT_ID = isinstance(client, int)
             if IS_CLIENT_ID:
                 name = appointment.get("full_name")
@@ -436,6 +445,10 @@ TRANSACTION_TYPES = [
 
 class Transaction(models.Model):
 
+    collection = 'transactions'
+    serializer_path = 'invoice.serializers.TransactionSerializer'
+    readonly_sync = True
+
     def __str__(self):
         return "{} -> {}. {}".format(
             self.customer_id,
@@ -519,6 +532,7 @@ def proof_upload_path(instance, filename):
     return 'proofs/{}/{}/filename_base{}'.format(invoice.practitioner_id, invoice.id, filename_ext)
 
 class ProofOfPayment(models.Model):
+
     invoice = models.ForeignKey(Invoice)
     transaction = models.ForeignKey(Transaction, blank=True, null=True)
     document = models.FileField(upload_to=proof_upload_path, blank=True, null=True) # <- ideally this should really be required. Just for testing :()
@@ -544,3 +558,7 @@ class ProofOfPayment(models.Model):
 #     actor = models.CharField()
 
 from .signals import *
+# from django_nosql.signals import (
+#     sync_readonly_db,
+#     sync_remove_readonly_db
+# )

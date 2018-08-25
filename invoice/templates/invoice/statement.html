@@ -65,7 +65,6 @@ Parklands<br/>
         </table>
     </div>
 
-
     <!-- lineitems-->
     <div class="mdl-cell mdl-cell--12-col">
         <h6>Account summary</h6>
@@ -81,19 +80,19 @@ Parklands<br/>
         </thead>
         <tbody>
         {% for transaction in transactions %}
-            {% if transaction.invoice_number %}
+            {% if transaction.type == "Invoice" %}
             <tr class='invoice' >
                 <td class="mdl-data-table__cell--non-numeric">{{transaction.date|date}}</td>
-                <td class="mdl-data-table__cell--non-numeric">{{transaction.invoice_number}}</td>
+                <td class="mdl-data-table__cell--non-numeric">{{transaction.invoice.invoice_number}}</td>
                 <td class="mdl-data-table__cell--non-numeric">Invoiced</td>
-                <td>R{{transaction.invoice_amount|floatformat:2|intcomma}}</td>
+                <td>R{{transaction.amount|floatformat:2|intcomma}}</td>
                 <td >--</td>
             </tr>
             {% else %}
             <tr class='payment'>
                 <td class="mdl-data-table__cell--non-numeric">{{transaction.date|date}}</td>
                 <td class="mdl-data-table__cell--non-numeric">{{transaction.invoice.invoice_number}}</td>
-                <td class="mdl-data-table__cell--non-numeric">Payment. Thank-you</td>
+                <td class="mdl-data-table__cell--non-numeric">Payment, Thank-you</td>
                 <td>--</td>
                 <td>R{{transaction.amount|floatformat:2|intcomma}}</td>
                 </tr>
@@ -115,7 +114,9 @@ Parklands<br/>
 
     <div class="mdl-cell mdl-cell--12-col" >
         <h6>Banking details:</h6>
-        Christopher Crampton. <br/>FNB. <br/>Account number: 60232195566
+        Christopher Crampton.<br/>
+        FNB.<br/>
+        Account number: 60232195566
         {{practitioner.banking_details|linebreaks}}
     </div>
 

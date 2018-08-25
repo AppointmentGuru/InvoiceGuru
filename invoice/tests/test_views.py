@@ -74,7 +74,9 @@ class SnapScanWebHookTestCase(TestCase):
         self.result = self.client.post(self.url, data)
         self.invoice.refresh_from_db()
 
-        assert len(responses.calls) == 2
+        num_calls = len(responses.calls)
+        assert num_calls == 2,\
+            'Expected 2 calls. Got: {}'.format(num_calls)
 
         self.keen_request = responses.calls[0].request
         self.comms_request = responses.calls[1].request

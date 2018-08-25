@@ -51,6 +51,7 @@ services:
       - env.dev
     environment:
       - DATABASE_NAME=appointmentguru_invoiceguru
+      - NOSQL_BACKENDS=mock
 
 volumes:
   invoiceguru-postgres-db-volume:

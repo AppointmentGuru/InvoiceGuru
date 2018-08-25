@@ -131,12 +131,15 @@ possible time periods:
     return render(request, 'invoice/transactions.html', context=context)
 
 def statement(request, practitioner, client):
-    from_date = date(2018,7,26)
+    from_date = date(2018,7,25)
+    statement_date = parser.parse('2018-07-25')
+    statement_due_date = parser.parse('2018-08-25')
+
     transactions = Transaction.objects.filter(
         practitioner_id=practitioner,
         customer_id=client,
-        date__gte=from_date
-    ).order_by('-date')
+        date__date__gte=from_date
+    ).order_by('date')
     invoices = Invoice.objects.filter(
         practitioner_id=practitioner,
         customer_id=client,
@@ -144,14 +147,11 @@ def statement(request, practitioner, client):
     )
     settings = InvoiceSettings.objects.get(practitioner_id = practitioner)
     balance_brought_forward = 0
-    amount_paid = transactions.filter(type='payment').aggregate(amount_paid=Sum('amount')).get('amount_paid', 0)
-    amount_due = transactions.filter(type='payment').aggregate(amount_due=Sum('amount')).get('amount_due', 0)
+    amount_paid = transactions.filter(type='Payment').aggregate(amount_paid=Sum('amount')).get('amount_paid', 0)
+    amount_due = transactions.filter(type='Invoice').aggregate(amount_due=Sum('amount')).get('amount_due', 0)
 
     if amount_due is None: amount_due = 0
     if amount_paid is None: amount_paid = 0
-
-    statement_date = parser.parse('2018-06-25')
-    statement_due_date = parser.parse('2018-07-25')
 
     invoice = invoices.first()
     if invoice is None:
@@ -161,6 +161,7 @@ def statement(request, practitioner, client):
         ).last()
     client = invoice.context.get("client")
     practitioner = invoice.context.get("practitioner")
+
 
     # amount_paid = 0
     # amount_due = invoices.aggregate(amount_due=Sum('invoice_amount')).get('amount_due')
