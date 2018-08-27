@@ -202,10 +202,10 @@ def mark_invoice_as_paid(data):
     invoice = Invoice.objects.get(id=invoice_id)
     invoice.amount_paid = invoice.invoice_amount
     invoice.status = 'paid'
-    invoice.save()
     invoice.publish()
 
     Transaction.from_invoice(invoice, method=payment_method)
+    invoice.save()
 
     if should_send_receipt:
         invoice.send(to_email=True)

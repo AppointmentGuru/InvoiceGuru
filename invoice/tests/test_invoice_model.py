@@ -33,7 +33,6 @@ class InvoicePropertiesTestCase(TestCase):
     def test_get_download_url(self):
         """it has get_download_url as a property"""
         assert self.test_get_download_url is not None
-        import ipdb;ipdb.set_trace()
 
     def test_get_view_url(self):
         assert self.test_get_view_url is not None

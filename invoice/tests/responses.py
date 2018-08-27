@@ -71,27 +71,36 @@ def expect_get_record_response(customer_id, practitioner_id):
 		status=200
 	)
 
+def expect_get_appointment(appointment_id, practitioner_id, response_data={}):
+	data = {
+		'process': { },
+		'id': appointment_id,
+		'practitioner': { "id": practitioner_id },
+		'client': { "id": 123 },
+		'start_time': "2018-07-08T14:05:49.594+02:00",
+		'end_time': "2018-07-08T14:35:49.594+02:00",
+		'price': FAKE.pyint()
+	}
+	data.update(response_data)
+	url = '{}/api/appointments/{}/'.format(
+		settings.APPOINTMENTGURU_API,
+		appointment_id
+	)
+	responses.add(
+		responses.GET,
+		url,
+		json = data,
+		status = 200
+	)
+
 def expect_get_appointments(appointment_ids, practitioner_id, response_data={}):
 	extra_data = response_data.get('appointments', {})
 
 	for x in appointment_ids:
-		data = {
-			'process': { },
-			'id': x,
-			'practitioner': { "id": practitioner_id },
-			'client': { "id": 123 },
-			'start_time': "2018-07-08T14:05:49.594+02:00",
-			'end_time': "2018-07-08T14:35:49.594+02:00",
-			'price': FAKE.pyint(),
-        	'amount_paid': 0
-		}
-		data.update(extra_data.get(x, {}))
-		responses.add(
-			responses.GET,
-			'{}/api/appointments/{}/'.format(settings.APPOINTMENTGURU_API, x),
-			json = data,
-			status = 200
+		data = extra_data.get(x, {})
+		expect_get_appointment(
+			appointment_id=x,
+			practitioner_id = practitioner_id,
+			response_data=data
 		)
 
-def expect_enrich_invoice_responses():
-	pass

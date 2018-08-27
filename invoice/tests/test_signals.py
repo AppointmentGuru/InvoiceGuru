@@ -66,4 +66,4 @@ class PostSaveInvoiceTestCase(TestCase):
 
         self.assertEqual(invoice.transaction_set.count(), 2)
         self.assertEqual(invoice_transaction.amount, payment_transaction.amount)
-        self.assertEqual(invoice.invoice_total, invoice.calculated_amount_paid)
+        self.assertEqual(invoice.invoice_amount, invoice.calculated_amount_paid)

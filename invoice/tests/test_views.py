@@ -5,8 +5,17 @@ from django.urls import reverse
 from django.test import TestCase, override_settings
 from django.conf import settings
 
-from api.testutils import create_mock_invoice
-from ..models import Transaction
+from api.testutils import (
+    create_mock_invoice,
+    create_mock_v2_invoice
+)
+from .responses import (
+    expect_get_practitioner_response,
+    expect_get_user_response,
+    expect_get_record_response,
+    expect_get_appointments
+)
+from ..models import Transaction, Invoice
 
 import responses
 
@@ -43,7 +52,7 @@ class InvoiceViewTestCase(TestCase):
         '''When getting the page with the customer password, set views = True'''
         print ('TBD')
 
-class SnapScanWebHookTestCase(TestCase):
+class SnapScanInvoiceWebHookTestCase(TestCase):
 
     @responses.activate
     @override_settings(COMMUNICATIONGURU_API='https://communicationguru')
@@ -54,6 +63,8 @@ class SnapScanWebHookTestCase(TestCase):
         curl -i -X POST -d 'payload={\"id\":7,\"status\":\"completed\",\"totalAmount\":1000,\"tipAmount\":0,\"feeAmount\":35,\"settleAmount\":965,\"requiredAmount\":1000,\"date\":\"2018-04-23T13:51:59Z\",\"snapCode\":\"EJrKB_SJ\",\"snapCodeReference\":\"587e9743-3c7c-4e86-b54c-985ca29fe895\",\"userReference\":\"\",\"merchantReference\":\"1765\",\"statementReference\":null,\"authCode\":\"455303\",\"deliveryAddress\":null,\"extra\":{\"amount\":\"1000\",\"invoice_id\":\"1790\"}}' http://localhost:8000/incoming/snapscan/739B7B5E-B896-4C99-9AF5-AD424DB437A5/
         '''
         keen_url = 'https://api.keen.io/3.0/projects/{}/events/snapscan_webhook'.format(settings.KEEN_PROJECT_ID)
+        self.p_id = 1
+        self.u_id = 2
         responses.add(
             responses.POST,
             url=keen_url,
@@ -65,9 +76,17 @@ class SnapScanWebHookTestCase(TestCase):
             json={"id": 1},
             status=201
         )
+        expect_get_practitioner_response(practitioner_id = self.p_id)
+        expect_get_user_response(user_id=self.u_id)
+        expect_get_record_response(self.u_id, self.p_id)
+        expect_get_appointments([1], self.p_id)
 
         self.url = reverse('incoming_snapscan')
-        self.invoice = create_mock_invoice()
+        self.invoice = Invoice()
+        self.invoice.practitioner_id = self.p_id
+        self.invoice.customer_id = self.u_id
+        self.invoice.appointments = [1]
+        self.invoice.save()
         data = {
             "payload": "{\"id\":7,\"status\":\"completed\",\"totalAmount\":1000,\"tipAmount\":0,\"feeAmount\":35,\"settleAmount\":965,\"requiredAmount\":1000,\"date\":\"2018-04-23T13:51:59Z\",\"snapCode\":\"EJrKB_SJ\",\"snapCodeReference\":\"587e9743-3c7c-4e86-b54c-985ca29fe895\",\"userReference\":\"\",\"merchantReference\":\"1765\",\"statementReference\":null,\"authCode\":\"455303\",\"deliveryAddress\":null,\"extra\":{\"amount\":\"1000\",\"invoiceId\":\""+str(self.invoice.id)+"\"}}"
         }
@@ -75,11 +94,11 @@ class SnapScanWebHookTestCase(TestCase):
         self.invoice.refresh_from_db()
 
         num_calls = len(responses.calls)
-        assert num_calls == 1,\
+        assert num_calls == 2,\
             'Expected 1 calls. Got: {}'.format(num_calls)
 
-        # self.keen_request = responses.calls[0].request
-        # self.comms_request = responses.calls[1].request
+        self.keen_request = responses.calls[0].request
+        self.comms_request = responses.calls[1].request
 
     def test_returns_ok(self):
         assert self.result.status_code == 200
@@ -93,14 +112,20 @@ class SnapScanWebHookTestCase(TestCase):
         assert self.invoice.status == 'paid'
 
     def test_it_creates_a_transaction(self):
-        assert Transaction.objects.count() == 1
+        assert Transaction.objects.count() == 2
+
+    def test_amount_due_is_zero(self):
+        self.invoice.refresh_from_db()
+        assert self.invoice.amount_due == 0,\
+            'Expected amount_due to be 0. got: {}'.format(self.invoice.amount_due)
 
     def test_it_tags_the_payment_as_snapscan(self):
-        method = self.invoice.transaction_set.first().method
-        assert method == 'snapscan'
+        pass
 
     def test_it_sends_a_receipt(self):
         pass
 
+class SnapScanAppointmentWebHookTestCase(TestCase):
 
-
+    def setUp(self):
+        pass

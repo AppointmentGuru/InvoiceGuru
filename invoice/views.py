@@ -13,7 +13,7 @@ from django.db.models import Sum
 from decimal import Decimal
 from dateutil import parser
 from datetime import datetime, timedelta, date
-import json, calendar
+import json, calendar, keen
 
 from .helpers import (
     fetch_data,
@@ -43,9 +43,19 @@ def __get_invoice(request, pk):
 
 @csrf_exempt
 def snap_webhook(request):
-    print(request.POST.get('payload'))
     data = json.loads(request.POST.get('payload'))
     invoice_id = data.get('extra').get('invoiceId')
+    appointment_id = data.get('extra').get('appointmentId')
+    practitioner_id = data.get('extra').get('practitionerId')
+
+    if appointment_id is not None \
+        and practitioner_id is not None \
+        and invoice_id is None:
+        invoice = Invoice.from_appointment(
+            appointment_id=appointment_id,
+            practitioner_id=practitioner_id
+        )
+        invoice_id = invoice.id
 
     try:
         data = {
@@ -59,7 +69,7 @@ def snap_webhook(request):
             "error": "No matching invoice found"
         })
 
-    # keen.add_event("snapscan_webhook", data)
+    keen.add_event("snapscan_webhook", data)
     return HttpResponse('ok')
 
 @user_passes_test(lambda u: u.is_superuser)

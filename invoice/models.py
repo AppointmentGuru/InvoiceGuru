@@ -7,11 +7,6 @@ import uuid, requests, os
 from .guru import publish
 from .mixins import InvoiceModelMixin
 
-from .helpers import (
-    fetch_data,
-    to_context,
-    clean_context
-)
 from decimal import Decimal
 from dateutil.parser import parse
 from datetime import datetime, timedelta
@@ -179,8 +174,7 @@ class Invoice(models.Model, InvoiceModelMixin):
 
         if len(appointments) > 0:
             appointment = appointments[0]
-            dt = parse(appointment.get('start_time')).date()
-            title = appointment.get('invoice_title') or appointment.get('title')
+            dt = parse(appointment.get('end_time')).date()
             client_id = appointment.get('client_id') or appointment.get('client', {}).get('id')
 
             instance.customer_id = client_id
@@ -188,7 +182,6 @@ class Invoice(models.Model, InvoiceModelMixin):
             instance.appointments = [appointment_id]
             instance.date = dt
             instance.due_date = dt
-            instance.title = title
             instance.invoice_period_from = dt
             instance.invoice_period_to = dt
             instance.template = 'basic_v2'
@@ -257,15 +250,17 @@ class Transaction(models.Model):
 
         '''
 
-        # check for dupes:
-        if auto_created:
+        # There can only be 1 invoice-type transaction / invoice
+        if transaction_type == 'Invoice':
             existing_transactions = Transaction.objects.filter(
                 invoice=invoice,
-                auto_created=True,
                 type=transaction_type
             )
             if existing_transactions.count() > 0:
-                return existing_transactions.first()
+                transaction = existing_transactions.first()
+                if transaction.amount != invoice.invoice_amount:
+                    transaction.amount = invoice.invoice_amount
+                    transaction.save()
 
         transaction = cls()
         copy_fields = ['practitioner_id', 'customer_id', 'appointments']
@@ -281,7 +276,7 @@ class Transaction(models.Model):
         transaction.auto_created = auto_created
         transaction.invoice_id = invoice.id
         if amount is None:
-            transaction.amount = invoice.invoice_amount
+            transaction.amount = invoice.amount_due
         else:
             transaction.amount = Decimal(amount)
         transaction.date = date

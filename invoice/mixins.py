@@ -1,6 +1,12 @@
-from .invoicebuilder import InvoiceBuilder
-from decimal import Decimal
 from django.db.models import Sum
+from django.conf import settings
+
+from datetime import datetime
+from decimal import Decimal
+
+from .invoicebuilder import InvoiceBuilder
+from .guru import publish
+
 
 class MultiSerializerMixin():
     '''
@@ -91,10 +97,10 @@ class InvoiceModelMixin:
         if total is None: total = Decimal(0)
         return total
 
-
     @property
     def amount_due(self):
         due = self.invoice_amount - self.calculated_amount_paid
+        due = max(Decimal(0), due)
         return format(due, '.2f')
 
     @property

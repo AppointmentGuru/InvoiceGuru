@@ -1,6 +1,8 @@
 """
 Helpers are functions which help internal code with complicated tasks
 """
+
+#marked_for_delete
 from django.conf import settings
 from dateutil.parser import parse
 import requests

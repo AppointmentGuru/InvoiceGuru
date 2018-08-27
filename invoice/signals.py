@@ -83,9 +83,10 @@ def enrich_invoice(sender, instance, **kwargs):
 @receiver(post_save, sender=Invoice, dispatch_uid="invoice.signals.invoice_post_save_actions")
 def invoice_post_save_actions(sender, instance, **kwargs):
     # create a transaction
-    print(Transaction.from_invoice(instance, transaction_type='Invoice', with_save=True))
-    if instance.status == 'paid':
-        print(Transaction.from_invoice(instance, transaction_type='Payment', with_save=True))
+    Transaction.from_invoice(instance, transaction_type='Invoice', with_save=True)
+    due = Decimal(instance.amount_due)
+    if instance.status == 'paid' and due > 0:
+        Transaction.from_invoice(instance, transaction_type='Payment', amount=due, with_save=True)
 
 @receiver(post_save, dispatch_uid="django_nosql.sync")
 def nosql_sync(sender, instance, created, **kwargs):
