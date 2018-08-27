@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.test import TestCase, override_settings
-from invoice.models import Invoice
+from invoice.models import Invoice, InvoiceSettings
 from ..invoicebuilder import InvoiceBuilder
 from api.testutils import create_mock_v2_invoice
 import responses
@@ -74,7 +74,8 @@ class BuilderSetsContext(TestCase):
             "record": {}
         }
         builder.set_customer_info_from_context(with_save=False)
-        assert inv.invoicee_details == 'Soap Jane\nemail: jane@gmail.com\ncontact: +2781234567'
+        assert len(inv.invoicee_details.split('\n')) == 4,\
+            'invoicee_details looks wrong: {}'.format(inv.invoicee_details)
 
     def test_sets_invoice_details_from_client_record(self):
         inv, builder = self.__inv_and_builder()
@@ -89,9 +90,11 @@ class BuilderSetsContext(TestCase):
             }
         }
         builder.set_customer_info_from_context(with_save=False)
-        assert inv.invoicee_details == 'Jake White\nemail: None\ncontact: +27821234567\n101 Infinite Loop'
+        assert len(inv.invoicee_details.split('\n')) == 3,\
+            'invoicee_details looks wrong: {}'.format(inv.invoicee_details)
 
-    def test_sets_medicalaid_details(self):
+
+    def test_sets_medicalaid_details_with_dependent(self):
         inv, builder = self.__inv_and_builder()
         inv.context = {
             "record": {
@@ -110,5 +113,88 @@ class BuilderSetsContext(TestCase):
             }
         }
         builder.set_customer_info_from_context(with_save=False)
-        assert inv.medicalaid_details == 'DISCOVERY Health Medical Scheme. Comprehensive\n#67890.\nPatient:\nSoap Jane\nID: 82091951491234\nMain member:\nSoap Joe\nID: 123456'
+        assert len(inv.medicalaid_details.split('\n')) == 8,\
+            'medicalaid_details (for dependant) looks wrong: {}'.format(inv.medicalaid_details)
+
+    def test_sets_medicalaid_details_without_dependent(self):
+        inv, builder = self.__inv_and_builder()
+        inv.context = {
+            "record": {
+                "medical_aid": {
+                    "name": "DISCOVERY Health Medical Scheme",
+                    "number": "67890",
+                    "scheme": "Comprehensive",
+                    "is_dependent": False,
+                    "member_id_number": "123456",
+                    "member_last_name": "Joe",
+                    "member_first_name": "Soap",
+                    "patient_id_number": "82091951491234",
+                    "patient_last_name": "Jane",
+                    "patient_first_name": "Soap"
+                }
+            }
+        }
+        builder.set_customer_info_from_context(with_save=False)
+        assert len(inv.medicalaid_details.split('\n')) == 5,\
+            'medicalaid_details (for main member) looks wrong: {}'.format(inv.medicalaid_details)
+
+class BuilderAppliesSettingsTestCase(TestCase):
+    """Verify settings will apply if nothing is set"""
+    def setUp(self):
+        self.p_id = 1
+        settings = InvoiceSettings()
+        settings.practitioner_id = self.p_id
+        settings.integrate_medical_aid = True
+        settings.billing_address = "Some address"
+        settings.save()
+
+        self.invoice = Invoice()
+        self.invoice.practitioner_id = self.p_id
+
+        self.builder = InvoiceBuilder(self.invoice)
+        self.builder.apply_settings(self.invoice, self.settings)
+
+    def test_it_sets_medical_aid_details(self):
+        assert self.invoice.integrate_medical_aid == True
+
+    def test_it_sets_billing_address(self):
+        assert self.invoice.billing_address == "Some address"
+
+class BuilderOverrideSettingsTestCase(TestCase):
+    """Verify that settings don't override already set values"""
+
+    def __test_settings(self, field, invoice_value, settings_value, expected_result):
+        setattr(self.invoice, field, invoice_value)
+        setattr(self.settings, field, invoice_value)
+
+        self.builder.apply_settings(self.invoice, self.settings)
+
+        assert getattr(self.invoice, field) == expected_result,\
+            'Expected {} to be: {}. Settings were: {}. Invoice was: {}'.format(
+                field,
+                expected_result,
+                settings_value,
+                invoice_value
+            )
+
+    def setUp(self):
+        self.settings = InvoiceSettings()
+        self.invoice = Invoice()
+        self.builder = InvoiceBuilder(self.invoice)
+
+    def test_it_doesnt_override_integrate_medical_aid_if_exists(self):
+        self.__test_settings(
+            'integrate_medical_aid',
+            invoice_value=False,
+            settings_value=True,
+            expected_result=False
+        )
+
+    def test_it_doesnt_override_billing_address_if_exists(self):
+        self.__test_settings(
+            'billing_address',
+            invoice_value="invoice address",
+            settings_value="settings address",
+            expected_result="invoice address"
+        )
 

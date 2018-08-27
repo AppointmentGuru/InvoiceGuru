@@ -40,13 +40,15 @@ def expect_get_user_response(user_id):
 		'{}/api/users/{}/'.format(settings.APPOINTMENTGURU_API, user_id),
 		json={
 			'id': user_id,
-			'first_name': 'Joe'},
+			'first_name': 'Joe'
+		},
 		status=200
 	)
 def expect_get_practitioner_response(practitioner_id):
 	practitioner_data = {
 		'id': practitioner_id,
 		'username': 'jane@soap.com',
+		"profile": {}
 	}
 	responses.add(
 		responses.GET,
@@ -70,6 +72,8 @@ def expect_get_record_response(customer_id, practitioner_id):
 	)
 
 def expect_get_appointments(appointment_ids, practitioner_id, response_data={}):
+	extra_data = response_data.get('appointments', {})
+
 	for x in appointment_ids:
 		data = {
 			'process': { },
@@ -81,7 +85,7 @@ def expect_get_appointments(appointment_ids, practitioner_id, response_data={}):
 			'price': FAKE.pyint(),
         	'amount_paid': 0
 		}
-		data.update(response_data)
+		data.update(extra_data.get(x, {}))
 		responses.add(
 			responses.GET,
 			'{}/api/appointments/{}/'.format(settings.APPOINTMENTGURU_API, x),

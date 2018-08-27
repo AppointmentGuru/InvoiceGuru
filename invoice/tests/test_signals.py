@@ -3,39 +3,24 @@ from __future__ import unicode_literals
 
 from django.urls import reverse
 from django.test import TestCase
-from api.testutils import create_mock_invoice
-import unittest 
+from api.testutils import create_mock_v2_invoice
+from decimal import Decimal
+
+import unittest
 
 class InvoicePreSaveTestCase(TestCase):
 
     def setUp(self):
-        self.invoice = create_mock_invoice()
+        self.invoice = create_mock_v2_invoice()
 
     def test_it_sets_fields_from_context(self):
         pass
-
-    @unittest.skip('revisit later')
-    def test_lineitem_price_overrides_appointment_price(self):
-        assert self.invoice.context.get('appointments')[0].get('price') == '650.00',\
-            'Expect price to have been set to the lineitem cost'
-
-    def test_use_default_price_if_no_codes_specified(self):
-        # assert self.invoice.context.get('appointments')[1].get('codes', []) == 0
-        price = self.invoice.context.get('appointments')[1].get('price')
-        assert price == '326.00', \
-            'Expect price to be default prioce if no codes on appointment. Expected 326.00. Got: {}'.format(price)
 
     def test_it_sets_from_to_based_on_appointments_if_not_already_set(self):
         pass
 
     def test_it_doesnt_set_from_to_if_already_set(self):
         pass
-
-    @unittest.skip('revisit later')
-    def test_it_calculates_total(self):
-        print (self.invoice.invoice_amount)
-        assert self.invoice.invoice_amount == 1952,\
-            'Expected 1952. Got: {}'.format(self.invoice.invoice_amount)
 
     def test_it_adds_appointment_to_object_ids(self):
         pass
@@ -45,3 +30,40 @@ class InvoicePreSaveTestCase(TestCase):
 
     def test_it_handles_if_there_are_no_appointments_set(self):
         pass
+
+class PostSaveInvoiceTestCase(TestCase):
+
+    def setUp(self):
+        appointments = {
+            3: {"price": 100},
+            4: {"price": 200},
+            5: {"price": 300},
+        }
+        extra = { "appointments": appointments }
+        self.invoice = create_mock_v2_invoice(
+            appointments=[3,4,5],
+            extra_data=extra
+        )
+
+    def test_it_calculates_invoice_total(self):
+        self.assertEqual(self.invoice.invoice_amount, Decimal(600))
+
+    def test_it_creates_an_invoice_transaction_for_sent_invoices(self):
+        data = { "status": "sent" }
+        invoice = create_mock_v2_invoice(
+            invoice_data = data
+        )
+        invoice_transaction = self.invoice.transaction_set.first()
+        self.assertEqual(self.invoice.transaction_set.count(), 1)
+        self.assertEqual(invoice_transaction.type, 'Invoice')
+        self.assertEqual(self.invoice.invoice_amount, invoice_transaction.amount)
+
+    def test_it_creates_an_invoice_and_payment_transaction_for_paid_invoices(self):
+        data = { "status": "paid" }
+        invoice = create_mock_v2_invoice(invoice_data=data)
+        invoice_transaction = invoice.transaction_set.first()
+        payment_transaction = invoice.transaction_set.filter(type='Payment').first()
+
+        self.assertEqual(invoice.transaction_set.count(), 2)
+        self.assertEqual(invoice_transaction.amount, payment_transaction.amount)
+        self.assertEqual(invoice.invoice_total, invoice.calculated_amount_paid)

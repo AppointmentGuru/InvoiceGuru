@@ -5,12 +5,14 @@ from django.utils import timezone
 import uuid, requests, os
 
 from .guru import publish
+from .mixins import InvoiceModelMixin
 
 from .helpers import (
     fetch_data,
     to_context,
     clean_context
 )
+from decimal import Decimal
 from dateutil.parser import parse
 from datetime import datetime, timedelta
 
@@ -93,76 +95,19 @@ class InvoiceSettings(models.Model):
     show_snapcode_on_invoice = models.NullBooleanField(default=False)
     allow_pre_payments = models.NullBooleanField(default=False)
     allow_submit_to_medical_aid = models.NullBooleanField(default=False)
-    include_vat = models.NullBooleanField(default=False)
-
     snap_id = models.CharField(max_length=128, blank=True, null=True)
+
+    include_vat = models.NullBooleanField(default=False)
     vat_percent = models.PositiveIntegerField(default=0, blank=True, null=True)
 
-class Invoice(models.Model):
+class Invoice(models.Model, InvoiceModelMixin):
 
     collection = 'invoices'
     serializer_path = 'invoice.serializers.InvoiceSerializer'
     readonly_sync = True
 
-    cached_settings = None
-
     def __str__(self):
         return '#{}: {}'.format(self.invoice_number, self.title)
-
-    def get_absolute_url(self):
-        return '/invoice/view/{}/?key={}'.format(self.id, self.password)
-
-    @property
-    def amount_due(self):
-        due = self.invoice_amount - self.amount_paid
-        return format(due, '.2f')
-
-    @property
-    def get_download_url(self):
-        return '/invoice/{}/?key={}'.format(self.id, self.password)
-
-    @property
-    def get_view_url(self):
-        return '/invoice/view/{}/?key={}'.format(self.id, self.password)
-
-    def __get_snap_url(self, is_qr_code=True):
-        base = "https://pos.snapscan.io/qr/"
-        snap_id = self.settings.snap_id
-        if is_qr_code:
-            snap_id = "{}.svg".format(snap_id)
-        snap_params = "?invoice_id={}&amount={}".format(
-            self.id,
-            self.amount_due.replace('.', '')
-        )
-        return "{}{}{}&strict=true".format(
-            base,
-            snap_id,
-            snap_params
-        )
-
-    @property
-    def show_snapcode_on_invoice(self):
-        return self.settings.show_snapcode_on_invoice
-
-    @property
-    def get_snapscan_url(self):
-        return self.__get_snap_url(is_qr_code=False)
-
-    @property
-    def get_snapscan_qr(self):
-        return self.__get_snap_url(is_qr_code=True)
-
-    @property
-    def settings(self):
-        if self.cached_settings is not None:
-            return self.cached_settings
-        try:
-            settings = InvoiceSettings.objects.get(practitioner_id = self.practitioner_id)
-            self.cached_settings = settings
-            return settings
-        except InvoiceSettings.DoesNotExist:
-            return None
-
 
     # relationships
     practitioner_id = models.CharField(max_length=128, db_index=True)
@@ -177,7 +122,7 @@ class Invoice(models.Model):
     status = models.CharField(max_length=10, choices=INVOICE_STATUSES, default='new', db_index=True)
 
     context = JSONField(default={})
-    template = models.CharField(max_length=255, blank=True, null=True, choices=TEMPLATES, default='basic')
+    template = models.CharField(max_length=255, blank=True, null=True, choices=TEMPLATES, default='basic_v2')
 
     password = models.CharField(max_length=255, blank=True, null=True, default=get_short_uuid)
     customer_password = models.CharField(max_length=255, blank=True, null=True, default=get_short_uuid)
@@ -194,37 +139,15 @@ class Invoice(models.Model):
 
     short_url = models.URLField(blank=True, null=True)
 
+    integrate_medical_aid = models.NullBooleanField()
     # free text fields:
+    billing_address = models.TextField(blank=True, null=True)
     invoicee_details = models.TextField(blank=True, null=True)
     medicalaid_details = models.TextField(blank=True, null=True)
 
-    # settings:
-    integrate_medical_aid = models.NullBooleanField()
-    # automatically_submit_to_medical_aid = models.BooleanField(default=False)
 
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     modified_date = models.DateTimeField(auto_now=True, db_index=True)
-
-    def __get_client(self):
-        client = self.context.get("client")
-        if client is not None:
-            return client
-
-        appointments = self.context.get("appointments", [])
-        if len(appointments) > 0:
-            appointment = appointments[0]
-            client = appointment.get("client")
-            IS_CLIENT_ID = isinstance(client, int)
-            if IS_CLIENT_ID:
-                name = appointment.get("full_name")
-                return {
-                    "first_name": name.split(" ")[0],
-                    "last_name": (" ").join(name.split(" ")[1:]),
-                    "email": appointment.get("contact_email"),
-                    "phone_number": appointment.get("contact_phone"),
-                }
-            return client
-        return {}
 
     @staticmethod
     def past_due(min_days, max_days = None, other_filters = None):
@@ -280,163 +203,7 @@ class Invoice(models.Model):
             return instance
         return None
 
-    @property
-    def get_client_email(self):
-        return self.__get_client().get("email")
 
-    @property
-    def get_client_full_name(self):
-        fname = self.__get_client().get("first_name")
-        lname = self.__get_client().get("last_name")
-        return "{} {}".format(fname, lname)
-
-    @property
-    def get_client_phone_number(self):
-        return self.__get_client().get("phone_number")
-
-    def get_short_url(self, force=False, admin_url=True):
-        '''
-        curl https://www.googleapis.com/urlshortener/v1/url?key=... \
-            -H 'Content-Type: application/json' \
-            -d '{"longUrl": "https://google.com"}'
-        '''
-        url = 'https://www.googleapis.com/urlshortener/v1/url'
-        params = {
-            "key": settings.GOOGLE_API_SHORTENER_TOKEN
-        }
-
-        if admin_url:
-            url_to_shorten = self.admin_invoice_url
-        else:
-            url_to_shorten = self.customer_invoice_url
-
-        result = requests.post(
-            url,
-            json={'longUrl': url_to_shorten},
-            params=params)
-        short_url = result.json().get('id')
-        self.short_url = short_url
-        self.save()
-        return short_url
-
-    def enrich(self):
-        return InvoiceBuilder(self).enrich()
-
-    def get_context(self, default_context = {}):
-
-        practitioner, appointments, medical_record = fetch_data(
-            self.practitioner_id,
-            self.appointment_ids,
-            self.customer_id)
-
-        context = to_context(
-                    practitioner,
-                    appointments,
-                    medical_record,
-                    default_context=default_context,
-                    format_times = False,
-                    format_codes = False)
-        context = clean_context(context)
-        self.context = context
-        return context
-
-    def apply_settings(self, with_save=True):
-        if self.settings is not None:
-            fields = dir(InvoiceSettings)
-            for field in fields:
-                IS_PRIVATE_FIELD = field.startswith('_')
-                EXISTS = hasattr(self, field)
-
-                if not IS_PRIVATE_FIELD and EXISTS:
-                    FIELD_IS_EMPTY = getattr(self, field, None) is None
-                    if FIELD_IS_EMPTY:
-                        value = getattr(self.settings, field)
-                        setattr(self, field, value)
-            if with_save:
-                self.save()
-
-    def apply_context(self):
-        '''
-        Copy items from context to invoice
-        '''
-        for field in EXTRA_FIELDS:
-            value = self.context.get(field, None)
-            if value is not None:
-                setattr(self, field, value)
-
-
-    def _get_serialized(self):
-        from .serializers import InvoiceSerializer
-        if isinstance(self.date, datetime):
-            self.date = self.date.date() # make sure date is only a date
-        return InvoiceSerializer(self).data
-
-    def _get_payload(self):
-        data = self._get_serialized()
-        summarized = [{"id": appt.get('id')} \
-                    for appt \
-                    in data.get('context',{}).get('appointments')]
-        data.update({"context": { "appointments": summarized } })
-        return data
-
-    def send(self, to_email=False, to_phone=False, to_inapp = False):
-
-        from .tasks import send_invoice_or_receipt
-        data = {
-            "from_email": self.sender_email,
-            "invoice_id": self.id
-        }
-        if to_email and self.get_client_email:
-            data.update({
-                "to_emails": [self.get_client_email]
-            })
-        if to_phone and self.get_client_phone_number:
-            data.update({
-                "to_phone_numbers": [self.get_client_phone_number]
-            })
-        if to_inapp and self.get_client_phone_number:
-            data.update({
-                "to_channels": [self.get_client_phone_number]
-            })
-        return send_invoice_or_receipt(data)
-
-    def send_to_medical_aid(self):
-        pass
-
-    def publish(self):
-        if self.status == 'paid':
-            self.publish_paid()
-        if self.status == 'sent':
-            self.publish_sent()
-
-    def publish_paid(self):
-        data = self._get_payload()
-        publish(settings.PUBLISHKEYS.invoice_paid, data)
-
-    def publish_sent(self):
-        data = self._get_payload()
-        publish(settings.PUBLISHKEYS.invoice_sent, data)
-
-    @property
-    def is_receipt(self):
-        return self.status == 'paid'
-        # return (self.invoice_amount - self.amount_paid) == 0
-
-    @property
-    def invoice_number(self):
-        if self.title is None: return 'INV-{}'.format(self.id)
-        initials = ("").join([word[0:1].upper() for word in self.title.split(' ') if word.isalpha()])
-        return '{}-{}'.format(initials, self.id)
-
-    @property
-    def admin_invoice_url(self):
-        base = settings.INVOICEGURU_BASE_URL
-        return '{}/invoice/{}?key={}'.format(base, self.pk, self.password)
-
-    @property
-    def customer_invoice_url(self):
-        base = settings.INVOICEGURU_BASE_URL
-        return '{}/invoice/{}?key={}'.format(base, self.pk, self.customer_password)
 
 TRANSACTION_TYPES = [
     ('Invoice', 'Invoice'),
@@ -450,9 +217,14 @@ class Transaction(models.Model):
     readonly_sync = True
 
     def __str__(self):
-        return "{} -> {}. {}".format(
-            self.customer_id,
+        arrow = '->'
+        if self.type == 'Payment':
+            arrow = '<-'
+        return "#{}: {} {} {}. {}".format(
+            self.invoice.id,
             self.practitioner_id,
+            arrow,
+            self.customer_id,
             self.amount
         )
 
@@ -476,7 +248,7 @@ class Transaction(models.Model):
     modified_date = models.DateTimeField(auto_now=True, db_index=True)
 
     @classmethod
-    def from_invoice(cls, invoice, method='unknown', date=None, with_save=True):
+    def from_invoice(cls, invoice, transaction_type='Invoice', method='unknown', date=None, amount=None, auto_created=True, with_save=True):
         '''
         Creates a transaction from an invoice.
         If invoice is not in correct status, returns None
@@ -485,22 +257,15 @@ class Transaction(models.Model):
 
         '''
 
-        if invoice.status not in ['paid', 'sent']:
-            return None
-
-        transaction_type = 'Invoice'
-        if invoice.status == 'paid':
-            transaction_type = 'Payment'
-
         # check for dupes:
-        existing_transactions = Transaction.objects.filter(
-            invoice=invoice,
-            auto_created=True,
-            type=transaction_type
-        )
-        if existing_transactions.count() > 0:
-            print("transaction already exists")
-            return existing_transactions.first()
+        if auto_created:
+            existing_transactions = Transaction.objects.filter(
+                invoice=invoice,
+                auto_created=True,
+                type=transaction_type
+            )
+            if existing_transactions.count() > 0:
+                return existing_transactions.first()
 
         transaction = cls()
         copy_fields = ['practitioner_id', 'customer_id', 'appointments']
@@ -513,9 +278,12 @@ class Transaction(models.Model):
 
         transaction.type = transaction_type
 
-        transaction.auto_created = True
+        transaction.auto_created = auto_created
         transaction.invoice_id = invoice.id
-        transaction.amount = invoice.amount_paid
+        if amount is None:
+            transaction.amount = invoice.invoice_amount
+        else:
+            transaction.amount = Decimal(amount)
         transaction.date = date
         # transaction.transaction_date = invoice.created_date
         transaction.method = method

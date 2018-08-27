@@ -1,7 +1,24 @@
 import requests
 from django.conf import settings
 from .guru import get_headers
-from invoice.models import InvoiceSettings
+from django import template
+
+DEFAULT_INVOICEE_TEMPLATE = """{{first_name}} {{last_name}}{% if email %}
+email: {{email}}{% endif %}{% if cell_phone %}
+contact: {{phone_number}}{% endif %}
+{{home_address}}
+"""
+
+DEFAULT_MEDICAL_AID_TEMPLATE = """{{name}}. {{scheme}}
+#{{number}}.
+Patient:
+{{patient_first_name}} {{patient_last_name}}
+ID: {{patient_id_number}}}{% if is_dependent %}
+Main member:
+{{member_first_name}} {{member_last_name}}
+ID: {{member_id_number}}
+{% endif %}
+"""
 
 class InvoiceBuilder:
     '''
@@ -25,28 +42,36 @@ builder.profit()
     def __init__(self, invoice):
         self.invoice = invoice
 
-    def get_billing_address(self, practitioner):
-        address = practitioner\
-                    .get("profile", {})\
-                    .get("services", [{}])[0]\
-                    .get("address", {})
+    def __render_templated(self, content, data):
 
-        return """{}
-{}
-""".format(address.get('name'), address.get('address'))
+        tmplt = template.Template(content)
+        context = template.Context(data)
+        return tmplt.render(context).strip()
 
-    def update_settings(self, practitioner):
+    def apply_settings(self, invoice, settings, with_save=False):
+
         settings = self.invoice.settings
+        settings_to_apply = [
+            ('billing_address', 'billing_address'),
+            ('integrate_medical_aid', 'integrate_medical_aid'),
+        ]
         if settings is None:
+            from invoice.models import InvoiceSettings
             settings = InvoiceSettings()
             settings.practitioner_id = self.invoice.practitioner_id
+            settings.save()
 
-        if settings.billing_address is None:
-            settings.billing_address = self.get_billing_address(practitioner)
+        for setting_field, invoice_field in settings_to_apply:
+            setting_value = getattr(settings, setting_field, None)
+            invoice_value = getattr(self.invoice, invoice_field, None)
 
-        if settings.integrate_medical_aid is None:
-            settings.integrate_medical_aid = self.invoice.context.get('medicalaid_info') is not None
-        settings.save()
+            setting_exists = setting_value is not None
+
+            if setting_exists and invoice_value is None:
+                setattr(self.invoice, invoice_field, setting_value)
+
+        if with_save:
+            self.invoice.save()
 
     def update_invoice_from_context(self):
         if self.invoice.context is not None:
@@ -58,10 +83,8 @@ builder.profit()
             if invoicee_details is not None:
                 self.invoice.invoicee_details = invoicee_details.strip()
 
-    def populate_appointments_from_context(self):
-        appointments = self.invoice.context.get('appointments',[])
-        self.invoice.appointments = [appt.get('id') for appt in appointments]
-        self.invoice.save()
+            if self.invoice.title is None:
+                self.invoice.title = self.invoice.invoice_number
 
     def set_object_ids(self):
         pass
@@ -79,13 +102,12 @@ builder.profit()
 
         context = {}
 
-        appointments = self.get_appointments_from_legacy_context()
-        if appointments is None:
-            appointments = self.get_appointments(self.invoice.practitioner_id, self.invoice.appointments)
+        # appointments = self.get_appointments_from_legacy_context()
+        appointments = self.get_appointments(
+                        self.invoice.practitioner_id,
+                        self.invoice.appointments)
 
         practitioner, raw_practitioner = self.get_practitioner(self.invoice.practitioner_id)
-
-        self.update_settings(raw_practitioner)
 
         context.update({
             "client": self.get_client(self.invoice.practitioner_id, self.invoice.customer_id),
@@ -94,12 +116,26 @@ builder.profit()
             "record": self.get_record(self.invoice.practitioner_id, self.invoice.customer_id)
         })
         self.update_invoice_from_context()
+
+        self.invoice.context = context
+        self.apply_settings(self.invoice, self.invoice.settings)
+
         if save_context:
-            self.invoice.context = context
             self.invoice.save()
 
-        self.update_settings(raw_practitioner)
         return context
+
+    def get_formatted_invoicee_details(self, client):
+        template_string = None
+        if self.invoice.settings is not None:
+            template_string = self.invoice.settings.customer_info
+        if template_string is None:
+            template_string = DEFAULT_INVOICEE_TEMPLATE
+        return self.__render_templated(template_string, client)
+
+    def get_formatted_medical_aid_details(self, medical_aid):
+        template_string = DEFAULT_MEDICAL_AID_TEMPLATE
+        return self.__render_templated(template_string, medical_aid)
 
     def set_customer_info_from_context(self, with_save=False):
         '''
@@ -110,54 +146,23 @@ builder.profit()
         aid = record.get('medical_aid')
 
         if client is not None:
-            self.invoice.invoicee_details = """
-{} {}
-email: {}
-contact: {}
-{}
-""".format(
-    client.get('first_name'),
-    client.get('last_name'),
-    client.get('email'),
-    client.get('phone_number') or client.get('cell_phone'),
-    client.get('home_address') or '',
-).strip()
+            if client.get('phone_number') is None:
+                client.upate({
+                    "phone_number": client.get("cell_phone")
+                })
+            self.invoice.invoicee_details = self.get_formatted_invoicee_details(client)
 
         if aid is not None:
-            self.invoice.medicalaid_details = """
-{}. {}
-#{}.
-Patient:
-{} {}
-ID: {}
-""".format(
-    aid.get('name'),
-    aid.get('scheme'),
-    aid.get('number'),
-    aid.get('patient_first_name'),
-    aid.get('patient_last_name'),
-    aid.get('patient_id_number'),
-).strip()
+            self.invoice.medicalaid_details = self.get_formatted_medical_aid_details(aid)
 
-            if aid.get('is_dependent'):
-                self.invoice.medicalaid_details = """
-{}
-Main member:
-{} {}
-ID: {}
-""".format(
-    self.invoice.medicalaid_details,
-    aid.get('member_first_name'),
-    aid.get('member_last_name'),
-    aid.get('member_id_number'),
-).strip()
         if with_save:
             self.invoice.save()
         return self.invoice
 
     def reduce(self, obj, fields_to_keep):
         new_obj = {}
-        if obj is None: return new_obj
+        if obj is None or not isinstance(obj, dict):
+            return new_obj
 
         for field in fields_to_keep:
             new_obj[field] = obj.get(field)
@@ -197,10 +202,11 @@ ID: {}
             'invoiceable', 'product'
         ]
         data = self.reduce(appointment, fields)
-        data.get('client')
+        client = self.clean_client(data.get("client"))
+        practitioner = self.fierce_clean_practitioner(data.get("practitioner"))
         data.update({
-            "client": self.clean_client(data.get("client")),
-            "practitioner": self.fierce_clean_practitioner(data.get("practitioner"))
+            "client": client,
+            "practitioner": practitioner
         })
         return data
 

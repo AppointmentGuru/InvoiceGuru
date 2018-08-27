@@ -5,7 +5,7 @@ from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
 from django_nosql.signals import (sync_readonly_db, SYNC_TYPE)
 
-from .models import Invoice, ProofOfPayment
+from .models import Invoice, ProofOfPayment, Transaction
 from .invoicebuilder import InvoiceBuilder
 
 from dateutil.parser import parse
@@ -15,18 +15,8 @@ import random
 @receiver(pre_save, sender=Invoice, dispatch_uid="invoice.signals.apply_context")
 def enrich_invoice(sender, instance, **kwargs):
 
-    context = instance.context
-    invoice_total = 0
-    invoice_amount_paid = 0
-    if instance.template == 'basic_v2' and instance.context.get('id') is None:
-        builder = InvoiceBuilder(instance)
-        instance.context = builder.enrich(save_context=False)
-
-    if instance.title is None:
-        instance.title = instance.invoice_number
-
-#     appointments = context.get('appointments', [])
-
+    instance.enrich(save_context=False)
+    instance.invoice_amount = instance.calculate_invoice_amount()
 #     for appt in appointments:
 
 #         codes = getattr(appt, 'codes', [])
@@ -90,10 +80,15 @@ def enrich_invoice(sender, instance, **kwargs):
 #     if instance.status == 'paid':
 #         instance.amount_paid = instance.invoice_amount
 
-
+@receiver(post_save, sender=Invoice, dispatch_uid="invoice.signals.invoice_post_save_actions")
+def invoice_post_save_actions(sender, instance, **kwargs):
+    # create a transaction
+    print(Transaction.from_invoice(instance, transaction_type='Invoice', with_save=True))
+    if instance.status == 'paid':
+        print(Transaction.from_invoice(instance, transaction_type='Payment', with_save=True))
 
 @receiver(post_save, dispatch_uid="django_nosql.sync")
-def sync_to_readonly_db(sender, instance, created, **kwargs):
+def nosql_sync(sender, instance, created, **kwargs):
     sync_readonly_db(instance, SYNC_TYPE.UPDATE, created)
 
 @receiver(post_delete, dispatch_uid="django_nosql.sync.delete")

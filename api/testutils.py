@@ -1,4 +1,4 @@
-from invoice.models import Invoice, ProofOfPayment
+from invoice.models import Invoice, ProofOfPayment, InvoiceSettings
 from django.contrib.auth import get_user_model
 import django
 from unittest.mock import Mock
@@ -47,18 +47,33 @@ def create_mock_proof(invoice):
     # proof.document = mock_file
     return proof
 
-def create_mock_v2_invoice(customer_id=1, practitioner_id=2, appointments=[3,4,5]):
-    invoice = Invoice()
-    invoice.customer_id = 1
-    invoice.practitioner_id = 2
-    invoice.appointments = [3,4,5]
+def create_mock_settings(practitioner_id):
+    settings = InvoiceSettings()
+    settings.billing_address = 'billing address'
+    settings.invoice_notes = 'invoice note'
+    settings.receipt_notes = 'receipt_note'
+    settings.integrate_medical_aid = True
+    settings.show_snapcode_on_invoice = True
+    settings.allow_pre_payments = True
+    settings.allow_submit_to_medical_aid = True
+    settings.snap_id = 'snappers'
+    return settings
+
+@responses.activate
+def create_mock_v2_invoice(customer_id=1, practitioner_id=2, appointments=[3,4,5], invoice_data={}, extra_data={}):
+    data = {
+        "customer_id": 1,
+        "practitioner_id": 2,
+        "appointments": [3,4,5],
+    }
+    data.update(invoice_data)
 
     expect_get_practitioner_response(2)
     expect_get_user_response(1)
     expect_get_record_response(1, 2)
-    expect_get_appointments([3,4,5], 2)
+    expect_get_appointments([3,4,5], 2, response_data=extra_data)
 
-    invoice.save()
+    invoice = Invoice.objects.create(**data)
     return invoice
 
 def create_mock_invoice(practitioner_id=None, customer_id=None):
