@@ -116,3 +116,4 @@ invoiceguru.sql
 medicalaidguru.sql
 appointmentguru_invoiceguru.data.*
 appointmentguru.sql
+firestore-credentials.json

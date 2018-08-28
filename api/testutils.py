@@ -1,7 +1,15 @@
-from invoice.models import Invoice, ProofOfPayment
+from invoice.models import Invoice, ProofOfPayment, InvoiceSettings
 from django.contrib.auth import get_user_model
 import django
 from unittest.mock import Mock
+from invoice.tests.responses import (
+    expect_get_practitioner_response,
+    expect_get_user_response,
+    expect_get_record_response,
+    expect_get_appointments
+)
+import responses
+
 from faker import Factory
 FAKE = Factory.create()
 
@@ -39,18 +47,42 @@ def create_mock_proof(invoice):
     # proof.document = mock_file
     return proof
 
+def create_mock_settings(practitioner_id):
+    settings = InvoiceSettings()
+    settings.billing_address = 'billing address'
+    settings.invoice_notes = 'invoice note'
+    settings.receipt_notes = 'receipt_note'
+    settings.integrate_medical_aid = True
+    settings.show_snapcode_on_invoice = True
+    settings.allow_pre_payments = True
+    settings.allow_submit_to_medical_aid = True
+    settings.snap_id = 'snappers'
+    return settings
+
+@responses.activate
+def create_mock_v2_invoice(customer_id=1, practitioner_id=2, appointments=[3,4,5], invoice_data={}, extra_data={}):
+    data = {
+        "customer_id": 1,
+        "practitioner_id": 2,
+        "appointments": [3,4,5],
+    }
+    data.update(invoice_data)
+
+    expect_get_practitioner_response(2)
+    expect_get_user_response(1, response_data=extra_data.get("user"))
+    expect_get_record_response(1, 2)
+    expect_get_appointments([3,4,5], 2, response_data=extra_data)
+
+    invoice = Invoice.objects.create(**data)
+    return invoice
+
 def create_mock_invoice(practitioner_id=None, customer_id=None):
 
     inv_total = FAKE.numerify()
-
     data = {
         "practitioner_id": practitioner_id or FAKE.numerify(),
         "customer_id": customer_id or FAKE.numerify(),
         "sender_email": "support@appointmentguru.co",
-        "title": "Joe Soap",
-        "invoicee_details": "some address",
-        "medicalaid_details": "some medical aid",
-        ""
         "context": {
                 "notes": "",
                 "due_date": "2017-09-14",
@@ -64,21 +96,13 @@ def create_mock_invoice(practitioner_id=None, customer_id=None):
                     "notes": None,
                     "price": "326.00",
                     "title": "Mathew",
-                    "client": {
-                        "email": "tech@appointmentguru.co",
-                        "last_name": "Joe",
-                        "first_name": "Soap",
-                        "phone_number": "+27832566533"
-                    },
+                    "client": 655,
                     "status": "N",
                     "product": 45,
                     "currency": "ZAR",
                     "end_time": "2017-08-10T13:15:00Z",
                     "included": True,
                     "full_name": "Joe Soap",
-                    "contact_email": "tech@appointmentguru.co",
-                    "contact_phone": "+27832566533",
-
                     "lineitems": [{
                         "id": 16,
                         "fields": ["icd10", "procedureCode"],
@@ -242,5 +266,4 @@ def create_mock_invoice(practitioner_id=None, customer_id=None):
                 "practitioner_id": 363
             }
         }
-
     return Invoice.objects.create(**data)

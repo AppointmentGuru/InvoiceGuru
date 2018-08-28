@@ -20,6 +20,7 @@ def get_headers(user_id, consumer='invoiceguru'):
         'X_CONSUMER_USERNAME': consumer,
     }
 
+#marked_for_delete
 def send_invoice(invoice, to_emails=None, to_phone=None):
     '''
     Sends invoice to to_email and to_phone if they are available.
