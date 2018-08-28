@@ -5,7 +5,7 @@ from django.test import TestCase, override_settings
 from invoice.models import Invoice, InvoiceSettings
 from ..invoicebuilder import InvoiceBuilder
 from api.testutils import create_mock_v2_invoice
-import responses
+import responses, unittest
 
 from faker import Factory
 FAKE = Factory.create()
@@ -14,53 +14,50 @@ class InvoiceBuilderEnrichesContextTestCase(TestCase):
 
     @override_settings(APPOINTMENTGURU_API='http://appointmentguru')
     @override_settings(MEDICALAIDGURU_API='http://medicalaidguru')
-    @responses.activate
     def setUp(self):
-
+        self.fields = [
+            'practitioner_data',
+            'client_data',
+            'appointment_data',
+            'record_data'
+        ]
         self.invoice = create_mock_v2_invoice()
-
         self.builder = InvoiceBuilder(self.invoice)
-        self.context = self.builder.enrich(save_context=True)
 
-    def test_build_context(self):
-        assert self.invoice.context is not None
+        #self.context = self.builder.enrich(save_context=True)
+
+    def test_it_sets_datas(self):
+
+        for field in self.fields:
+            assert getattr(self.invoice, field, None) is not None
+
+    def test_it_doesnt_touch_context(self):
+        self.assertDictEqual(self.invoice.context, {})
 
     def test_it_sets_practitioner(self):
-        assert self.invoice.context.get('practitioner').get('id') == 2,\
-            'Practitioner data is missing: {}'.format(
-                self.invoice.context.get('practitioner')
-            )
+        practitioner = self.invoice.practitioner_data
+        assert practitioner.get('id') == 2,\
+            'Practitioner data is missing: {}'\
+            .format(practitioner)
 
     def test_it_sets_client(self):
-        assert self.invoice.context.get('client').get('id') == 1
+        assert self.invoice.client_data.get('id') == 1
 
     def test_it_sets_appointments(self):
-        appointments = self.invoice.context.get('appointments', [])
+        appointments = self.invoice.appointment_data
         num_appointments = len(appointments)
-        assert num_appointments == 3,\
-            'Expected 3 appointments. Got: {}. {}'.format(num_appointments, appointments)
+        self.assertEqual(num_appointments, 3)
 
-    def test_it_formats_a_billing_address(self):
-        data = {
-            "profile": {
-                "services": [
-                    {"address": {
-                        "name": "Downtown Abby",
-                        "address": "10 Downtown Abbey, England"
-                    }}
-                ]
-            }
-        }
-        result = self.builder.get_billing_address(data)
-        self.assertEquals(result, 'Downtown Abby\n10 Downtown Abbey, England\n')
 
-class BuilderSetsContext(TestCase):
+
+class BuilderAppliesContext(TestCase):
 
     def __inv_and_builder(self):
         inv = Invoice()
         builder = InvoiceBuilder(inv)
         return (inv, builder)
 
+    @unittest.skip('moving this around')
     def test_set_customer_info_from_context_sets_invoicee_details_from_client_if_no_record(self):
 
         inv, builder = self.__inv_and_builder()

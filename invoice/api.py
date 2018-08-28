@@ -93,6 +93,7 @@ class InvoiceViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         'list': InvoiceListViewSerializer
     }
 
+
     def get_queryset(self):
         user = self.request.user
         return Invoice.objects.filter(

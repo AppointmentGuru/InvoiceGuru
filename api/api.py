@@ -7,12 +7,21 @@ API = {
         "resources": {
             "appointment": {
                 "path": "api/appointments/"
+            },
+            "practitioner": {
+                "path": "api/practitioners/"
+            },
+            "user": {
+                "path": "api/users/"
             }
         }
     },
     "medicalaidguru": {
-        "base_url": settings.APPOINTMENTGURU_API,
+        "base_url": settings.MEDICALAIDGURU_API,
         "resources": {
+            "record": {
+                "path": "records/"
+            }
         }
     },
     "communicationguru": {

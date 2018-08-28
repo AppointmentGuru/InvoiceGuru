@@ -2,6 +2,7 @@ import requests
 from django.conf import settings
 from .guru import get_headers
 from django import template
+from api.api import get_micro
 
 DEFAULT_INVOICEE_TEMPLATE = """{{first_name}} {{last_name}}{% if email %}
 email: {{email}}{% endif %}{% if cell_phone %}
@@ -89,41 +90,35 @@ builder.profit()
     def set_object_ids(self):
         pass
 
-    def enrich(self, save_context=False):
-        '''
-        Invoice()
-        invoice.customer_id =
-        invoice.practitioner_id =
-        invoice.appointments = []
-        invoice.save()
+    def enrich_resource(self, service, resource, id, field, cleaner = None):
+        practitioner_id = self.invoice.practitioner_id
+        m = get_micro(service, practitioner_id)
+        result, data, ok = m.get(resource, id)
+        if cleaner is not None:
+            data = getattr(self, cleaner)(data)
+        setattr(self.invoice, field, data)
 
-        context = InvoiceBuilder(invoice).enrich(save_context=True)
-        '''
-
-        context = {}
+    def enrich(self, with_save=False):
 
         # appointments = self.get_appointments_from_legacy_context()
         appointments = self.get_appointments(
                         self.invoice.practitioner_id,
                         self.invoice.appointments)
 
-        practitioner, raw_practitioner = self.get_practitioner(self.invoice.practitioner_id)
+        self.enrich_resource("appointmentguru", "practitioner", self.invoice.practitioner_id, "practitioner_data", "clean_practitioner")
+        self.enrich_resource("appointmentguru", "user", self.invoice.customer_id, "client_data", "clean_client")
+        self.enrich_resource("medicalaidguru", "record", self.invoice.customer_id, "record_data")
+        self.invoice.appointment_data = appointments
 
-        context.update({
-            "client": self.get_client(self.invoice.practitioner_id, self.invoice.customer_id),
-            "practitioner": practitioner,
-            "appointments": appointments,
-            "record": self.get_record(self.invoice.practitioner_id, self.invoice.customer_id)
-        })
-        self.update_invoice_from_context()
 
-        self.invoice.context = context
+        # self.update_invoice_from_context()
+
         self.apply_settings(self.invoice, self.invoice.settings)
 
-        if save_context:
+        if with_save:
             self.invoice.save()
 
-        return context
+        return self.invoice
 
     def get_formatted_invoicee_details(self, client):
         template_string = None
@@ -147,7 +142,7 @@ builder.profit()
 
         if client is not None:
             if client.get('phone_number') is None:
-                client.upate({
+                client.update({
                     "phone_number": client.get("cell_phone")
                 })
             self.invoice.invoicee_details = self.get_formatted_invoicee_details(client)
@@ -210,72 +205,15 @@ builder.profit()
         })
         return data
 
-    def get_client(self, practitioner_id, customer_id):
-        base = settings.APPOINTMENTGURU_API
-        path = '/api/users/'
-        url = "{}{}{}/".format(base, path, customer_id)
-        headers = get_headers(customer_id)
-        result = requests.get(url, headers=headers)
-        if result.status_code == 200:
-            return result.json()
-        return {}
-
-    def get_record(self, practitioner_id, customer_id):
-
-        headers = get_headers(practitioner_id)
-        url = '{}/records/{}/?customer_id={}&practitioner_id={}'.format(
-            settings.MEDICALAIDGURU_API,
-            customer_id,
-            customer_id,
-            practitioner_id
-        )
-        record_request = requests.get(url, headers=headers)
-        if record_request.status_code == 200:
-            return record_request.json()
-        else:
-            print(record_request.content)
-            print(url)
-            print(headers)
-
-    def get_practitioner(self, practitioner_id):
-        base = settings.APPOINTMENTGURU_API
-        path = '/api/practitioners/{}/'.format(practitioner_id)
-        url = '{}{}'.format(base, path)
-        result = requests.get(url)
-
-        if result.status_code == 200:
-            return (
-                self.clean_practitioner(result.json()),
-                result.json()
-            )
-        return ({}, {})
-
-    def get_appointments_from_legacy_context(self):
-        # return none if no context already exists on here
-        CONTEXT_IS_NONE = self.invoice.context is None
-        NO_APPOINTMENTS = self.invoice.context.get('appointments', None) is None
-        if CONTEXT_IS_NONE or NO_APPOINTMENTS: return None
-
-        appointments = []
-        for appointment in self.invoice.context.get('appointments', []):
-            cleaned_appointment = self.clean_appointment(appointment)
-            appointments.append(cleaned_appointment)
-        return appointments
-
     def get_appointments(self, practitioner_id, appointment_ids):
 
-        headers = get_headers(practitioner_id)
         appointments = []
-
         for appointment_id in appointment_ids:
-            url = '{}/api/appointments/{}/'.format(
-                settings.APPOINTMENTGURU_API,
-                appointment_id
-            )
-            result = requests.get(url, headers=headers)
-            if result.status_code == 200:
-                data = self.clean_appointment(result.json())
-                appointments.append(data)
+            m = get_micro("appointmentguru", self.invoice.practitioner_id)
+            result, data, ok = m.get("appointment", appointment_id)
+            if ok:
+                cleaned = self.clean_appointment(data)
+                appointments.append(cleaned)
             else:
                 print("{}: Appt #{}: {}".format(practitioner_id, appointment_id, result.status_code))
         return appointments

@@ -154,8 +154,8 @@ class InvoiceModelMixin:
         except InvoiceSettings.DoesNotExist:
             return None
 
-    def enrich(self, save_context=False):
-        return InvoiceBuilder(self).enrich(save_context=False)
+    def enrich(self, with_save=False):
+        return InvoiceBuilder(self).enrich(with_save=False)
 
     def calculate_invoice_amount(self, with_save=False):
         appointments = self.context.get('appointments', [])

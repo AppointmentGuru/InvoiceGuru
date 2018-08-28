@@ -6,6 +6,12 @@ class InvoiceMigrator:
     def __init__(self, invoice):
         self.invoice = invoice
 
+    def upgrade(self):
+        '''
+        Upgrade invoice to new version
+        '''
+        pass
+
     def populate_appointments_from_context(self):
         appointments = self.invoice.context.get('appointments',[])
         self.invoice.appointments = [appt.get('id') for appt in appointments]

@@ -15,7 +15,7 @@ import random
 @receiver(pre_save, sender=Invoice, dispatch_uid="invoice.signals.apply_context")
 def enrich_invoice(sender, instance, **kwargs):
 
-    instance.enrich(save_context=False)
+    instance.enrich(with_save=False)
     instance.invoice_amount = instance.calculate_invoice_amount()
 
 @receiver(post_save, sender=Invoice, dispatch_uid="invoice.signals.invoice_post_save_actions")
