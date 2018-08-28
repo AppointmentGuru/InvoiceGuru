@@ -116,7 +116,13 @@ class Invoice(models.Model, InvoiceModelMixin):
     title = models.CharField(max_length=255,blank=True, null=True)
     status = models.CharField(max_length=10, choices=INVOICE_STATUSES, default='new', db_index=True)
 
+    client_data = JSONField(default={}, blank=True, null=True)
+    record_data = JSONField(default={}, blank=True, null=True)
+    appointment_data = JSONField(default={}, blank=True, null=True)
+    practitioner_data = JSONField(default={}, blank=True, null=True)
+
     context = JSONField(default={})
+
     template = models.CharField(max_length=255, blank=True, null=True, choices=TEMPLATES, default='basic_v2')
 
     password = models.CharField(max_length=255, blank=True, null=True, default=get_short_uuid)
