@@ -69,7 +69,7 @@ def create_mock_v2_invoice(customer_id=1, practitioner_id=2, appointments=[3,4,5
     data.update(invoice_data)
 
     expect_get_practitioner_response(2)
-    expect_get_user_response(1)
+    expect_get_user_response(1, response_data=extra_data.get("user"))
     expect_get_record_response(1, 2)
     expect_get_appointments([3,4,5], 2, response_data=extra_data)
 

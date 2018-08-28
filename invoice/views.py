@@ -69,7 +69,7 @@ def snap_webhook(request):
             "error": "No matching invoice found"
         })
 
-    keen.add_event("snapscan_webhook", data)
+    # keen.add_event("snapscan_webhook", data)
     return HttpResponse('ok')
 
 @user_passes_test(lambda u: u.is_superuser)

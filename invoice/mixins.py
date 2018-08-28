@@ -65,6 +65,10 @@ class InvoiceModelMixin:
             snap_params
         )
 
+    def __get_client(self):
+        context = self.context
+        return context.get('client', {})
+
     @property
     def get_client_email(self):
         return self.__get_client().get("email")
@@ -89,8 +93,9 @@ class InvoiceModelMixin:
 
     @property
     def calculated_amount_paid(self):
-        total = self.transaction_set\
-            .filter(type='Payment')\
+        from .models import Transaction
+        total = Transaction.objects \
+            .filter(invoice = self, type='Payment')\
             .aggregate(amount_paid = Sum('amount'))\
             .get('amount_paid', Decimal(0))
 

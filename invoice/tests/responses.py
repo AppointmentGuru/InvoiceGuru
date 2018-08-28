@@ -34,14 +34,39 @@ MESSAGE_SUCCESS_RESPONSE = {
 	"template": None
 }
 
-def expect_get_user_response(user_id):
+def get_call(calls, search):
+    for call in calls:
+    		if search in call.request.url:
+    			return call
+
+def expect_keen_response():
+	keen_url = 'https://api.keen.io/3.0/projects/{}/events/snapscan_webhook'.format(settings.KEEN_PROJECT_ID)
+	responses.add(
+		responses.POST,
+		url=keen_url,
+		json={'ok': 'true'}
+	)
+
+def expect_communications_response(response_data={}):
+	data = {"id": 1}
+	data.update(response_data)
+	responses.add(
+		responses.POST,
+		url='https://communicationguru/communications/',
+		json=data,
+		status=201
+	)
+
+def expect_get_user_response(user_id, response_data={}):
+	data = {
+		'id': user_id,
+		'first_name': 'Joe'
+	}
+	data.update(response_data)
 	responses.add(
 		responses.GET,
 		'{}/api/users/{}/'.format(settings.APPOINTMENTGURU_API, user_id),
-		json={
-			'id': user_id,
-			'first_name': 'Joe'
-		},
+		json=data,
 		status=200
 	)
 def expect_get_practitioner_response(practitioner_id):

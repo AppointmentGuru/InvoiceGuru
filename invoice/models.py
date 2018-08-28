@@ -254,13 +254,14 @@ class Transaction(models.Model):
         if transaction_type == 'Invoice':
             existing_transactions = Transaction.objects.filter(
                 invoice=invoice,
-                type=transaction_type
+                type='Invoice'
             )
             if existing_transactions.count() > 0:
                 transaction = existing_transactions.first()
                 if transaction.amount != invoice.invoice_amount:
                     transaction.amount = invoice.invoice_amount
                     transaction.save()
+                return transaction
 
         transaction = cls()
         copy_fields = ['practitioner_id', 'customer_id', 'appointments']
