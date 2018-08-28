@@ -96,7 +96,6 @@ class MockMicro:
 
     def expect(self, resource, id=None, response_data={}, response_status=200):
         url = self.micro._prepare_request(resource, id)
-        print(url)
         responses.add(
             responses.GET,
             url,
