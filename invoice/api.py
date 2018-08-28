@@ -10,7 +10,8 @@ from .guru import send_invoice, publish
 from .mixins import MultiSerializerMixin
 from .filters import (
     InvoiceFilter,
-    TransactionFilter
+    TransactionFilter,
+    IdsInFilter
 )
 from .serializers import (
     InvoiceSerializer,
@@ -76,9 +77,15 @@ class InvoiceViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
 
-    filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter,
+        IdsInFilter
+    )
     filter_class = InvoiceFilter
     ordering_fields = ('date', 'due_date', 'id', 'date_created', 'invoice_amount')
+    search_fields = ('date', 'due_date', 'sender_email', 'title', 'invoice_amount', 'invoicee_details', 'medicalaid_details',)
     ordering = ('-date',)
 
     default_serializer_class = InvoiceSerializer
