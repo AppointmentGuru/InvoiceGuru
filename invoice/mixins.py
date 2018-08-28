@@ -66,8 +66,7 @@ class InvoiceModelMixin:
         )
 
     def __get_client(self):
-        context = self.context
-        return context.get('client', {})
+        return self.client_data
 
     @property
     def get_client_email(self):
@@ -158,7 +157,7 @@ class InvoiceModelMixin:
         return InvoiceBuilder(self).enrich(with_save=False)
 
     def calculate_invoice_amount(self, with_save=False):
-        appointments = self.context.get('appointments', [])
+        appointments = self.appointment_data
         invoice_total = Decimal(0)
         for appointment in appointments:
             price = appointment.get('price', 0)
