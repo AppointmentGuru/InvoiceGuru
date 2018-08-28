@@ -62,7 +62,8 @@ def expect_get_user_response(user_id, response_data={}):
 		'id': user_id,
 		'first_name': 'Joe'
 	}
-	data.update(response_data)
+	if response_data is not None:
+		data.update(response_data)
 	responses.add(
 		responses.GET,
 		'{}/api/users/{}/'.format(settings.APPOINTMENTGURU_API, user_id),

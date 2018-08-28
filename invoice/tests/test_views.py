@@ -43,7 +43,7 @@ class InvoiceSubmitViewTestCase(TestCase):
 class InvoiceViewTestCase(TestCase):
 
     def setUp(self):
-        self.invoice = create_mock_invoice()
+        self.invoice = create_mock_v2_invoice()
         self.url = reverse('invoice_view', args=(self.invoice.pk,))
 
     def test_get_without_password(self):
