@@ -39,6 +39,14 @@ def get_call(calls, search):
     		if search in call.request.url:
     			return call
 
+def expect_shorten_url():
+	url = "https://www.googleapis.com/urlshortener/v1/url"
+	responses.add(
+		responses.POST,
+		url=url,
+		json={'id': 'https://go.gle/1234'}
+	)
+
 def expect_keen_response():
 	keen_url = 'https://api.keen.io/3.0/projects/{}/events/snapscan_webhook'.format(settings.KEEN_PROJECT_ID)
 	responses.add(

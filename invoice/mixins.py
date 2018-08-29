@@ -175,9 +175,10 @@ class InvoiceModelMixin:
 
     def _get_payload(self):
         data = self._get_serialized()
+        summarized = []
         summarized = [{"id": appt.get('id')} \
-                    for appt \
-                    in data.get('context',{}).get('appointments')]
+                for appt \
+                in data.get('appointment_data', [])]
         data.update({"context": { "appointments": summarized } })
         return data
 

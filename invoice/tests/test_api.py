@@ -2,6 +2,9 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from ..models import Invoice
 from api.testutils import create_mock_invoice, assert_response, get_proxy_headers
+from .responses import (
+    expect_shorten_url
+)
 import responses
 
 class ApiRootTestCase(TestCase):
@@ -25,6 +28,7 @@ class ApiRootTestCase(TestCase):
 class SendEndpointTestCase(TestCase):
 
     def setUp(self):
+        expect_shorten_url()
         invoice = create_mock_invoice(1, 1)
         url = reverse('invoice-send', args=(invoice.id,))
         data = {
