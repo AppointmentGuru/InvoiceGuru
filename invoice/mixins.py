@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from .invoicebuilder import InvoiceBuilder
 from .guru import publish
-
+import requests
 
 class MultiSerializerMixin():
     '''
@@ -103,7 +103,7 @@ class InvoiceModelMixin:
 
     @property
     def amount_due(self):
-        due = self.invoice_amount - self.calculated_amount_paid
+        due = Decimal(self.invoice_amount) - Decimal(self.calculated_amount_paid)
         due = max(Decimal(0), due)
         return format(due, '.2f')
 

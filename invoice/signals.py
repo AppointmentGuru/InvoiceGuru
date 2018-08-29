@@ -14,9 +14,10 @@ import random
 
 @receiver(pre_save, sender=Invoice, dispatch_uid="invoice.signals.apply_context")
 def enrich_invoice(sender, instance, **kwargs):
-
-    instance.enrich(with_save=False)
-    instance.invoice_amount = instance.calculate_invoice_amount()
+    created = instance.pk is None
+    if created:
+        instance.enrich(with_save=False)
+        instance.invoice_amount = instance.calculate_invoice_amount()
 
 @receiver(post_save, sender=Invoice, dispatch_uid="invoice.signals.invoice_post_save_actions")
 def invoice_post_save_actions(sender, instance, **kwargs):
@@ -25,6 +26,7 @@ def invoice_post_save_actions(sender, instance, **kwargs):
     due = Decimal(instance.amount_due)
     if instance.status == 'paid' and due > 0:
         Transaction.from_invoice(instance, transaction_type='Payment', amount=due, with_save=True)
+    instance.publish()
 
 @receiver(post_save, dispatch_uid="django_nosql.sync")
 def nosql_sync(sender, instance, created, **kwargs):

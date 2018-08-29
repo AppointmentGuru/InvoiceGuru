@@ -53,7 +53,8 @@ def snap_webhook(request):
         and invoice_id is None:
         invoice = Invoice.from_appointment(
             appointment_id=appointment_id,
-            practitioner_id=practitioner_id
+            practitioner_id=practitioner_id,
+            with_save=True
         )
         invoice_id = invoice.id
 

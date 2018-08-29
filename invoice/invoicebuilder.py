@@ -74,19 +74,6 @@ builder.profit()
         if with_save:
             self.invoice.save()
 
-    def update_invoice_from_context(self):
-        if self.invoice.context is not None:
-            medicalaid_info = self.invoice.context.get('medicalaid_info')
-            if medicalaid_info is not None:
-                self.invoice.medicalaid_details = medicalaid_info.strip()
-
-            invoicee_details = self.invoice.context.get("customer_info")
-            if invoicee_details is not None:
-                self.invoice.invoicee_details = invoicee_details.strip()
-
-            if self.invoice.title is None:
-                self.invoice.title = self.invoice.invoice_number
-
     def set_object_ids(self):
         pass
 
@@ -110,10 +97,10 @@ builder.profit()
         self.enrich_resource("medicalaidguru", "record", self.invoice.customer_id, "record_data")
         self.invoice.appointment_data = appointments
 
-
         # self.update_invoice_from_context()
 
         self.apply_settings(self.invoice, self.invoice.settings)
+        self.set_customer_info()
 
         if with_save:
             self.invoice.save()
@@ -132,12 +119,12 @@ builder.profit()
         template_string = DEFAULT_MEDICAL_AID_TEMPLATE
         return self.__render_templated(template_string, medical_aid)
 
-    def set_customer_info_from_context(self, with_save=False):
+    def set_customer_info(self, with_save=False):
         '''
         from values in context, set invoicee_details and medicalaid_details
         '''
-        record = self.invoice.context.get('record', {})
-        client = record.get('patient', None) or self.invoice.context.get('client', None)
+        record = self.invoice.record_data
+        client = record.get('patient', None) or self.invoice.client_data
         aid = record.get('medical_aid')
 
         if client is not None:

@@ -173,7 +173,7 @@ class Invoice(models.Model, InvoiceModelMixin):
         return invoices
 
     @classmethod
-    def from_appointment(cls, practitioner_id, appointment_id, with_save=True, send=False):
+    def from_appointment(cls, practitioner_id, appointment_id, with_save=False, send=False):
         instance = cls()
         builder = InvoiceBuilder(instance)
         appointments = builder.get_appointments(practitioner_id, [appointment_id])
