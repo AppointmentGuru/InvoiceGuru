@@ -10,7 +10,10 @@ class InvoiceMigrator:
         '''
         Upgrade invoice to new version
         '''
-        pass
+        self.populate_appointments_from_context()
+        self.populate_client()
+        self.populate_practitioner()
+        self.populate_record()
 
     def get_from_appointments(self, field):
         appointments = self.invoice.context.get('appointments',[])
@@ -23,7 +26,7 @@ class InvoiceMigrator:
             self.invoice.practitioner_data = self.get_from_appointments('practitioner')
 
     def populate_client(self):
-        self.invoice.client_data = self.context.get('client')
+        self.invoice.client_data = self.get_from_appointments('client')
 
     def populate_record(self):
         self.invoice.record_data = self.context.get('record')

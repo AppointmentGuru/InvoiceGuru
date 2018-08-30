@@ -12,7 +12,7 @@ API = {
                 "path": "api/practitioners/"
             },
             "user": {
-                "path": "api/users/"
+                "path": "api/v2/practitioner/clients/"
             }
         }
     },
