@@ -5,7 +5,7 @@ from django import template
 from api.api import get_micro
 
 DEFAULT_INVOICEE_TEMPLATE = """{{first_name}} {{last_name}}{% if email %}
-email: {{email}}{% endif %}{% if cell_phone %}
+email: {{email}}{% endif %}{% if phone_number %}
 contact: {{phone_number}}{% endif %}
 {{home_address}}
 """
@@ -97,7 +97,7 @@ builder.profit()
         self.enrich_resource("medicalaidguru", "record", self.invoice.customer_id, "record_data")
         self.invoice.appointment_data = appointments
 
-        # self.update_invoice_from_context()
+        self.set_customer_info()
 
         self.apply_settings(self.invoice, self.invoice.settings)
         self.set_customer_info()

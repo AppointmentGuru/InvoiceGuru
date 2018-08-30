@@ -13,6 +13,7 @@ from invoice.models import (
     Transaction
 )
 from .responses import (
+    expect_get_appointment,
     expect_get_appointments,
     expect_get_practitioner_response,
     expect_get_record_response,
@@ -103,14 +104,15 @@ class CreateInvoiceFromAppointmentTestCase(TestCase):
         self.customer_id = 3
 
         # expected requests:
-        expect_get_appointments([self.appointment_id], self.practitioner_id, response_data=self.appointment_data)
+        expect_get_appointment(self.appointment_id, self.practitioner_id, response_data=self.appointment_data)
         expect_get_practitioner_response(self.practitioner_id)
         expect_get_record_response(self.customer_id, self.practitioner_id)
         expect_get_user_response(self.customer_id)
 
         self.invoice = Invoice.from_appointment(
             self.practitioner_id,
-            self.appointment_id
+            self.appointment_id,
+            with_save=True
         )
         self.invoice.refresh_from_db()
 

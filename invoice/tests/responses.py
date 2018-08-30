@@ -91,19 +91,27 @@ def expect_get_practitioner_response(practitioner_id):
 		status=200
 	)
 
-def expect_get_record_response(customer_id, practitioner_id):
-	responses.add(
-		responses.GET,
-		'{}/records/{}/'.format(settings.MEDICALAIDGURU_API, customer_id),
-		json={
-			'customer_id': customer_id,
-			'practitioners': [practitioner_id],
-			'patient': {
-				'first_name': 'Joe'
-			}
-		},
-		status=200
-	)
+def record_response_data(customer_id, practitioner_id, response_data = {}):
+	data = {
+		'customer_id': customer_id,
+		'practitioners': [practitioner_id],
+		'patient': {
+			'first_name': 'Joe'
+		}
+	}
+	data.update(response_data)
+	return data
+
+def expect_patch_record_response(customer_id, practitioner_id, response_data = {}):
+	data = record_response_data(customer_id, practitioner_id, response_data)
+	url = '{}/records/{}/'.format(settings.MEDICALAIDGURU_API, customer_id)
+	import ipdb;ipdb.set_trace()
+	responses.add(responses.PATCH, url, json=data)
+
+def expect_get_record_response(customer_id, practitioner_id, response_data = {}):
+	data = record_response_data(customer_id, practitioner_id, response_data)
+	url = '{}/records/{}/'.format(settings.MEDICALAIDGURU_API, customer_id)
+	responses.add(responses.GET, url, json=data)
 
 def expect_get_appointment(appointment_id, practitioner_id, response_data={}):
 	data = {

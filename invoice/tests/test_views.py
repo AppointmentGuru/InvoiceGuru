@@ -95,7 +95,7 @@ class SnapScanInvoiceWebHookTestCase(TestCase):
 
         mock_publish.assert_called()
         # num_calls = len(responses.calls)
-        # self.calls = [call for call in responses.calls]
+        self.calls = [call for call in responses.calls]
         # self.assertEqual(num_calls, 9)
 
     def test_returns_ok(self):

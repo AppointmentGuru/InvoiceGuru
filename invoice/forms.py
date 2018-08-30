@@ -126,7 +126,6 @@ class UpdateInvoiceDetailsForm(forms.Form):
 
     def save(self, invoice, commit = True):
         data = self.cleaned_data
-
         result = self.save_medicalaid(invoice.customer_id, data)
         print (result)
         print (result.content)

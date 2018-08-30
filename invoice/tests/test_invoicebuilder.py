@@ -49,7 +49,6 @@ class InvoiceBuilderEnrichesContextTestCase(TestCase):
         self.assertEqual(num_appointments, 3)
 
 
-
 class BuilderAppliesContext(TestCase):
 
     def __inv_and_builder(self):
@@ -57,81 +56,72 @@ class BuilderAppliesContext(TestCase):
         builder = InvoiceBuilder(inv)
         return (inv, builder)
 
-    @unittest.skip('moving this around')
     def test_set_customer_info_from_context_sets_invoicee_details_from_client_if_no_record(self):
 
         inv, builder = self.__inv_and_builder()
-        inv.context = {
-            "client": {
-                "email": "jane@gmail.com",
-                "last_name": "Jane",
-                "first_name": "Soap",
-                "phone_number": "+2781234567",
-            },
-            "record": {}
+        inv.client_data = {
+            "email": "jane@gmail.com",
+            "last_name": "Jane",
+            "first_name": "Soap",
+            "phone_number": "+2781234567",
         }
-        builder.set_customer_info_from_context(with_save=False)
-        assert len(inv.invoicee_details.split('\n')) == 4,\
-            'invoicee_details looks wrong: {}'.format(inv.invoicee_details)
+        builder.set_customer_info(with_save=False)
+        num_lines = len(inv.invoicee_details.split('\n'))
+        self.assertEqual(num_lines, 3)
+
 
     def test_sets_invoice_details_from_client_record(self):
         inv, builder = self.__inv_and_builder()
-        inv.context = {
-            "record": {
-                "patient": {
-                    "first_name": "Jake",
-                    "last_name": "White",
-                    "cell_phone": "+27821234567",
-                    "home_address": "101 Infinite Loop",
-                },
+        inv.record_data = {
+            "patient": {
+                "first_name": "Jake",
+                "last_name": "White",
+                "cell_phone": "+27821234567",
+                "home_address": "101 Infinite Loop",
             }
         }
-        builder.set_customer_info_from_context(with_save=False)
+        builder.set_customer_info(with_save=False)
         assert len(inv.invoicee_details.split('\n')) == 3,\
             'invoicee_details looks wrong: {}'.format(inv.invoicee_details)
 
 
     def test_sets_medicalaid_details_with_dependent(self):
         inv, builder = self.__inv_and_builder()
-        inv.context = {
-            "record": {
-                "medical_aid": {
-                    "name": "DISCOVERY Health Medical Scheme",
-                    "number": "67890",
-                    "scheme": "Comprehensive",
-                    "is_dependent": True,
-                    "member_id_number": "123456",
-                    "member_last_name": "Joe",
-                    "member_first_name": "Soap",
-                    "patient_id_number": "82091951491234",
-                    "patient_last_name": "Jane",
-                    "patient_first_name": "Soap"
-                }
+        inv.record_data = {
+            "medical_aid": {
+                "name": "DISCOVERY Health Medical Scheme",
+                "number": "67890",
+                "scheme": "Comprehensive",
+                "is_dependent": True,
+                "member_id_number": "123456",
+                "member_last_name": "Joe",
+                "member_first_name": "Soap",
+                "patient_id_number": "82091951491234",
+                "patient_last_name": "Jane",
+                "patient_first_name": "Soap"
             }
         }
-        builder.set_customer_info_from_context(with_save=False)
+        builder.set_customer_info(with_save=False)
         assert len(inv.medicalaid_details.split('\n')) == 8,\
             'medicalaid_details (for dependant) looks wrong: {}'.format(inv.medicalaid_details)
 
     def test_sets_medicalaid_details_without_dependent(self):
         inv, builder = self.__inv_and_builder()
-        inv.context = {
-            "record": {
-                "medical_aid": {
-                    "name": "DISCOVERY Health Medical Scheme",
-                    "number": "67890",
-                    "scheme": "Comprehensive",
-                    "is_dependent": False,
-                    "member_id_number": "123456",
-                    "member_last_name": "Joe",
-                    "member_first_name": "Soap",
-                    "patient_id_number": "82091951491234",
-                    "patient_last_name": "Jane",
-                    "patient_first_name": "Soap"
-                }
+        inv.record_data = {
+            "medical_aid": {
+                "name": "DISCOVERY Health Medical Scheme",
+                "number": "67890",
+                "scheme": "Comprehensive",
+                "is_dependent": False,
+                "member_id_number": "123456",
+                "member_last_name": "Joe",
+                "member_first_name": "Soap",
+                "patient_id_number": "82091951491234",
+                "patient_last_name": "Jane",
+                "patient_first_name": "Soap"
             }
         }
-        builder.set_customer_info_from_context(with_save=False)
+        builder.set_customer_info(with_save=False)
         assert len(inv.medicalaid_details.split('\n')) == 5,\
             'medicalaid_details (for main member) looks wrong: {}'.format(inv.medicalaid_details)
 
