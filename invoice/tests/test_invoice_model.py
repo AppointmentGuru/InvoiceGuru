@@ -42,15 +42,14 @@ class InvoiceMethodsTestCase(TestCase):
     def test_calculate_invoice_amount(self):
 
         invoice = Invoice()
-        invoice.context = {
-            "appointments": [
-                {"price": 100},
-                {"price": 200},
-                {"price": 300},
-            ]
-        }
+        invoice.appointment_data = [
+            {"price": 100},
+            {"price": 200},
+            {"price": 300},
+        ]
+
         invoice_amount = invoice.calculate_invoice_amount()
-        assert invoice_amount == Decimal(600)
+        self.assertEqual(invoice_amount, Decimal(600))
 
     def test_calculate_amount_paid(self):
         invoice = create_mock_v2_invoice()

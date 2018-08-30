@@ -2,6 +2,10 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from ..models import Invoice
 from api.testutils import create_mock_invoice, assert_response, get_proxy_headers
+from .responses import (
+    expect_shorten_url
+)
+from unittest import mock
 import responses
 
 class ApiRootTestCase(TestCase):
@@ -26,6 +30,7 @@ class SendEndpointTestCase(TestCase):
 
     def setUp(self):
         invoice = create_mock_invoice(1, 1)
+        expect_shorten_url()
         url = reverse('invoice-send', args=(invoice.id,))
         data = {
             "to_email": "info@38.co.za"
@@ -46,19 +51,23 @@ class SendEndpointTestCase(TestCase):
 # @override_settings(PUB_SUB_BACKEND=('backends', 'MockBackend'))
 class MarkAsPaidEndpointTestCase(TestCase):
 
-    @responses.activate
-    def setUp(self):
+    @mock.patch.object(Invoice, 'publish')
+    def setUp(self, publish_mock):
         self.invoice = create_mock_invoice(1, 1)
         url = reverse('invoice-paid', args=(self.invoice.id,))
         self.response = self.client.post(url, **get_proxy_headers(1))
         self.invoice.refresh_from_db()
+        self.publish_mock = publish_mock
+
+    def test_it_publishes_update(self):
+        self.publish_mock.assert_called()
 
     def test_is_ok(self):
         assert self.response.status_code == 200,\
             'Expected 200. Got: {}: {}'.format(self.response.status_code, self.response)
 
     def test_creates_payment(self):
-        num_payments = self.invoice.transaction_set.count()
+        num_payments = self.invoice.transaction_set.filter(type='Payment').count()
         assert num_payments == 1,\
             'Expected exactly 1 payment to be created. Got: {}'.format(num_payments)
 

@@ -14,71 +14,10 @@ import random
 
 @receiver(pre_save, sender=Invoice, dispatch_uid="invoice.signals.apply_context")
 def enrich_invoice(sender, instance, **kwargs):
-
-    instance.enrich(save_context=False)
-    instance.invoice_amount = instance.calculate_invoice_amount()
-#     for appt in appointments:
-
-#         codes = getattr(appt, 'codes', [])
-#         if len(codes) > 0:
-#             li_total = sum([Decimal(code.get('price')) for code in codes])
-#             if appt['price'] != li_total:
-#                 appt['price'] = str(li_total)
-
-#         appt_price = Decimal(appt.get('price', 0))
-#         amount_paid = Decimal(appt.get('amount_paid', 0))
-#         appt_is_paid = appt.get('status') == 'P'
-#         if appt_is_paid:
-#             amount_paid = appt_price
-#             # if status is paid, make sure this reflects in amount_paid
-#             appt.update({"amount_paid": int(amount_paid)})
-#         subtotal = appt_price - amount_paid
-
-#         invoice_amount_paid += amount_paid
-#         invoice_total += appt_price
-
-#         appt_key = 'appointment:{}'.format(appt.get('id'))
-#         # if appt_key not in object_ids:
-#         #     object_ids.append(appt_key)
-
-#     # only automatically set amount paid if it's greater than zero so as not to override
-#     # explicitly set amount paid
-#     if invoice_amount_paid > 0:
-#         instance.amount_paid = invoice_amount_paid
-
-#     instance.invoice_amount = invoice_total
-#     if instance.due_date is None:
-#         instance.due_date = context.get('due_date')
-#     if instance.date is None:
-#         instance.date = context.get('date')
-
-#     if instance.customer_id is None:
-#         instance.customer_id = context.get('customer_id')
-#     # instance.object_ids = object_ids
-
-#     if instance.invoicee_details is None:
-#         client = context.get('client', None)
-#         if client is not None:
-#             instance.invoicee_details = """{} {}
-# {}""".format(
-#         client.get('first_name'),
-#         client.get('last_name'),
-#         client.get('email')
-#     )
-
-#     appointments_exist = (len(appointments) > 0)
-#     if instance.invoice_period_from is None and appointments_exist:
-#         instance.invoice_period_from = parse(appointments[0].get('start_time')).date()
-
-#     if instance.invoice_period_to is None and appointments_exist:
-#         instance.invoice_period_to = parse(appointments[-1].get('start_time')).date()
-
-#     # if instance.invoice_number is None:
-#     #     random_number = random.choice(range(1000,9999))
-#     #     instance.invoice_number = 'INV-{}-{}'.format(random_number, instance.customer_id)
-
-#     if instance.status == 'paid':
-#         instance.amount_paid = instance.invoice_amount
+    created = instance.pk is None
+    if created:
+        instance.enrich(with_save=False)
+        instance.invoice_amount = instance.calculate_invoice_amount()
 
 @receiver(post_save, sender=Invoice, dispatch_uid="invoice.signals.invoice_post_save_actions")
 def invoice_post_save_actions(sender, instance, **kwargs):
@@ -87,6 +26,7 @@ def invoice_post_save_actions(sender, instance, **kwargs):
     due = Decimal(instance.amount_due)
     if instance.status == 'paid' and due > 0:
         Transaction.from_invoice(instance, transaction_type='Payment', amount=due, with_save=True)
+    instance.publish()
 
 @receiver(post_save, dispatch_uid="django_nosql.sync")
 def nosql_sync(sender, instance, created, **kwargs):

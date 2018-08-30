@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from .invoicebuilder import InvoiceBuilder
 from .guru import publish
-
+import requests
 
 class MultiSerializerMixin():
     '''
@@ -66,8 +66,7 @@ class InvoiceModelMixin:
         )
 
     def __get_client(self):
-        context = self.context
-        return context.get('client', {})
+        return self.client_data
 
     @property
     def get_client_email(self):
@@ -104,7 +103,7 @@ class InvoiceModelMixin:
 
     @property
     def amount_due(self):
-        due = self.invoice_amount - self.calculated_amount_paid
+        due = Decimal(self.invoice_amount) - Decimal(self.calculated_amount_paid)
         due = max(Decimal(0), due)
         return format(due, '.2f')
 
@@ -154,11 +153,11 @@ class InvoiceModelMixin:
         except InvoiceSettings.DoesNotExist:
             return None
 
-    def enrich(self, save_context=False):
-        return InvoiceBuilder(self).enrich(save_context=False)
+    def enrich(self, with_save=False):
+        return InvoiceBuilder(self).enrich(with_save=False)
 
     def calculate_invoice_amount(self, with_save=False):
-        appointments = self.context.get('appointments', [])
+        appointments = self.appointment_data
         invoice_total = Decimal(0)
         for appointment in appointments:
             price = appointment.get('price', 0)
@@ -176,9 +175,10 @@ class InvoiceModelMixin:
 
     def _get_payload(self):
         data = self._get_serialized()
+        summarized = []
         summarized = [{"id": appt.get('id')} \
-                    for appt \
-                    in data.get('context',{}).get('appointments')]
+                for appt \
+                in data.get('appointment_data', [])]
         data.update({"context": { "appointments": summarized } })
         return data
 

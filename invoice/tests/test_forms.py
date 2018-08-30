@@ -10,6 +10,9 @@ from ..forms import (
     MedicalAidSubmissionForm
 )
 from api.testutils import create_mock_invoice
+from .responses import (
+    expect_patch_record_response
+)
 import responses
 
 class MedicalAidSubmissionFormTestCase(TestCase):
@@ -38,8 +41,6 @@ class MedicalAidSubmissionFormTestCase(TestCase):
             "sender_email=joe%40soap.com" in call.request.body
 
 
-
-
 class InvoiceConstructionFormTestCase(TestCase):
 
     def setUp(self):
@@ -49,6 +50,7 @@ class InvoiceConstructionFormTestCase(TestCase):
         pass
         # if self.form.isValid():
         #     self.form.save()
+
 
 class UpdateInvoiceDetailsFormTestCase(TestCase):
 
@@ -67,8 +69,9 @@ class UpdateInvoiceDetailsFormTestCase(TestCase):
             'member_id_number': '91011'
         }
 
+    @responses.activate
     def test_save_valid_result(self):
-
+        expect_patch_record_response(self.invoice.customer_id, self.invoice.practitioner_id)
         form = UpdateInvoiceDetailsForm(self.data)
         if form.is_valid():
             invoice = form.save(self.invoice)

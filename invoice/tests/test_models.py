@@ -3,6 +3,7 @@ from django import db
 from django.conf import settings
 from api.testutils import (
     create_mock_invoice,
+    create_mock_v2_invoice,
     create_mock_proof
 )
 from invoice.models import (
@@ -12,6 +13,7 @@ from invoice.models import (
     Transaction
 )
 from .responses import (
+    expect_get_appointment,
     expect_get_appointments,
     expect_get_practitioner_response,
     expect_get_record_response,
@@ -35,17 +37,13 @@ class InvoiceModelTestCase(TestCase):
         self.invoice = create_mock_invoice()
         self.invoice.invoice_amount = 12.34
         self.invoice.integrate_medical_aid = True
-        self.settings = InvoiceSettings()
-        self.settings.snap_id = '12345'
-        self.settings.practitioner_id = self.invoice.practitioner_id
-        self.settings.save()
+        settings = self.invoice.settings
+        settings.snap_id = '12345'
+        settings.save()
 
         # need this to count db queries
         settings.DEBUG = True
         db.reset_queries()
-
-    def test_get_settings_from_invoice(self):
-        assert self.settings.id == self.invoice.settings.id
 
     def test_getting_settings_is_cached(self):
         db.reset_queries()
@@ -54,10 +52,6 @@ class InvoiceModelTestCase(TestCase):
         len(db.connection.queries) == 1
         self.invoice.settings
         len(db.connection.queries) == 1
-
-    def test_if_no_settings_exist_return_none(self):
-        invoice = create_mock_invoice()
-        assert invoice.settings is None
 
     def test_get_snapscan_qr_url(self):
         snap_url = self.invoice.get_snapscan_qr
@@ -75,9 +69,8 @@ class InvoiceModelTestCase(TestCase):
 
     def test_get_serialized(self):
         from ..serializers import INVOICE_COMMON_FIELDS
-        self.invoice.date = self.invoice.date # <- this seems wrong :^/
+        self.invoice.date = self.invoice.date
         data = self.invoice._get_serialized()
-
 
 
 class ProofOfPaymentTestCase(TestCase):
@@ -111,14 +104,15 @@ class CreateInvoiceFromAppointmentTestCase(TestCase):
         self.customer_id = 3
 
         # expected requests:
-        expect_get_appointments([self.appointment_id], self.practitioner_id, self.appointment_data)
+        expect_get_appointment(self.appointment_id, self.practitioner_id, response_data=self.appointment_data)
         expect_get_practitioner_response(self.practitioner_id)
         expect_get_record_response(self.customer_id, self.practitioner_id)
         expect_get_user_response(self.customer_id)
 
         self.invoice = Invoice.from_appointment(
             self.practitioner_id,
-            self.appointment_id
+            self.appointment_id,
+            with_save=True
         )
         self.invoice.refresh_from_db()
 
@@ -129,9 +123,6 @@ class CreateInvoiceFromAppointmentTestCase(TestCase):
 
         assert int(self.invoice.customer_id) == int(self.customer_id), \
             'Expected {}. got: {}'.format(self.customer_id, self.invoice.customer_id)
-        assert int(self.invoice.context.get('appointments')[0].get('id')) == int(self.appointment_id)
-        assert int(self.invoice.appointments[0]) == int(self.appointment_id)
-        assert int(self.invoice.practitioner_id) == int(self.practitioner_id)
 
     def test_it_sets_dates(self):
 
@@ -146,7 +137,7 @@ class CreateInvoiceFromAppointmentTestCase(TestCase):
 class CreateInvoiceTestCase(TestCase):
 
     def setUp(self):
-        self.invoice = create_mock_invoice()
+        self.invoice = create_mock_v2_invoice()
 
     def test_create_invoice(self):
         Invoice.objects.get(id=self.invoice.id)
@@ -172,14 +163,11 @@ class CreateInvoiceTestCase(TestCase):
         assert len(key) == 12,\
             'Expected params to be 12 chars. Expected something like: key=b4c8b930. Got: {}'.format(key)
 
+    @responses.activate
     def test_get_short_url(self):
+        url = "https://www.googleapis.com/urlshortener/v1/url"
+        url_response = "https://go.gl"
+        responses.add(responses.POST, url, json={"id": url_response})
         url = self.invoice.get_short_url()
-        assert self.invoice.short_url == url
-
-    def test_can_manually_update_amount_paid(self):
-        self.invoice.amount_paid = 10
-        self.invoice.save()
-
-        self.invoice.refresh_from_db()
-        assert self.invoice.amount_paid == 10,\
-            'Expected amount_paid to be 10. Got: {}'.format(self.invoice.amount_paid)
+        self.assertEqual(url, "https://go.gl")
+        self.assertEqual(self.invoice.short_url, url)

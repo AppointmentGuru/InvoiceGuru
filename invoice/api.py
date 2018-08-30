@@ -24,11 +24,6 @@ from .models import (
     InvoiceSettings,
     Transaction
 )
-from .helpers import (
-    to_context,
-    fetch_data,
-    fetch_appointments
-)
 
 from rest_framework import (
     routers,
@@ -93,30 +88,32 @@ class InvoiceViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         'list': InvoiceListViewSerializer
     }
 
+
     def get_queryset(self):
         user = self.request.user
         return Invoice.objects.filter(
             Q(practitioner_id=user.id) |
             Q(customer_id=user.id)
-        )
+            )
 
-    @decorators.detail_route(methods=['post'])
-    def appointments(self, request, pk=None):
-        '''
-        Send a list of appointment_ids and we add the full context to the invoice
-        '''
-        invoice = get_object_or_404(Invoice, pk=pk, practitioner_id=request.user.id)
-        appointments = request.data.get('appointments', [])
-        appointment_ids = appointments.split(',')
+    # @decorators.detail_route(methods=['post'])
+    # def appointments(self, request, pk=None):
+    #     '''
+    #     Send a list of appointment_ids and we add the full context to the invoice
+    #     '''
+    #     invoice = get_object_or_404(Invoice, pk=pk, practitioner_id=request.user.id)
+    #     appointments = request.data.get('appointments', [])
+    #     appointment_ids = appointments.split(',')
 
-        appointments = fetch_appointments(invoice.practitioner_id, appointment_ids)
-
-        invoice.context.update({
-            'appointments': appointments
-        })
-        invoice.save()
-        data = InvoiceSerializer(invoice).data
-        return response.Response(data)
+    #     # appointments = fetch_appointments(invoice.practitioner_id, appointment_ids)
+    #     api = get_mirco("appointmentguru", request.user.id)
+    #     api.list("appointments", params={"ids": })
+    #     invoice.context.update({
+    #         'appointments': appointments
+    #     })
+    #     invoice.save()
+    #     data = InvoiceSerializer(invoice).data
+    #     return response.Response(data)
 
     @decorators.detail_route(methods=['post', 'get'])
     def send(self, request, pk):
@@ -142,12 +139,6 @@ class InvoiceViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         data = InvoiceSerializer(invoice).data
 
-        summarized = [{"id": appt.get('id')} \
-                        for appt \
-                        in data.get('context',{}).get('appointments')]
-        data.update({"context": { "appointments": summarized } })
-
-        publish(settings.PUBLISHKEYS.invoice_sent, data)
         return response.Response(data)
 
     @decorators.detail_route(methods=['post', 'get'])

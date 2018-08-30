@@ -49,7 +49,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Invoice
-        fields = INVOICE_COMMON_FIELDS + ['context', 'transaction_set']
+        fields = INVOICE_COMMON_FIELDS + ['appointment_data', 'practitioner_data', 'client_data', 'record_data', 'transaction_set']
         ordering = ('date', 'created',)
 
 
