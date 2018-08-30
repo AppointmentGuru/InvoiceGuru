@@ -102,7 +102,10 @@ class PUBLISHKEYS:
 
 NOSQL_BACKENDS = os.environ.get('NOSQL_BACKENDS', '').split(',')
 #  FireStore settings
-FIRESTORE_CREDENTIALS_FILE = '/code/firestore-credentials.json'
+FIRESTORE_CREDENTIALS_FILE = os.environ.get(
+    'FIRESTORE_CREDENTIALS_FILE',
+    '/code/firestore-credentials.json'
+)
 
 sentry_url = 'https://{}:{}@sentry.io/{}'.format(
     os.environ.get('SENTRY_PUBLIC_KEY'),
