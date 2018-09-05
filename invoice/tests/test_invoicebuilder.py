@@ -77,7 +77,7 @@ class BuilderAppliesContext(TestCase):
                 "first_name": "Jake",
                 "last_name": "White",
                 "cell_phone": "+27821234567",
-                "home_address": "101 Infinite Loop",
+                "billing_address": "101 Infinite Loop",
             }
         }
         builder.set_customer_info(with_save=False)
