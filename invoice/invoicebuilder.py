@@ -10,8 +10,8 @@ contact: {{phone_number}}{% endif %}
 {{home_address}}
 """
 
-DEFAULT_MEDICAL_AID_TEMPLATE = """{{name}}. {{scheme}}
-#{{number}}.
+DEFAULT_MEDICAL_AID_TEMPLATE = """{{name|default:""}}. {{scheme|default:""}}{% if number %}
+#{{number}}.{% endif %}
 Patient:
 {{patient_first_name}} {{patient_last_name}}
 ID: {{patient_id_number}}}{% if is_dependent %}
@@ -20,6 +20,10 @@ Main member:
 ID: {{member_id_number}}
 {% endif %}
 """
+
+def truthy(val):
+    return bool(val)
+
 
 class InvoiceBuilder:
     '''
@@ -68,7 +72,7 @@ builder.profit()
 
             setting_exists = setting_value is not None
 
-            if setting_exists and invoice_value is None:
+            if setting_exists and not truthy(invoice_value):
                 setattr(self.invoice, invoice_field, setting_value)
 
         if with_save:
@@ -111,7 +115,7 @@ builder.profit()
         template_string = None
         if self.invoice.settings is not None:
             template_string = self.invoice.settings.customer_info
-        if template_string is None:
+        if not truthy(template_string):
             template_string = DEFAULT_INVOICEE_TEMPLATE
         return self.__render_templated(template_string, client)
 
@@ -122,13 +126,15 @@ builder.profit()
     def set_customer_info(self, with_save=False):
         '''
         from values in context, set invoicee_details and medicalaid_details
+        prefer details from record, roll back to user if need be
         '''
         record = self.invoice.record_data
         client = record.get('patient', None) or self.invoice.client_data
+        # client = record.get('patient', None) or inv.client_data
         aid = record.get('medical_aid')
 
         if client is not None:
-            if client.get('phone_number') is None:
+            if not truthy(client.get('phone_number')):
                 client.update({
                     "phone_number": client.get("cell_phone")
                 })
