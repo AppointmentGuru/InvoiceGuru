@@ -147,6 +147,11 @@ class BuilderAppliesSettingsTestCase(TestCase):
     def test_it_sets_billing_address(self):
         assert self.invoice.billing_address == "Some address"
 
+    def test_it_handles_an_empty_string(self):
+        self.invoice.billing_address = ""
+        self.builder.apply_settings(self.invoice, self.settings)
+        assert self.invoice.billing_address == "Some address"
+
 class BuilderOverrideSettingsTestCase(TestCase):
     """Verify that settings don't override already set values"""
 

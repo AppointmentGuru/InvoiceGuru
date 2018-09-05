@@ -74,7 +74,7 @@ def expect_get_user_response(user_id, response_data={}):
 		data.update(response_data)
 	responses.add(
 		responses.GET,
-		'{}/api/users/{}/'.format(settings.APPOINTMENTGURU_API, user_id),
+		'{}/api/v2/practitioner/clients/{}/'.format(settings.APPOINTMENTGURU_API, user_id),
 		json=data,
 		status=200
 	)
@@ -105,7 +105,6 @@ def record_response_data(customer_id, practitioner_id, response_data = {}):
 def expect_patch_record_response(customer_id, practitioner_id, response_data = {}):
 	data = record_response_data(customer_id, practitioner_id, response_data)
 	url = '{}/records/{}/'.format(settings.MEDICALAIDGURU_API, customer_id)
-	import ipdb;ipdb.set_trace()
 	responses.add(responses.PATCH, url, json=data)
 
 def expect_get_record_response(customer_id, practitioner_id, response_data = {}):

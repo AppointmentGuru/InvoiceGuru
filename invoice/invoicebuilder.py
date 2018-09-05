@@ -7,7 +7,7 @@ from api.api import get_micro
 DEFAULT_INVOICEE_TEMPLATE = """{{first_name}} {{last_name}}{% if email %}
 email: {{email}}{% endif %}{% if phone_number %}
 contact: {{phone_number}}{% endif %}
-{{home_address}}
+{{billing_address}}
 """
 
 DEFAULT_MEDICAL_AID_TEMPLATE = """{{name|default:""}}. {{scheme|default:""}}{% if number %}
