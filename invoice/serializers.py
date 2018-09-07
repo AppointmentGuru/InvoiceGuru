@@ -28,6 +28,7 @@ INVOICE_COMMON_FIELDS = [
     'get_download_url',
     'get_view_url',
     'billing_address',
+    'banking_details',
 ]
 
 class InvoiceSettingsSerializer(serializers.ModelSerializer):
