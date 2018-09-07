@@ -70,13 +70,13 @@ def create_mock_v2_invoice(customer_id=1, practitioner_id=2, appointments=[3,4,5
     }
     data.update(invoice_data)
 
-    expect_get_practitioner_response(practitioner_id)
-    expect_get_user_response(customer_id, response_data=extra_data.get("user"))
-    expect_get_record_response(customer_id, practitioner_id)
-    expect_get_appointments(appointments, practitioner_id, response_data=extra_data)
-
-    invoice = Invoice.objects.create(**data)
-    return invoice
+    with responses.RequestsMock() as rsps:
+        expect_get_practitioner_response(practitioner_id, responses_mock=rsps)
+        expect_get_user_response(customer_id, response_data=extra_data.get("user"), responses_mock=rsps)
+        expect_get_record_response(customer_id, practitioner_id, responses_mock=rsps)
+        expect_get_appointments(appointments, practitioner_id, response_data=extra_data, responses_mock=rsps)
+        invoice = Invoice.objects.create(**data)
+        return invoice
 
 def create_mock_invoice(practitioner_id=None, customer_id=None):
     return create_mock_v2_invoice(customer_id=customer_id, practitioner_id=practitioner_id)

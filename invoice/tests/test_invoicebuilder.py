@@ -31,9 +31,6 @@ class InvoiceBuilderEnrichesContextTestCase(TestCase):
         for field in self.fields:
             assert getattr(self.invoice, field, None) is not None
 
-    def test_it_doesnt_touch_context(self):
-        self.assertDictEqual(self.invoice.context, {})
-
     def test_it_sets_practitioner(self):
         practitioner = self.invoice.practitioner_data
         assert practitioner.get('id') == 2,\
@@ -69,7 +66,6 @@ class BuilderAppliesContext(TestCase):
         num_lines = len(inv.invoicee_details.split('\n'))
         self.assertEqual(num_lines, 3)
 
-
     def test_sets_invoice_details_from_client_record(self):
         inv, builder = self.__inv_and_builder()
         inv.record_data = {
@@ -83,7 +79,6 @@ class BuilderAppliesContext(TestCase):
         builder.set_customer_info(with_save=False)
         assert len(inv.invoicee_details.split('\n')) == 3,\
             'invoicee_details looks wrong: {}'.format(inv.invoicee_details)
-
 
     def test_sets_medicalaid_details_with_dependent(self):
         inv, builder = self.__inv_and_builder()

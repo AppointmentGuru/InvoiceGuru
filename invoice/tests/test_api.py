@@ -1,9 +1,14 @@
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from ..models import Invoice
-from api.testutils import create_mock_invoice, assert_response, get_proxy_headers
+from api.testutils import (
+    assert_response,
+    get_proxy_headers,
+    create_mock_v2_invoice
+)
 from .responses import (
-    expect_shorten_url
+    expect_shorten_url,
+    expect_communications_response
 )
 from unittest import mock
 import responses
@@ -28,15 +33,23 @@ class ApiRootTestCase(TestCase):
 
 class SendEndpointTestCase(TestCase):
 
-    def setUp(self):
-        invoice = create_mock_invoice(1, 1)
+    @mock.patch.object(Invoice, 'publish')
+    def setUp(self, publish_mock):
+
+        invoice = create_mock_v2_invoice(1, 1)
         expect_shorten_url()
+
         url = reverse('invoice-send', args=(invoice.id,))
         data = {
             "to_email": "info@38.co.za"
         }
-        self.response = self.client.post(url, **get_proxy_headers(1))
+        with responses.RequestsMock() as rsps:
+            expect_communications_response(responses_mock=rsps)
+            self.response = self.client.post(url, **get_proxy_headers(1))
+            # self.call_list = rsps.CallList
         self.invoice = invoice
+        self.publish_mock = publish_mock
+
 
     def test_send_ok(self):
         assert_response(self.response)
@@ -44,6 +57,9 @@ class SendEndpointTestCase(TestCase):
     def test_invoice_status_is_sent(self):
         self.invoice.refresh_from_db()
         assert self.invoice.status == 'sent'
+
+    def test_it_publishes_update(self):
+        self.publish_mock.assert_called()
 
     def test_sends_invoice_to_customer(self):
         pass
@@ -53,7 +69,7 @@ class MarkAsPaidEndpointTestCase(TestCase):
 
     @mock.patch.object(Invoice, 'publish')
     def setUp(self, publish_mock):
-        self.invoice = create_mock_invoice(1, 1)
+        self.invoice = create_mock_v2_invoice(1, 1)
         url = reverse('invoice-paid', args=(self.invoice.id,))
         self.response = self.client.post(url, **get_proxy_headers(1))
         self.invoice.refresh_from_db()

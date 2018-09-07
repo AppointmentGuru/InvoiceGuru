@@ -39,6 +39,15 @@ def get_call(calls, search):
     		if search in call.request.url:
     			return call
 
+def get_responses(responses_mock=None):
+	'''
+	rsps = get_responses(responses_mock)
+	'''
+	rsps = responses
+	if responses_mock is not None:
+		rsps = responses_mock
+	return rsps
+
 def expect_shorten_url():
 	url = "https://www.googleapis.com/urlshortener/v1/url"
 	responses.add(
@@ -55,36 +64,44 @@ def expect_keen_response():
 		json={'ok': 'true'}
 	)
 
-def expect_communications_response(response_data={}):
+def expect_communications_response(response_data={}, responses_mock = None):
+	rsps = get_responses(responses_mock)
+
 	data = {"id": 1}
 	data.update(response_data)
-	responses.add(
+	base = settings.COMMUNICATIONGURU_API
+	url = "{}/communications/".format(base)
+
+	rsps.add(
 		responses.POST,
-		url='https://communicationguru/communications/',
+		url=url,
 		json=data,
 		status=201
 	)
 
-def expect_get_user_response(user_id, response_data={}):
+def expect_get_user_response(user_id, response_data={}, responses_mock = None):
+	rsps = get_responses(responses_mock)
 	data = {
 		'id': user_id,
 		'first_name': 'Joe'
 	}
 	if response_data is not None:
 		data.update(response_data)
-	responses.add(
+	rsps.add(
 		responses.GET,
 		'{}/api/v2/practitioner/clients/{}/'.format(settings.APPOINTMENTGURU_API, user_id),
 		json=data,
 		status=200
 	)
-def expect_get_practitioner_response(practitioner_id):
+def expect_get_practitioner_response(practitioner_id, responses_mock = None):
+	rsps = get_responses(responses_mock)
+
 	practitioner_data = {
 		'id': practitioner_id,
 		'username': 'jane@soap.com',
 		"profile": {}
 	}
-	responses.add(
+	rsps.add(
 		responses.GET,
 		'{}/api/practitioners/{}/'.format(settings.APPOINTMENTGURU_API, practitioner_id),
 		json=practitioner_data,
@@ -92,6 +109,7 @@ def expect_get_practitioner_response(practitioner_id):
 	)
 
 def record_response_data(customer_id, practitioner_id, response_data = {}):
+
 	data = {
 		'customer_id': customer_id,
 		'practitioners': [practitioner_id],
@@ -102,17 +120,20 @@ def record_response_data(customer_id, practitioner_id, response_data = {}):
 	data.update(response_data)
 	return data
 
-def expect_patch_record_response(customer_id, practitioner_id, response_data = {}):
+def expect_patch_record_response(customer_id, practitioner_id, response_data = {}, responses_mock=None):
+	rsps = get_responses(responses_mock)
 	data = record_response_data(customer_id, practitioner_id, response_data)
 	url = '{}/records/{}/'.format(settings.MEDICALAIDGURU_API, customer_id)
-	responses.add(responses.PATCH, url, json=data)
+	rsps.add(responses.PATCH, url, json=data)
 
-def expect_get_record_response(customer_id, practitioner_id, response_data = {}):
+def expect_get_record_response(customer_id, practitioner_id, response_data = {}, responses_mock = None):
+	rsps = get_responses(responses_mock)
 	data = record_response_data(customer_id, practitioner_id, response_data)
 	url = '{}/records/{}/'.format(settings.MEDICALAIDGURU_API, customer_id)
-	responses.add(responses.GET, url, json=data)
+	rsps.add(responses.GET, url, json=data)
 
-def expect_get_appointment(appointment_id, practitioner_id, response_data={}):
+def expect_get_appointment(appointment_id, practitioner_id, response_data={}, responses_mock = None):
+	rsps = get_responses(responses_mock)
 	data = {
 		'process': { },
 		'id': appointment_id,
@@ -127,14 +148,15 @@ def expect_get_appointment(appointment_id, practitioner_id, response_data={}):
 		settings.APPOINTMENTGURU_API,
 		appointment_id
 	)
-	responses.add(
+	rsps.add(
 		responses.GET,
 		url,
 		json = data,
 		status = 200
 	)
 
-def expect_get_appointments(appointment_ids, practitioner_id, response_data={}):
+def expect_get_appointments(appointment_ids, practitioner_id, response_data={}, responses_mock = None):
+
 	extra_data = response_data.get('appointments', {})
 
 	for x in appointment_ids:
@@ -142,6 +164,7 @@ def expect_get_appointments(appointment_ids, practitioner_id, response_data={}):
 		expect_get_appointment(
 			appointment_id=x,
 			practitioner_id = practitioner_id,
-			response_data=data
+			response_data=data,
+			responses_mock=responses_mock
 		)
 

@@ -61,9 +61,9 @@ def __send_templated_communication(transport, practitioner_id, channel, frm, to,
             "recipient_channel": to,
             "backends": ["services.backends.onesignal.OneSignalBackend"]
             })
-    print(url)
-    print(headers)
-    print(data)
+    # print(url)
+    # print(headers)
+    # print(data)
     return requests.post(url, data, headers=headers)
 
 

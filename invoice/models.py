@@ -142,10 +142,13 @@ class Invoice(models.Model, InvoiceModelMixin):
 
     integrate_medical_aid = models.NullBooleanField()
     # free text fields:
-    billing_address = models.TextField(blank=True, null=True)
     invoicee_details = models.TextField(blank=True, null=True)
     medicalaid_details = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
 
+    # these are global settings, you only need to set them if you want to override the default
+    billing_address = models.TextField(blank=True, null=True)
+    banking_details = models.TextField(blank=True, null=True)
 
     created_date = models.DateTimeField(auto_now_add=True, db_index=True)
     modified_date = models.DateTimeField(auto_now=True, db_index=True)

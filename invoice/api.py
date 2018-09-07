@@ -6,7 +6,6 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 
-from .guru import send_invoice, publish
 from .mixins import MultiSerializerMixin
 from .filters import (
     InvoiceFilter,
@@ -36,7 +35,8 @@ from rest_framework import (
 )
 
 from .tasks import (
-    mark_invoice_as_paid
+    mark_invoice_as_paid,
+    send_invoice_or_receipt
 )
 
 class Guru:
@@ -126,11 +126,20 @@ class InvoiceViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         to_phone = request.data.get('to_phone', None)
         # update the status of all appointments
-        # update invoice status
-        send_result = send_invoice(
-            invoice,
-            to_emails=to_emails,
-            to_phone=to_phone)
+        data = {
+            "from_email": invoice.sender_email,
+            "to_emails": to_emails,
+            "to_phone_numbers": [to_phone],
+            "to_channels": [
+                "practitioner:{}".format(request.user.id),
+                "customer:{}".format(invoice.customer_id),
+                "thread-practitioner:{}-client:{}".format(request.user.id, invoice.customer_id),
+                "invoice:{}".format(invoice.id),
+                "to:{}".format(to_phone)
+            ],
+            "invoice_id": invoice.id
+        }
+        send_result = send_invoice_or_receipt(data)
         print(send_result)
         if invoice.status != 'paid':
             invoice.status = 'sent'
