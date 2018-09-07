@@ -9,7 +9,8 @@ nb:
 """
 from django.conf import settings
 from invoice.models import Invoice, Transaction
-from .guru import get_headers
+from pubsub import get_backend
+
 import requests, json
 
 from faker import Factory
@@ -26,6 +27,13 @@ class MessageTemplate(Enum):
     SUBMIT_TO_MEDICAL_AID = 'SUBMIT_TO_MEDICAL_AID'
     SEND_RECEIPT = 'SEND_RECEIPT'
     SEND_INVOICE = 'SEND_INVOICE'
+
+def get_headers(user_id, consumer='invoiceguru'):
+    return {
+        'X_ANONYMOUS_CONSUMER': 'False',
+        'X_AUTHENTICATED_USERID': str(user_id),
+        'X_CONSUMER_USERNAME': consumer,
+    }
 
 def __send_templated_communication(transport, practitioner_id, channel, frm, to, template_slug, context, urls=None, **kwargs):
     headers = get_headers(practitioner_id)
@@ -66,6 +74,13 @@ def __send_templated_communication(transport, practitioner_id, channel, frm, to,
     # print(data)
     return requests.post(url, data, headers=headers)
 
+def publish(key, payload):
+    '''Send a message onward'''
+    pubsub = get_backend(
+        settings.PUB_SUB_BACKEND[0],
+        settings.PUB_SUB_BACKEND[1],
+        settings.PUB_SUB_CHANNEL)
+    return pubsub.publish(key, payload)
 
 def __extract_message_context(data):
     """

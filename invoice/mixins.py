@@ -5,7 +5,6 @@ from datetime import datetime
 from decimal import Decimal
 
 from .invoicebuilder import InvoiceBuilder
-from .guru import publish
 import requests
 
 class MultiSerializerMixin():
@@ -213,10 +212,12 @@ class InvoiceModelMixin:
             self.publish_sent()
 
     def publish_paid(self):
+        from .tasks import publish
         data = self._get_payload()
         publish(settings.PUBLISHKEYS.invoice_paid, data)
 
     def publish_sent(self):
+        from .tasks import publish
         data = self._get_payload()
         publish(settings.PUBLISHKEYS.invoice_sent, data)
 

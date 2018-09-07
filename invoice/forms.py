@@ -2,8 +2,7 @@ from django import forms
 from django.conf import settings
 from django.template import Template, Context
 from .models import  ProofOfPayment, Invoice
-from .tasks import submit_to_medical_aid
-from .guru import get_headers
+from .tasks import submit_to_medical_aid, get_headers
 
 import requests
 

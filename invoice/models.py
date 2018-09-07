@@ -4,7 +4,6 @@ from django.contrib.postgres.fields import ArrayField, JSONField
 from django.utils import timezone
 import uuid, requests, os
 
-from .guru import publish
 from .mixins import InvoiceModelMixin
 
 from decimal import Decimal

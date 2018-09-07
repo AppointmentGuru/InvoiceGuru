@@ -128,24 +128,38 @@ class BuilderAppliesSettingsTestCase(TestCase):
         settings.practitioner_id = self.p_id
         settings.integrate_medical_aid = True
         settings.billing_address = "Some address"
+        settings.banking_details = "Bank of AppointmentGuru"
         settings.save()
 
         self.invoice = Invoice()
+        self.settings = settings
         self.invoice.practitioner_id = self.p_id
 
         self.builder = InvoiceBuilder(self.invoice)
-        self.builder.apply_settings(self.invoice, self.settings)
+        self.builder.apply_settings(self.invoice, settings)
 
     def test_it_sets_medical_aid_details(self):
         assert self.invoice.integrate_medical_aid == True
 
     def test_it_sets_billing_address(self):
-        assert self.invoice.billing_address == "Some address"
+        self.assertEqual(
+            self.invoice.billing_address,
+            "Some address"
+        )
+
+    def test_it_sets_banking_details(self):
+        self.assertEqual(
+            self.invoice.banking_details,
+            "Bank of AppointmentGuru"
+        )
 
     def test_it_handles_an_empty_string(self):
         self.invoice.billing_address = ""
         self.builder.apply_settings(self.invoice, self.settings)
-        assert self.invoice.billing_address == "Some address"
+        self.assertEqual(
+            self.invoice.billing_address,
+            "Some address"
+        )
 
 class BuilderOverrideSettingsTestCase(TestCase):
     """Verify that settings don't override already set values"""

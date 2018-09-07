@@ -1,6 +1,5 @@
 import requests
 from django.conf import settings
-from .guru import get_headers
 from django import template
 from api.api import get_micro
 
@@ -53,12 +52,14 @@ builder.profit()
         context = template.Context(data)
         return tmplt.render(context).strip()
 
-    def apply_settings(self, invoice, settings, with_save=False):
+    def apply_settings(self, invoice, settings=None, with_save=False):
 
-        settings = self.invoice.settings
+        if settings is None:
+            settings = self.invoice.settings
         settings_to_apply = [
             ('billing_address', 'billing_address'),
             ('integrate_medical_aid', 'integrate_medical_aid'),
+            ('banking_details', 'banking_details'),
         ]
         if settings is None:
             from invoice.models import InvoiceSettings
@@ -71,7 +72,6 @@ builder.profit()
             invoice_value = getattr(self.invoice, invoice_field, None)
 
             setting_exists = setting_value is not None
-
             if setting_exists and not truthy(invoice_value):
                 setattr(self.invoice, invoice_field, setting_value)
 
