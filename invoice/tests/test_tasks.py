@@ -3,13 +3,12 @@ from __future__ import unicode_literals
 
 from django.test import TestCase, override_settings
 from ..tasks import (
-    __send_templated_communication as stc,
+    send_templated_communication as stc,
     submit_to_medical_aid,
     send_invoice_or_receipt
 )
 from api.testutils import create_mock_invoice
 import responses
-
 
 
 class TemplatedCommunicationTestCase(TestCase):

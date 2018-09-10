@@ -33,6 +33,7 @@ class ApiRootTestCase(TestCase):
 
 class SendEndpointTestCase(TestCase):
 
+    # @mock.patch('invoice.tasks.send_templated_communication')
     @mock.patch.object(Invoice, 'publish')
     def setUp(self, publish_mock):
 
@@ -49,7 +50,7 @@ class SendEndpointTestCase(TestCase):
             # self.call_list = rsps.CallList
         self.invoice = invoice
         self.publish_mock = publish_mock
-
+        # self.templated_mock = templated_mock
 
     def test_send_ok(self):
         assert_response(self.response)

@@ -35,7 +35,7 @@ def get_headers(user_id, consumer='invoiceguru'):
         'X_CONSUMER_USERNAME': consumer,
     }
 
-def __send_templated_communication(transport, practitioner_id, channel, frm, to, template_slug, context, urls=None, **kwargs):
+def send_templated_communication(transport, practitioner_id, channel, frm, to, template_slug, context, urls=None, **kwargs):
     headers = get_headers(practitioner_id)
     base = settings.COMMUNICATIONGURU_API
     url = "{}/communications/".format(base)
@@ -111,7 +111,7 @@ def submit_to_medical_aid(data):
     base = settings.INVOICEGURU_BASE_URL
     invoice_url = "{}{}".format(base, invoice.get_download_url)
 
-    result = __send_templated_communication(
+    result = send_templated_communication(
         transport = Transport.EMAIL,
         practitioner_id = invoice.practitioner_id,
         channel = "practitioner-{}".format(invoice.practitioner_id),
@@ -177,7 +177,7 @@ def send_invoice_or_receipt(data):
             "transport": Transport.EMAIL,
             "to": to_emails
         })
-        __send_templated_communication(**email_data)
+        send_templated_communication(**email_data)
 
     if to_phone_numbers is not None:
         for phone in to_phone_numbers:
@@ -186,7 +186,7 @@ def send_invoice_or_receipt(data):
                 "transport": Transport.SMS,
                 "to": phone
             })
-            __send_templated_communication(**sms_data)
+            send_templated_communication(**sms_data)
 
     if to_channels is not None:
         for channel in to_channels:
@@ -195,7 +195,7 @@ def send_invoice_or_receipt(data):
                 "transport": Transport.INAPP,
                 "to": channel
             })
-            __send_templated_communication(**channel_data)
+            send_templated_communication(**channel_data)
 
 
 def mark_invoice_as_paid(data):

@@ -317,22 +317,11 @@ def invoice(request, pk):
     template_data = settings.TEMPLATE_REGISTRY.get(template_key)
     template_path = 'invoice/templates/{}'.format(template_data.get('filename', 'basic.html'))
     template_path = 'invoice/templates/basic_v2.html'
-    context = invoice.context
+
     invoice_total = 0
     amount_paid = 0
-    for appt in context.get('appointments', []):
+    for appt in invoice.appointment_data:
         appt['start_time_formatted'] = parse(appt.get('start_time'))
-        codes = appt.get('codes', None)
-        if codes is not None and len(codes) > 0:
-            appt['codes_formatted'] = codes_to_table(codes)
-        if appt.get('status') == 'P':
-            amount_paid += Decimal(appt.get('price', 0))
-        invoice_total += Decimal(appt.get('price', 0))
-
-    try:
-        invoice_settings = InvoiceSettings.objects.get(practitioner_id = invoice.practitioner_id)
-    except InvoiceSettings.DoesNotExist:
-        invoice_settings = None
 
     is_receipt = False
     if invoice.status == 'paid':
@@ -344,11 +333,12 @@ def invoice(request, pk):
 
     if amount_due == 0:
         is_receipt = True
+    context = {}
     context['invoice'] = invoice
     context['is_receipt'] = is_receipt
-    context['amount_paid'] = amount_paid
-    context['amount_due'] = amount_due
-    context['settings'] = invoice_settings
+    context['amount_paid'] = invoice.calculated_amount_paid
+    context['amount_due'] = invoice.amount_due
+    context['settings'] = invoice.settings
     context['snap_params'] = "?invoice_id={}&amount={}".format(
         invoice.id,
         format(amount_due, '.2f').replace('.', ''))

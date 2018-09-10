@@ -106,11 +106,7 @@
 	}
 
 	.invoice-box .sub-heading {
-		font-style: italic;
-	}
-
-	.invoice-box table tr.top table td{
-		padding-bottom:20px;
+		font-weight: bold;
 	}
 
 	.invoice-box table tr.top table td.title{
@@ -119,18 +115,10 @@
 		color:#333;
 	}
 
-	.invoice-box table tr.information table td{
-		padding-bottom:40px;
-	}
-
 	.invoice-box table tr.heading td{
-		background:#eee;
+		background:#ccc;
 		border-bottom:1px solid #ddd;
 		font-weight:bold;
-	}
-
-	.invoice-box table tr.details td{
-		padding-bottom:20px;
 	}
 
 	.invoice-box table tr.item td{
@@ -145,6 +133,7 @@
 		border-top:2px solid #eee;
 		font-weight:bold;
 	}
+	.text--right { text-align:right; }
 
 	@media only screen and (max-width: 600px) {
 		.invoice-box table tr.top table td{
@@ -167,9 +156,6 @@
 		background-color: #f1f1f1;
 		border-bottom: solid 1px #ccc;
 	}
-	.li-table tr {
-	}
-
 	table.data-table thead tr.head td {
 		border-bottom: solid 2px rgb(85, 83, 83);
 		text-transform: uppercase
@@ -182,6 +168,14 @@
 	table.data-table tr td:last-child {
 		text-align: right;
 	}
+
+	table.lineitem-table td {
+		border:solid 1px #ccc;
+	}
+	table.lineitem-table .sub-heading {
+		background-color: #eee;
+	}
+
 	</style>
 </head>
 
@@ -192,9 +186,9 @@
 				<td colspan="2">
 					<table>
 						<tr>
-							{% if invoice.context.practitioner.logo_picture %}
+							{% if invoice.practitioner_data.logo_picture %}
 							<td class="title">
-								 <img src="{{invoice.context.practitioner.logo_picture}}" style="max-width:300px; max-height:150px;">
+								 <img src="{{invoice.practitioner_data.logo_picture}}" style="max-width:300px; max-height:150px;">
 							</td>
 							{% endif %}
 
@@ -230,15 +224,15 @@
 			</tr>
 
 			<tr class="information">
-				<td colspan="2">
+				<td colspan="2" style='padding:0px;'>
 					<table>
 						<tr>
 							<td>
                                 <div style='max-width: 60%;'>
-                                    {% if invoice.context.practitioner.practice_name %}<div><strong>{{invoice.context.practitioner.practice_name}}</strong></div>{% endif %}
-                                    {% if invoice.context.practitioner.practice_number %}<strong>Practice number:</strong> {{invoice.context.practitioner.practice_number}}<br/>{% endif %}
-                                    {{invoice.context.practitioner.first_name}} {{invoice.context.practitioner.last_name}}
-                                    <!--email_off-->{{settings.billing_address|linebreaks}}<!--/email_off-->
+                                    {% if invoice.practitioner_data.practice_name %}<div><strong>{{invoice.practitioner_data.practice_name}}</strong></div>{% endif %}
+                                    {% if invoice.practitioner_data.practice_number %}<strong>Practice number:</strong> {{invoice.practitioner_data.practice_number}}<br/>{% endif %}
+                                    {{invoice.practitioner_data.first_name}} {{invoice.practitioner_data.last_name}}
+                                    <!--email_off-->{{invoice.billing_address|default:settings.billing_address|linebreaks}}<!--/email_off-->
                                 </div>
 								<div class='amount-due {{invoice.status}}' >
 									<strong>Amount due: </strong>
@@ -258,14 +252,12 @@
 <strong>Bill to:</strong>
 <!--email_off-->
 {{invoice.invoicee_details|markdown|linebreaks}}
-	{% endif %}
-	{% if invoice.integrate_medical_aid %}
-	{% if invoice.context.record.medical_aid %}
-		{% include "invoice/templates/includes/medicalaid.html" with invoice=invoice medicalaid=invoice.context.record.medical_aid %}
-	{% elif invoice.medicalaid_details %}
-		<div><strong>Medical Aid:</strong></div>
-		{{invoice.medicalaid_details|markdown|linebreaks}}
-	{% endif %}
+{% endif %}
+{% if invoice.integrate_medical_aid %}
+{% if invoice.medicalaid_details %}
+	<div><strong>Medical Aid:</strong></div>
+	{{invoice.medicalaid_details|markdown|linebreaks}}
+{% endif %}
 {% endif %}
 <!--/email_off-->
 							</td>
@@ -273,39 +265,42 @@
 					</table>
 				</td>
 			</tr>
-			{% for appointment in invoice.context.appointments %}
+			{% for appointment in invoice.appointment_data %}
 				<tr class="heading">
-					{% if appointment.invoice_title %}
-					<td>{{appointment.invoice_title}}</td>
-					{% else %}
 					<td>
-						{% if not appointment.codes_formatted %}
-							{{appointment.full_name}}. {{appointment.start_time_formatted|date:'D d M Y'}}
-						{% else %}
-						Appointment date: {{appointment.start_time_formatted|date:'D d M Y'}}
+						{% if invoice.integrate_medical_aid %}
+						Patient name:
+						{% endif %}
+						{{appointment.invoice_title|default:appointment.title|default:appointment.full_name}}.
+						{% if invoice.integrate_medical_aid %}
+						Practitioner: {{appointment.practitioner.first_name}} {{appointment.practitioner.last_name}}
 						{% endif %}
 					</td>
-					{% endif %}
 					<td>
-						<!-- Practitioner: {{appointment.practitioner.first_name}} {{appointment.practitioner.last_name}} -->
+						{{appointment.start_time}}
+						<!-- {{appointment.start_time|date:'D d M Y'}} -->
 					</td>
+					<!-- <td>
+						Practitioner: {{appointment.practitioner.first_name}} {{appointment.practitioner.last_name}}
+					</td> -->
 				</tr>
-				<!-- <tr class="sub-heading">
-					<td colspan='2'>
-						Treated by: {{appointment.practitioner.first_name}} {{appointment.practitioner.last_name}}
-					</td>
-				</tr> -->
-				{% if appointment.invoice_description %}
-				<tr class="sub-heading">
-					<td colspan='2'>{{appointment.invoice_description}}</td>
-				</tr>
-				{% endif %}
-				{% if appointment.codes_formatted %}
-				<tr class="item">
-					<td colspan='2'>
-						{% include "invoice/templates/includes/codetable.html" with codes=appointment.codes_formatted patient_name=appointment.full_name appointment_date=appointment.start_time_formatted %}
-					</td>
-				</tr>
+				{% if appointment.codes %}
+				<tr style='padding:0px;margin:0px;' ><td colspan="2" style='padding:0px;' >
+					<table class='data-table lineitem-table' width='100%' cellpadding="0" cellspacing="0">
+						<tr class='sub-heading' >
+							<td class='mdl-data-table__cell--non-numeric' >ICD10</td>
+							<td class='mdl-data-table__cell--non-numeric'>Tarriff code</td>
+							<td class='text--right' >Unit price</td>
+						</tr>
+
+						{% for code in appointment.codes %}
+						<td class='mdl-data-table__cell--non-numeric'>{{code.icd10}}</td>
+						<td class='mdl-data-table__cell--non-numeric'>{{code.process}}</td>
+						<td class='text--right' >{{code.currency}} {{code.price}}</td>
+						{% endfor %}
+
+					</table>
+				</td></tr>
 				{% endif %}
 
 				{% if appointment.lineitems %}
@@ -363,14 +358,14 @@
 					{{invoice.currency}} {{amount_due|intcomma}}
 				</td>
 			</tr>
-			{% if invoice.context.practitioner.banking_details %}
+			{% if invoice.practitioner_data.banking_details %}
             <tr>
                 <td colspan="2" ><hr/></td>
             </tr>
             <tr>
 				<td>
 				<strong>Banking details:</strong>
-{{invoice.context.practitioner.banking_details|markdown|linebreaks}}
+{{invoice.practitioner_data.banking_details|markdown|linebreaks}}
 				</td>
 				<td>
 					{% if settings.show_snapcode_on_invoice %}
@@ -380,7 +375,10 @@
 						<img src="{{invoice.get_snapscan_qr}}" >
 					</a>
 					<div>
-						Scan or click this code to pay with SnapScan
+						Scan or click this code to
+						<a target='_top'
+							href="{{invoice.get_snapscan_url}}">
+						pay with SnapScan</a>
 					</div>
 					{% endif %}
 				</td>
@@ -388,14 +386,13 @@
 			{% endif %}
 			<tr>
 				<td>
-				<strong>Notes:</strong>
+
+<strong>Notes:</strong>
 {% if invoice.notes %}{{invoice.notes|markdown|linebreaks}}{% endif %}
 {% if invoice.is_receipt and settings.receipt_notes|markdown|linebreaks %}{{settings.receipt_notes}}{% endif %}
 {% if not invoice.is_receipt and settings.invoice_notes|markdown|linebreaks %}{{settings.invoice_notes}}{% endif %}
-				</td>
-				<td>
-
-				</td>
+</td>
+				<td>&nbsp;</td>
 			</tr>
 		</table>
 	</div>
@@ -405,8 +402,8 @@
 		<a
 			style='color:white;'
 			target='_top'
-			href="https://bookme.guru/{{invoice.context.practitioner.sub_domain}}/" >
-				https://bookme.guru/{{invoice.context.practitioner.sub_domain}}/
+			href="https://bookme.guru/{{invoice.practitioner_data.sub_domain}}/" >
+				https://bookme.guru/{{invoice.practitioner_data.sub_domain}}/
 		</a>
 	</div>
 	{% endif %}
