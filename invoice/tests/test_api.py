@@ -4,7 +4,8 @@ from ..models import Invoice
 from api.testutils import (
     assert_response,
     get_proxy_headers,
-    create_mock_v2_invoice
+    create_mock_v2_invoice,
+    create_mock_settings
 )
 from .responses import (
     expect_shorten_url,
@@ -110,3 +111,32 @@ class TransactionListTestCase(TestCase):
             "customer_id": 1
         }
         res = self.client.get(self.url, data, **self.headers)
+
+class InvoiceSettingsViewTestCase(TestCase):
+
+    def setUp(self):
+        self.practitoner_id = 1
+        self.headers = get_proxy_headers(self.practitoner_id)
+        create_mock_settings(self.practitoner_id, with_save=True)
+        create_mock_settings(3, with_save=True)
+        create_mock_settings(3, with_save=True)
+
+    def test_get_my_settings(self):
+        url = reverse('invoicesettings-detail', args=('me',))
+        result = self.client.get(url, **self.headers)
+
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json().get('practitioner_id'), str(self.practitoner_id))
+
+    def test_list_only_returns_my_settings(self):
+        url = reverse('invoicesettings-list')
+        result = self.client.get(url, **self.headers)
+        num_results = result.json().get('count')
+        self.assertEqual(num_results, 1)
+
+    def test_cannot_get_other_practitioners_settings(self):
+        url = reverse('invoicesettings-list')
+        result = self.client.get(url, **get_proxy_headers(2))
+        num_results = result.json().get('count')
+        self.assertEqual(num_results, 0)
+

@@ -3,8 +3,17 @@ Filters for use with Invoices
 '''
 from .models import Invoice, Transaction
 from django_filters.rest_framework import FilterSet
+from rest_framework import filters
 from rest_framework.filters import BaseFilterBackend
 import django_filters
+
+class OwnerFilterBackend(filters.BaseFilterBackend):
+    """
+    Return only objects owned by the current user
+    """
+    def filter_queryset(self, request, queryset, view):
+        user_id = str(request.user.id)
+        return queryset.filter(practitioner_id=user_id)
 
 class InvoiceFilter(FilterSet):
     	# time needs to be in the format: 2016-10-17 11:34:51

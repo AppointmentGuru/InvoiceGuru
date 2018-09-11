@@ -10,7 +10,8 @@ from .mixins import MultiSerializerMixin
 from .filters import (
     InvoiceFilter,
     TransactionFilter,
-    IdsInFilter
+    IdsInFilter,
+    OwnerFilterBackend
 )
 from .serializers import (
     InvoiceSerializer,
@@ -55,6 +56,13 @@ class Guru:
 class InvoiceSettingsViewSet(viewsets.ModelViewSet):
     queryset = InvoiceSettings.objects.all()
     serializer_class = InvoiceSettingsSerializer
+    filter_backends = (OwnerFilterBackend,)
+
+    def get_object(self):
+        user = self.request.user
+        queryset = self.get_queryset()
+        return get_object_or_404(queryset, practitioner_id=user.id)
+
 
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.all()

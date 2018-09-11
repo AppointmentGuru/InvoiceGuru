@@ -47,8 +47,9 @@ def create_mock_proof(invoice):
     # proof.document = mock_file
     return proof
 
-def create_mock_settings(practitioner_id):
+def create_mock_settings(practitioner_id, with_save=False):
     settings = InvoiceSettings()
+    settings.practitioner_id = practitioner_id
     settings.billing_address = 'billing address'
     settings.invoice_notes = 'invoice note'
     settings.receipt_notes = 'receipt_note'
@@ -57,6 +58,8 @@ def create_mock_settings(practitioner_id):
     settings.allow_pre_payments = True
     settings.allow_submit_to_medical_aid = True
     settings.snap_id = 'snappers'
+    if with_save:
+        settings.save()
     return settings
 
 @responses.activate

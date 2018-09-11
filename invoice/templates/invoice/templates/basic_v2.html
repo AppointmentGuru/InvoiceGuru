@@ -277,8 +277,7 @@
 						{% endif %}
 					</td>
 					<td>
-						{{appointment.start_time}}
-						<!-- {{appointment.start_time|date:'D d M Y'}} -->
+						{{appointment.start_time_formatted|date:'D d M Y'}}
 					</td>
 					<!-- <td>
 						Practitioner: {{appointment.practitioner.first_name}} {{appointment.practitioner.last_name}}
@@ -294,9 +293,11 @@
 						</tr>
 
 						{% for code in appointment.codes %}
-						<td class='mdl-data-table__cell--non-numeric'>{{code.icd10}}</td>
-						<td class='mdl-data-table__cell--non-numeric'>{{code.process}}</td>
-						<td class='text--right' >{{code.currency}} {{code.price}}</td>
+						<tr>
+							<td class='mdl-data-table__cell--non-numeric'>{{code.icd10}}</td>
+							<td class='mdl-data-table__cell--non-numeric'>{{code.process}}</td>
+							<td class='text--right' >{{code.currency}} {{code.price}}</td>
+						</tr>
 						{% endfor %}
 
 					</table>
@@ -317,7 +318,7 @@
 				{% endif %}
 				<tr class='item' >
 						<td style='text-align:right;'>Price</td>
-						<td style='padding-right:10px;' >
+						<td >
 							{{invoice.currency}} {{appointment.price}}
 						</td>
 					</tr>
@@ -333,7 +334,7 @@
 				</tr> -->
 				<tr class='item total' >
 					<td style='text-align:right;'>Sub-total</td>
-					<td style='padding-right:10px;' >
+					<td >
 						{{invoice.currency}} {{appointment.price|intcomma}}
 					</td>
 				</tr>
