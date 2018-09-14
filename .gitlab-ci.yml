@@ -6,7 +6,7 @@ services:
 stages:
   - test
   - build
-  - analyze
+  - deploy
 
 cache:
   paths:
@@ -46,3 +46,4 @@ deploy_review:
     - branches
   except:
     - master
+
