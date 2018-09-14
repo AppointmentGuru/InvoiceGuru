@@ -1,6 +1,6 @@
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/74dcf512fcd24bdc971d1d57272c6e5e)](https://www.codacy.com/app/toast38coza/InvoiceGuru?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AppointmentGuru/InvoiceGuru&amp;utm_campaign=Badge_Grade)
+[![pipeline status](https://gitlab.com/appointmentguru/services/InvoiceGuru/badges/master/pipeline.svg)](https://gitlab.com/appointmentguru/services/InvoiceGuru/commits/master)
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/74dcf512fcd24bdc971d1d57272c6e5e)](https://www.codacy.com/app/toast38coza/InvoiceGuru?utm_source=github.com&utm_medium=referral&utm_content=AppointmentGuru/InvoiceGuru&utm_campaign=Badge_Coverage)
+[![coverage report](https://gitlab.com/appointmentguru/services/InvoiceGuru/badges/master/coverage.svg)](https://gitlab.com/appointmentguru/services/InvoiceGuru/commits/master)
 
 ### Run integration tests:
 

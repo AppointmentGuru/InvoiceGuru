@@ -11,7 +11,6 @@ stages:
 cache:
   paths:
   - ~/.cache/pip/
-
 # test:
 #   stage: test
 #   before_script:
@@ -36,12 +35,14 @@ build:
     - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
 
-pages:
-  stage: analyze
+deploy_review:
+  stage: deploy
   script:
-    - cp -r htmlcov/ public/
-  artifacts:
-    paths:
-      - public
+    - echo "Deploy a review app"
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: https://$CI_COMMIT_REF_NAME-$CI_PROJECT_NAME.appointmentguru.co
   only:
+    - branches
+  except:
     - master
