@@ -91,6 +91,7 @@ builder.profit()
 
     def enrich(self, with_save=False):
 
+        self.populate_appointments_from_context()
         # appointments = self.get_appointments_from_legacy_context()
         appointments = self.get_appointments(
                         self.invoice.practitioner_id,
@@ -210,3 +211,13 @@ builder.profit()
             else:
                 print("{}: Appt #{}: {}".format(practitioner_id, appointment_id, result.status_code))
         return appointments
+
+    def populate_appointments_from_context(self, with_save = False):
+        appointments_are_empty = not truthy(self.invoice.appointments)
+        if appointments_are_empty:
+            appointments = self.invoice.context.get('appointments', None)
+            if appointments is not None:
+                self.invoice.appointment_data = appointments
+                self.invoice.appointments = [appt.get('id') for appt in appointments]
+                if with_save:
+                    self.invoice.save()
