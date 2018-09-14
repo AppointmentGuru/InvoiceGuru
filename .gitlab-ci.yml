@@ -8,6 +8,7 @@ stages:
 cache:
   paths:
   - ~/.cache/pip/
+
 test:
   stage: test
   services:
@@ -24,6 +25,7 @@ test:
     paths:
       - htmlcov/
     expire_in: 1 hour
+
 build:
   image: docker
   services:
