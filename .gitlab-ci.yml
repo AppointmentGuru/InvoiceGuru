@@ -1,8 +1,5 @@
 image: python:3.6
 
-services:
-  - postgres:latest
-
 stages:
   - test
   - build
@@ -13,6 +10,8 @@ cache:
   - ~/.cache/pip/
 # test:
 #   stage: test
+#   services:
+#   - postgres:latest
 #   before_script:
 #   - python -V
 #   - pip install -r requirements.txt
@@ -37,10 +36,14 @@ build:
 
 deploy_review:
   stage: deploy
-  image: python:3.7
+  image: docker
+  stage: deploy
+  services:
+    - docker:dind
   script:
-    - pip install ansible
-    - ansible-playbook test.yml
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - echo $DEPLOY_KEY >> id_rsa
+    - docker run --rm -v `pwd`/id_rsa:/code/id_rsa registry.gitlab.com/appointmentguru/ops/playbooks:master ansible ansible-playbook deploy_service.yml -i inventory/digital_ocean.py
   environment:
     name: review/$CI_COMMIT_REF_NAME
     url: https://$CI_COMMIT_REF_NAME-$CI_PROJECT_NAME.appointmentguru.co
